@@ -64,7 +64,7 @@ import com.desacibiruwetan.posyandu.ui.theme.TextDark
 import com.desacibiruwetan.posyandu.ui.theme.TextPlaceholder
 
 @Composable
-fun LoginScreenWrapper() {
+fun LoginScreenWrapper(onNavigateToRegister: () -> Unit) {
     var isDarkTheme by remember { mutableStateOf(false) }
 
     // Transisi Ombak (Wave Transition) dari Pojok Kanan Atas
@@ -86,14 +86,15 @@ fun LoginScreenWrapper() {
         PosyanduCibiruTheme(darkTheme = targetTheme) {
             LoginScreen(
                 isDarkTheme = targetTheme,
-                onThemeToggle = { isDarkTheme = !isDarkTheme }
+                onThemeToggle = { isDarkTheme = !isDarkTheme },
+                onNavigateToRegister = onNavigateToRegister
             )
         }
     }
 }
 
 @Composable
-fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit) {
+fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit, onNavigateToRegister: () -> Unit) {
     // States for Inputs
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
@@ -359,7 +360,7 @@ fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit) {
                 }
                 Text(
                     text = registerText,
-                    modifier = Modifier.clickable { /* Action Navigate to Register */ }
+                    modifier = Modifier.clickable { onNavigateToRegister() }
                 )
             }
         }
