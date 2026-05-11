@@ -12,6 +12,7 @@ import androidx.navigation.compose.rememberNavController
 import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
 import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
 import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreen
+import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
 import com.desacibiruwetan.posyandu.ui.theme.PosyanduCibiruTheme
 
 
@@ -19,6 +20,7 @@ sealed class Screen(val route: String) {
     object Login : Screen("login")
     object Register : Screen("register")
     object Personalization : Screen("personalization")
+    object Dashboard : Screen("dashboard")
 }
 
 class MainActivity : ComponentActivity() {
@@ -27,7 +29,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PosyanduCibiruTheme {
-                AppNavigation()
+                DashboardScreen()
             }
         }
     }
@@ -74,6 +76,10 @@ fun AppNavigation() {
                     println("Personalisasi Selesai! Menuju Dashboard...")
                 }
             )
+        }
+
+        composable(Screen.Dashboard.route) {
+            DashboardScreen()
         }
     }
 }
