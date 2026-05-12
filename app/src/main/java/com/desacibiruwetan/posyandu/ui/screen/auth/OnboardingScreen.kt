@@ -9,7 +9,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.desacibiruwetan.posyandu.ui.theme.*
+import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,8 +47,7 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
             // RW Dropdown
             ExposedDropdownMenuBox(
                 expanded = rwExpanded,
-                onExpandedChange = { rwExpanded = !rwExpanded }
-            ) {
+                onExpandedChange = { rwExpanded = !rwExpanded }) {
                 OutlinedTextField(
                     value = selectedRW,
                     onValueChange = {},
@@ -64,11 +65,7 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                     rwList.forEach { rw ->
                         DropdownMenuItem(
                             text = { Text(rw) },
-                            onClick = {
-                                selectedRW = rw
-                                selectedRT = ""
-                                rwExpanded = false
-                            }
+                            onClick = { selectedRW = rw; selectedRT = ""; rwExpanded = false }
                         )
                     }
                 }
@@ -79,8 +76,7 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
             // RT Dropdown
             ExposedDropdownMenuBox(
                 expanded = rtExpanded,
-                onExpandedChange = { if (selectedRW.isNotEmpty()) rtExpanded = !rtExpanded }
-            ) {
+                onExpandedChange = { if (selectedRW.isNotEmpty()) rtExpanded = !rtExpanded }) {
                 OutlinedTextField(
                     value = selectedRT,
                     onValueChange = {},
@@ -100,10 +96,7 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                     rtList.forEach { rt ->
                         DropdownMenuItem(
                             text = { Text(rt) },
-                            onClick = {
-                                selectedRT = rt
-                                rtExpanded = false
-                            }
+                            onClick = { selectedRT = rt; rtExpanded = false }
                         )
                     }
                 }
@@ -111,16 +104,11 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
+            PrimaryButton(
+                text = "Selesai & Masuk Dashboard",
                 onClick = onComplete,
-                enabled = selectedRW.isNotEmpty() && selectedRT.isNotEmpty(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(45.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryGreen)
-            ) {
-                Text("Selesai & Masuk Dashboard")
-            }
+                enabled = selectedRW.isNotEmpty() && selectedRT.isNotEmpty()
+            )
         }
     }
 }

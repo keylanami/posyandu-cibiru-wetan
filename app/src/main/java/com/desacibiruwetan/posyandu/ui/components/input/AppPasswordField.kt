@@ -55,9 +55,11 @@ fun AppPasswordField(
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
     val bgColor = if (isDarkTheme) Color(0xFF303030) else SurfaceLightGray
 
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(bottom = 8.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+    ) {
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
