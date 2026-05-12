@@ -1,10 +1,13 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
@@ -21,7 +24,12 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryFab
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
+import com.desacibiruwetan.posyandu.ui.components.items.WargaItemCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+
+
+
+data class DummyWarga(val name: String, val nik: String, val rtRw: String)
 
 @Composable
 fun CariWargaScreen(
@@ -31,26 +39,23 @@ fun CariWargaScreen(
     var searchQuery by remember { mutableStateOf("") }
     var navSelectedIndex by remember { mutableStateOf(1) }
 
+
+    val listWarga = remember {
+        listOf(
+            DummyWarga("Jaka Sambung", "1234567890123456", "RT04 / RW02"),
+            DummyWarga("Jaka Golok", "1234567890123456", "RT04 / RW02"),
+            DummyWarga("Jaka Tarub", "1234567890123456", "RT04 / RW02")
+        )
+    }
+
+    val filteredWarga = listWarga.filter {
+        it.name.contains(searchQuery, ignoreCase = true) || it.nik.contains(searchQuery)
+    }
+
     Scaffold(
-        topBar = {
-            AppTopBar(
-                title = "Cari Warga",
-                onBackClick = onBackClick
-            )
-        },
-        bottomBar = {
-            AppNavBar(
-                selectedIndex = navSelectedIndex,
-                onItemSelected = { index -> navSelectedIndex = index }
-            )
-        },
-        floatingActionButton = {
-            PrimaryFab(
-                text = "Tambah Warga",
-                icon = Icons.Default.Add,
-                onClick = onAddWargaClick
-            )
-        },
+        topBar = { AppTopBar(title = "Cari Warga", onBackClick = onBackClick) },
+        bottomBar = { AppNavBar(selectedIndex = navSelectedIndex, onItemSelected = { navSelectedIndex = it }) },
+        floatingActionButton = { PrimaryFab(text = "Tambah Warga", icon = Icons.Default.Add, onClick = onAddWargaClick) },
         containerColor = BgMint
     ) { paddingValues ->
         Column(
@@ -61,12 +66,13 @@ fun CariWargaScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-
             AppSearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
                 placeholder = "Cari nama atau NIK"
             )
+
+            Spacer(modifier = Modifier.height(24.dp))
 
 
             if (searchQuery.isEmpty()) {
@@ -74,8 +80,29 @@ fun CariWargaScreen(
                     icon = Icons.Default.Face,
                     message = "Lakukan pencarian untuk\nmelihat data warga"
                 )
+            } else if (filteredWarga.isEmpty()) {
+                EmptyState(
+                    icon = Icons.Default.Face,
+                    message = "Data warga tidak ditemukan"
+                )
             } else {
-                // TODO: Tampilkan list hasil pencarian warga di sini nantinya
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.spacedBy(16.dp),
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(filteredWarga) { warga ->
+                        WargaItemCard(
+                            name = warga.name,
+                            nik = warga.nik,
+                            rtRw = warga.rtRw,
+                            onClick = { /* TODO: Navigasi ke Detail Warga */ }
+                        )
+                    }
+
+
+                    item { Spacer(modifier = Modifier.height(80.dp)) }
+                }
             }
         }
     }

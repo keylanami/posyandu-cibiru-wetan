@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -24,35 +23,25 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarDefaults
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar // <-- Import Reusable Component
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.Poppins
@@ -60,14 +49,15 @@ import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextDark
 
-val LightMintIconBg  = Color(0xFFC7FFEC)
+val LightMintIconBg = Color(0xFFC7FFEC)
 
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 data class ServiceData(
     val title: String,
     val description: String,
-    val icon: ImageVector
+    val icon: ImageVector,
+    val onClick: () -> Unit = {} // <-- Tambahan: Agar setiap layanan bisa di-route
 )
 
 data class ServiceGroup(val groupLabel: String, val items: List<ServiceData>)
@@ -75,16 +65,24 @@ data class ServiceGroup(val groupLabel: String, val items: List<ServiceData>)
 // ─── Screen ──────────────────────────────────────────────────────────────────
 
 @Composable
-fun DashboardScreen() {
-    // Kita hapus inner padding bawah dari Scaffold agar navbar bisa overlay dengan efek transparan
+fun DashboardScreen(
+    onNavigateToCariWarga: () -> Unit, // <-- Tambahan: Parameter routing untuk Cari Warga
+    onNavItemSelected: (Int) -> Unit   // <-- Tambahan: Parameter routing untuk Bottom Navbar
+) {
     Scaffold(
         containerColor = BgMint,
-        bottomBar = { DashboardBottomBar() }
+        bottomBar = {
+            // Menggunakan reusable component AppNavBar
+            AppNavBar(
+                selectedIndex = 0, // 0 = Beranda
+                onItemSelected = onNavItemSelected
+            )
+        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding()) // Hanya terapkan bottom padding ke lazy column
+                .padding(bottom = paddingValues.calculateBottomPadding())
         ) {
             DashboardTopBar()
 
@@ -113,24 +111,57 @@ fun DashboardScreen() {
                     ServiceGroup(
                         "Cari & Lihat Data",
                         listOf(
-                            ServiceData("Cari Warga", "Temukan data warga berdasarkan nama atau NIK", Icons.Default.Search),
-                            ServiceData("Rumah & Keluarga", "Lihat data anggota keluarga per rumah tangga", Icons.Default.Home)
+                            ServiceData(
+                                title = "Cari Warga",
+                                description = "Temukan data warga berdasarkan nama atau NIK",
+                                icon = Icons.Default.Search,
+                                onClick = onNavigateToCariWarga // <-- ACTION ROUTING DIPASANG DI SINI
+                            ),
+                            ServiceData(
+                                title = "Rumah & Keluarga",
+                                description = "Lihat data anggota keluarga per rumah tangga",
+                                icon = Icons.Default.Home
+                            )
                         )
                     ),
                     ServiceGroup(
                         "Catat & Perbarui",
                         listOf(
-                            ServiceData("Catat Kejadian", "Rekam kelahiran, kematian, atau kejadian penting", Icons.Default.Edit),
-                            ServiceData("Update KB", "Perbarui status penggunaan KB warga", Icons.Default.People),
-                            ServiceData("Wus / Pus", "Data wanita dan pasangan usia subur", Icons.Default.Favorite),
-                            ServiceData("Update Bumil", "Catat perkembangan ibu hamil di wilayah Anda", Icons.Default.Face),
-                            ServiceData("Update Balita", "Input tumbuh kembang dan gizi balita", Icons.Default.Face)
+                            ServiceData(
+                                "Catat Kejadian",
+                                "Rekam kelahiran, kematian, atau kejadian penting",
+                                Icons.Default.Edit
+                            ),
+                            ServiceData(
+                                "Update KB",
+                                "Perbarui status penggunaan KB warga",
+                                Icons.Default.People
+                            ),
+                            ServiceData(
+                                "Wus / Pus",
+                                "Data wanita dan pasangan usia subur",
+                                Icons.Default.Favorite
+                            ),
+                            ServiceData(
+                                "Update Bumil",
+                                "Catat perkembangan ibu hamil di wilayah Anda",
+                                Icons.Default.Face
+                            ),
+                            ServiceData(
+                                "Update Balita",
+                                "Input tumbuh kembang dan gizi balita",
+                                Icons.Default.Face
+                            )
                         )
                     ),
                     ServiceGroup(
                         "Administrasi",
                         listOf(
-                            ServiceData("Administrasi RT", "Kelola surat dan dokumen administrasi RT", Icons.Default.Settings)
+                            ServiceData(
+                                "Administrasi RT",
+                                "Kelola surat dan dokumen administrasi RT",
+                                Icons.Default.Settings
+                            )
                         )
                     )
                 )
@@ -140,14 +171,14 @@ fun DashboardScreen() {
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                item { Spacer(modifier = Modifier.height(32.dp)) } // Ruang ekstra agar tidak tertutup gradient bottom bar
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
     }
 }
 
-// ─── Top Bar ─────────────────────────────────────────────────────────────────
-
+// ─── Top Bar Khusus Dashboard ────────────────────────────────────────────────
+// (Note: Berbeda dari AppTopBar karena tidak ada tombol back dan ada foto profil)
 @Composable
 fun DashboardTopBar() {
     Row(
@@ -181,76 +212,6 @@ fun DashboardTopBar() {
             fontSize = 15.sp,
             color = SurfaceWhite
         )
-    }
-}
-
-// ─── Bottom Bar (Gradient Transparan) ────────────────────────────────────────
-
-@Composable
-fun DashboardBottomBar() {
-    var selectedItem by remember { mutableIntStateOf(0) }
-
-    val items = listOf("Beranda", "Warga", "Riwayat", "Profil")
-    val icons = listOf(
-        Icons.Default.Home,
-        Icons.Default.People,
-        Icons.Default.History,
-        Icons.Default.Person
-    )
-
-    // Menggunakan warna background system agar adaptif ke Light/Dark mode
-    val systemBgColor = MaterialTheme.colorScheme.background
-
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color.Transparent, // Atas transparan
-                        systemBgColor.copy(alpha = 0.85f), // Tengah semi transparan
-                        systemBgColor // Bawah solid mengikuti tema
-                    )
-                )
-            )
-    ) {
-        NavigationBar(
-            containerColor = Color.Transparent, // Dibuat transparan agar gradient Box terlihat
-            windowInsets = NavigationBarDefaults.windowInsets, // Support edge-to-edge
-            modifier = Modifier.padding(top = 16.dp) // Sedikit padding atas agar efek transparan di ujung atas terlihat natural
-        ) {
-            items.forEachIndexed { index, item ->
-                val isSelected = selectedItem == index
-
-                NavigationBarItem(
-                    selected = isSelected,
-                    onClick = { selectedItem = index },
-                    icon = {
-                        Icon(
-                            imageVector = icons[index],
-                            contentDescription = item,
-                            modifier = Modifier.size(26.dp)
-                        )
-                    },
-                    label = {
-                        Text(
-                            text = item,
-                            fontFamily = Poppins,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            fontSize = 12.sp
-                        )
-                    },
-                    colors = NavigationBarItemDefaults.colors(
-                        // Warna diubah menjadi PrimaryGreen agar terlihat di atas background terang/gelap
-                        selectedIconColor   = PrimaryGreen,
-                        unselectedIconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        selectedTextColor   = PrimaryGreen,
-                        unselectedTextColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f),
-                        indicatorColor      = PrimaryGreen.copy(alpha = 0.15f)
-                    )
-                )
-            }
-        }
     }
 }
 
@@ -313,7 +274,7 @@ fun ServiceGroupSection(group: ServiceGroup) {
 // ─── Service Row ─────────────────────────────────────────────────────────────
 
 @Composable
-fun ServiceRow(service: ServiceData, onClick: () -> Unit = {}) {
+fun ServiceRow(service: ServiceData) {
     Row(
         modifier = Modifier
             .shadow(
@@ -324,7 +285,7 @@ fun ServiceRow(service: ServiceData, onClick: () -> Unit = {}) {
             )
             .background(color = PrimaryGreen, shape = RoundedCornerShape(12.dp))
             .fillMaxWidth()
-            .clickable { onClick() }
+            .clickable { service.onClick() } // <-- Execute onClick dari ServiceData
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
