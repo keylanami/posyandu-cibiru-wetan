@@ -54,19 +54,18 @@ fun AppNavigation() {
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavigateToCariWarga = {
-
-                    navController.navigate(Screen.Warga.route)
+                    navController.navigate(Screen.Warga.route) {
+                        launchSingleTop = true
+                    }
                 },
                 onNavItemSelected = { index ->
-
                     when (index) {
-                        1 -> navController.navigate(Screen.Warga.route) // Index 1 adalah "Warga"
-                        // TODO: Tambahkan navigasi Riwayat (2) dan Profil (3) nanti
+                        1 -> navController.navigate(Screen.Warga.route) { launchSingleTop = true }
+                        // TODO: Handle index 2 (Riwayat), 3 (Profil)
                     }
                 }
             )
         }
-
 
         composable(Screen.Warga.route) {
             CariWargaScreen(
@@ -74,8 +73,15 @@ fun AppNavigation() {
                     navController.popBackStack()
                 },
                 onAddWargaClick = {
-                    // TODO: Arahkan ke screen Tambah Data Warga (Screen.TambahWarga.route) jika sudah dibuat
-                    println("Tombol tambah warga ditekan!")
+                    // TODO: Arahkan ke screen Tambah Data Warga
+                },
+                onNavItemSelected = { index ->
+                    when (index) {
+                        0 -> {
+                            navController.popBackStack(Screen.Dashboard.route, inclusive = false)
+                        }
+                        // TODO: Handle index 2 (Riwayat), 3 (Profil)
+                    }
                 }
             )
         }

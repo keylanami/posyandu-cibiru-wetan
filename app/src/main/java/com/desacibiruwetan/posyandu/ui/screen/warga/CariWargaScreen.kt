@@ -27,18 +27,15 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.items.WargaItemCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 
-
-
 data class DummyWarga(val name: String, val nik: String, val rtRw: String)
 
 @Composable
 fun CariWargaScreen(
     onBackClick: () -> Unit,
-    onAddWargaClick: () -> Unit
+    onAddWargaClick: () -> Unit,
+    onNavItemSelected: (Int) -> Unit // <-- TAMBAHAN PARAMETER INI
 ) {
     var searchQuery by remember { mutableStateOf("") }
-    var navSelectedIndex by remember { mutableStateOf(1) }
-
 
     val listWarga = remember {
         listOf(
@@ -54,8 +51,19 @@ fun CariWargaScreen(
 
     Scaffold(
         topBar = { AppTopBar(title = "Cari Warga", onBackClick = onBackClick) },
-        bottomBar = { AppNavBar(selectedIndex = navSelectedIndex, onItemSelected = { navSelectedIndex = it }) },
-        floatingActionButton = { PrimaryFab(text = "Tambah Warga", icon = Icons.Default.Add, onClick = onAddWargaClick) },
+        bottomBar = {
+            AppNavBar(
+                selectedIndex = 1, // <-- Hardcode 1 karena ini screen Warga
+                onItemSelected = onNavItemSelected // Lempar kliknya ke luar
+            )
+        },
+        floatingActionButton = {
+            PrimaryFab(
+                text = "Tambah Warga",
+                icon = Icons.Default.Add,
+                onClick = onAddWargaClick
+            )
+        },
         containerColor = BgMint
     ) { paddingValues ->
         Column(
@@ -74,19 +82,12 @@ fun CariWargaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-
-            if (searchQuery.isEmpty()) {
-                EmptyState(
-                    icon = Icons.Default.Face,
-                    message = "Lakukan pencarian untuk\nmelihat data warga"
-                )
-            } else if (filteredWarga.isEmpty()) {
+            if (filteredWarga.isEmpty()) {
                 EmptyState(
                     icon = Icons.Default.Face,
                     message = "Data warga tidak ditemukan"
                 )
             } else {
-
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxSize()
@@ -99,7 +100,6 @@ fun CariWargaScreen(
                             onClick = { /* TODO: Navigasi ke Detail Warga */ }
                         )
                     }
-
 
                     item { Spacer(modifier = Modifier.height(80.dp)) }
                 }
