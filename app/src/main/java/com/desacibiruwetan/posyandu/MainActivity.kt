@@ -29,7 +29,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             PosyanduCibiruTheme {
-                DashboardScreen()
+                AppNavigation()
             }
         }
     }
@@ -71,15 +71,15 @@ fun AppNavigation() {
         composable(Screen.Personalization.route) {
             PersonalizationScreen(
                 onComplete = {
-                    // TODO: Arahkan ke Dashboard nanti
-                    // navController.navigate(Screen.Dashboard.route) { ... }
-                    println("Personalisasi Selesai! Menuju Dashboard...")
+                     navController.navigate(Screen.Dashboard.route) {
+                         popUpTo(Screen.Login.route) { inclusive = true }
+                     }
                 }
             )
         }
 
         composable(Screen.Dashboard.route) {
-            DashboardScreen()
+                DashboardScreen()
         }
     }
 }
