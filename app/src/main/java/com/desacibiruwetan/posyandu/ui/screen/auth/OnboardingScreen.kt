@@ -66,7 +66,7 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                             text = { Text(rw) },
                             onClick = {
                                 selectedRW = rw
-                                selectedRT = "" // Reset RT saat RW berubah
+                                selectedRT = ""
                                 rwExpanded = false
                             }
                         )

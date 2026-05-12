@@ -67,13 +67,12 @@ import com.desacibiruwetan.posyandu.ui.theme.TextPlaceholder
 fun LoginScreenWrapper(onNavigateToRegister: () -> Unit) {
     var isDarkTheme by remember { mutableStateOf(false) }
 
-    // Transisi Ombak (Wave Transition) dari Pojok Kanan Atas
     AnimatedContent(
         targetState = isDarkTheme,
         transitionSpec = {
             (fadeIn(animationSpec = tween(600)) + scaleIn(
                 animationSpec = tween(600),
-                transformOrigin = TransformOrigin(1f, 0f) // Titik awal ombak: Kanan Atas
+                transformOrigin = TransformOrigin(1f, 0f)
             )).togetherWith(
                 fadeOut(animationSpec = tween(600)) + scaleOut(
                     animationSpec = tween(600),
