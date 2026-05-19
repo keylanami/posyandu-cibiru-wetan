@@ -23,6 +23,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
@@ -30,20 +31,24 @@ import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
 
 @Composable
 fun AppTextField(
+    modifier: Modifier = Modifier,
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String = "Masukkan $label",
     error: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
+    readOnly: Boolean = false,
+    singleLine: Boolean = true,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
     val bgColor = if (isDarkTheme) Color(0xFF303030) else SurfaceLightGray
 
-    Column(modifier = Modifier
+    Column(modifier = modifier
         .fillMaxWidth()
         .padding(bottom = 8.dp)) {
         Text(text = label, style = MaterialTheme.typography.bodyMedium)
@@ -52,22 +57,25 @@ fun AppTextField(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
+            readOnly = readOnly,
+            singleLine = singleLine,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-            textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
+            visualTransformation = visualTransformation,
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) Color.Gray else MaterialTheme.colorScheme.onSurface),
             modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
             decorationBox = { innerTextField ->
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(38.dp)
+                        .height(if (singleLine) 38.dp else 114.dp)
                         .background(color = bgColor, shape = RoundedCornerShape(5.dp))
                         .border(
-                            width = if (isFocused) 1.5.dp else 1.dp,
+                            width = if (isFocused && !readOnly) 1.5.dp else 1.dp,
                             color = borderColor,
                             shape = RoundedCornerShape(5.dp)
                         )
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.CenterStart
+                        .padding(horizontal = 12.dp, vertical = if (singleLine) 0.dp else 12.dp),
+                    contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart
                 ) {
                     if (value.isEmpty()) {
                         Text(text = placeholder, style = MaterialTheme.typography.labelMedium)
