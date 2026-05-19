@@ -33,7 +33,7 @@ data class DummyWarga(val name: String, val nik: String, val rtRw: String)
 fun CariWargaScreen(
     onBackClick: () -> Unit,
     onAddWargaClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit // <-- TAMBAHAN PARAMETER INI
+    onNavItemSelected: (Int) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
 

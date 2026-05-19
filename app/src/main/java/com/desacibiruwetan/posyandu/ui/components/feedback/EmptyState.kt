@@ -19,13 +19,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.Inter
+import com.desacibiruwetan.posyandu.ui.theme.SecondaryGreen
 
 @Composable
 fun EmptyState(
     icon: ImageVector,
     message: String,
     modifier: Modifier = Modifier,
-    tintColor: Color = Color(0xFF7AA497) // Default menggunakan warna SecondaryGreen
+    tintColor: Color = SecondaryGreen
 ) {
     Box(
         modifier = modifier.fillMaxSize(),

@@ -25,9 +25,11 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
     var rwExpanded by remember { mutableStateOf(false) }
     var rtExpanded by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(BgMint)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(BgMint)
+    ) {
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
@@ -38,16 +40,14 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
         ) {
             Text("Personalisasi Wilayah", style = MaterialTheme.typography.titleLarge)
             Text(
-                "Pilih wilayah tugas Anda sebagai kader",
-                style = MaterialTheme.typography.bodyLarge
+                "Pilih wilayah tugas Anda sebagai kader", style = MaterialTheme.typography.bodyLarge
             )
 
             Spacer(modifier = Modifier.height(32.dp))
 
             // RW Dropdown
             ExposedDropdownMenuBox(
-                expanded = rwExpanded,
-                onExpandedChange = { rwExpanded = !rwExpanded }) {
+                expanded = rwExpanded, onExpandedChange = { rwExpanded = !rwExpanded }) {
                 OutlinedTextField(
                     value = selectedRW,
                     onValueChange = {},
@@ -60,13 +60,11 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryGreen)
                 )
                 ExposedDropdownMenu(
-                    expanded = rwExpanded,
-                    onDismissRequest = { rwExpanded = false }) {
+                    expanded = rwExpanded, onDismissRequest = { rwExpanded = false }) {
                     rwList.forEach { rw ->
                         DropdownMenuItem(
                             text = { Text(rw) },
-                            onClick = { selectedRW = rw; selectedRT = ""; rwExpanded = false }
-                        )
+                            onClick = { selectedRW = rw; selectedRT = ""; rwExpanded = false })
                     }
                 }
             }
@@ -81,8 +79,12 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                     value = selectedRT,
                     onValueChange = {},
                     readOnly = true,
-                    label = { Text("Pilih RT") },
-                    placeholder = { if (selectedRW.isEmpty()) Text("Pilih RW terlebih dahulu") },
+                    label = {
+                        Text("Pilih RT")
+                    },
+                    placeholder = {
+                        if (selectedRW.isEmpty()) Text("Pilih RW terlebih dahulu")
+                    },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = rtExpanded) },
                     modifier = Modifier
                         .menuAnchor()
@@ -91,13 +93,11 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                     colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryGreen)
                 )
                 ExposedDropdownMenu(
-                    expanded = rtExpanded,
-                    onDismissRequest = { rtExpanded = false }) {
+                    expanded = rtExpanded, onDismissRequest = { rtExpanded = false }) {
                     rtList.forEach { rt ->
                         DropdownMenuItem(
                             text = { Text(rt) },
-                            onClick = { selectedRT = rt; rtExpanded = false }
-                        )
+                            onClick = { selectedRT = rt; rtExpanded = false })
                     }
                 }
             }
