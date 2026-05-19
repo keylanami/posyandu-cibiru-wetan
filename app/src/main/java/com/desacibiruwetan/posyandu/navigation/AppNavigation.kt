@@ -84,9 +84,21 @@ fun AppNavigation() {
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavigateToCariWarga = {
-                    handleBottomNav(1)
+                    navController.navigate(Screen.Warga.route)
                 },
-                onNavItemSelected = handleBottomNav
+                onNavItemSelected = handleBottomNav,
+                onNavigateToCatatKejadian = {
+                    navController.navigate(Screen.CatatKejadian.route)
+                },
+                onNavigateToUpdateKb = {
+                    navController.navigate(Screen.UpdateKb.route)
+                },
+                onNavigateToUpdateBalita = {
+                    navController.navigate(Screen.UpdateBalita.route)
+                },
+                onNavigateToUpdateWusPus = {
+                    navController.navigate(Screen.UpdateWusPus.route)
+                }
             )
         }
 

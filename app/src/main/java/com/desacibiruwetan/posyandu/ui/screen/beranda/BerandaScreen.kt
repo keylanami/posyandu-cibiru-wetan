@@ -57,7 +57,7 @@ data class ServiceData(
     val title: String,
     val description: String,
     val icon: ImageVector,
-    val onClick: () -> Unit = {} // <-- Tambahan: Agar setiap layanan bisa di-route
+    val onClick: () -> Unit = {}
 )
 
 data class ServiceGroup(val groupLabel: String, val items: List<ServiceData>)
@@ -66,15 +66,18 @@ data class ServiceGroup(val groupLabel: String, val items: List<ServiceData>)
 
 @Composable
 fun DashboardScreen(
-    onNavigateToCariWarga: () -> Unit, // <-- Tambahan: Parameter routing untuk Cari Warga
-    onNavItemSelected: (Int) -> Unit   // <-- Tambahan: Parameter routing untuk Bottom Navbar
+    onNavigateToCariWarga: () -> Unit,
+    onNavItemSelected: (Int) -> Unit,
+    onNavigateToCatatKejadian: () -> Unit,
+    onNavigateToUpdateKb: () -> Unit,
+    onNavigateToUpdateWusPus: () -> Unit,
+    onNavigateToUpdateBalita: () -> Unit,
 ) {
     Scaffold(
         containerColor = BgMint,
         bottomBar = {
-            // Menggunakan reusable component AppNavBar
             AppNavBar(
-                selectedIndex = 0, // 0 = Beranda
+                selectedIndex = 0,
                 onItemSelected = onNavItemSelected
             )
         }
@@ -115,7 +118,7 @@ fun DashboardScreen(
                                 title = "Cari Warga",
                                 description = "Temukan data warga berdasarkan nama atau NIK",
                                 icon = Icons.Default.Search,
-                                onClick = onNavigateToCariWarga // <-- ACTION ROUTING DIPASANG DI SINI
+                                onClick = onNavigateToCariWarga
                             ),
                             ServiceData(
                                 title = "Rumah & Keluarga",
@@ -130,27 +133,31 @@ fun DashboardScreen(
                             ServiceData(
                                 "Catat Kejadian",
                                 "Rekam kelahiran, kematian, atau kejadian penting",
-                                Icons.Default.Edit
+                                Icons.Default.Edit,
+                                onNavigateToCatatKejadian
                             ),
                             ServiceData(
                                 "Update KB",
                                 "Perbarui status penggunaan KB warga",
-                                Icons.Default.People
+                                Icons.Default.People,
+                                onNavigateToUpdateKb
                             ),
                             ServiceData(
                                 "Wus / Pus",
                                 "Data wanita dan pasangan usia subur",
-                                Icons.Default.Favorite
+                                Icons.Default.Favorite,
+                                onNavigateToUpdateWusPus
                             ),
                             ServiceData(
                                 "Update Bumil",
                                 "Catat perkembangan ibu hamil di wilayah Anda",
-                                Icons.Default.Face
+                                Icons.Default.Face,
                             ),
                             ServiceData(
                                 "Update Balita",
                                 "Input tumbuh kembang dan gizi balita",
-                                Icons.Default.Face
+                                Icons.Default.Face,
+                                onNavigateToUpdateBalita
                             )
                         )
                     ),
@@ -178,7 +185,7 @@ fun DashboardScreen(
 }
 
 // ─── Top Bar Khusus Dashboard ────────────────────────────────────────────────
-// (Note: Berbeda dari AppTopBar karena tidak ada tombol back dan ada foto profil)
+
 @Composable
 fun DashboardTopBar() {
     Row(
@@ -285,7 +292,7 @@ fun ServiceRow(service: ServiceData) {
             )
             .background(color = PrimaryGreen, shape = RoundedCornerShape(12.dp))
             .fillMaxWidth()
-            .clickable { service.onClick() } // <-- Execute onClick dari ServiceData
+            .clickable { service.onClick() }
             .padding(horizontal = 20.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp)
