@@ -9,6 +9,7 @@ import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
 import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
 import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreen
 import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
+import com.desacibiruwetan.posyandu.ui.screen.riwayat.RiwayatScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.CariWargaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.CatatKejadianScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.DetailWargaScreen
@@ -25,8 +26,8 @@ fun AppNavigation() {
         val route = when (index) {
             0 -> Screen.Dashboard.route
             1 -> Screen.Warga.route
-            // 2 -> Screen.Riwayat.route // TODO: Buka komentar jika screen Riwayat sudah ada
-            // 3 -> Screen.Profil.route // TODO: Buka komentar jika screen Profil sudah ada
+             2 -> Screen.Riwayat.route
+            // 3 -> Screen.Profil.route
             else -> null
         }
 
@@ -97,6 +98,13 @@ fun AppNavigation() {
                 onAddWargaClick = {
                     navController.navigate(Screen.TambahWarga.route)
                 },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+
+        composable(Screen.Riwayat.route) {
+            RiwayatScreen(
+                onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav
             )
         }
