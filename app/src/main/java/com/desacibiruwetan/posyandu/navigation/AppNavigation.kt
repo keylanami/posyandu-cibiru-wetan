@@ -9,6 +9,12 @@ import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
 import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreen
 import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.CariWargaScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.CatatKejadianScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.DetailWargaScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.TambahWargaScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 
 @Composable
 fun AppNavigation() {
@@ -83,6 +89,47 @@ fun AppNavigation() {
                         // TODO: Handle index 2 (Riwayat), 3 (Profil)
                     }
                 }
+            )
+        }
+
+        composable(Screen.TambahWarga.route) {
+            TambahWargaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = { /* Handle bottom nav routing */ }
+            )
+        }
+
+        composable(Screen.DetailWarga.route) {
+            DetailWargaScreen(
+                onBackClick = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.UpdateBalita.route) {
+            UpdateBalitaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = { /* Handle bottom nav routing */ }
+            )
+        }
+
+        composable(Screen.UpdateKb.route) {
+            UpdateKbScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = { /* Handle bottom nav routing */ }
+            )
+        }
+
+        composable(Screen.UpdateWusPus.route) {
+            UpdateWusPusScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = { /* Handle bottom nav routing */ }
+            )
+        }
+
+        composable(Screen.CatatKejadian.route) {
+            CatatKejadianScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = { /* Handle bottom nav routing */ }
             )
         }
     }

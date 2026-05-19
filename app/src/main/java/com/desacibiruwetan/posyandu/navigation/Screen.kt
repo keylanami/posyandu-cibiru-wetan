@@ -6,4 +6,10 @@ sealed class Screen(val route: String) {
     object Personalization : Screen("personalization")
     object Dashboard : Screen("dashboard")
     object Warga : Screen("warga")
+    object TambahWarga : Screen("tambah_warga")
+    object DetailWarga : Screen("detail_warga")
+    object UpdateBalita : Screen("update_balita")
+    object UpdateKb : Screen("update_kb")
+    object UpdateWusPus : Screen("update_wuspus")
+    object CatatKejadian : Screen("catat_kejadian")
 }
