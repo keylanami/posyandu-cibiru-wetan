@@ -41,7 +41,7 @@ fun UpdateKbScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit
 ) {
-    // State Form
+
     var namaWarga by remember { mutableStateOf("ibu atta halilintar") }
     var jenisKb by remember { mutableStateOf("") }
     var tanggalMulaiKb by remember { mutableStateOf("") }
@@ -64,7 +64,6 @@ fun UpdateKbScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 1. Header Card
             UpdateHeaderCard(
                 name = namaWarga,
                 icon = Icons.Default.People
@@ -72,7 +71,6 @@ fun UpdateKbScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // 2. Form Box
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,7 +92,10 @@ fun UpdateKbScreen(
                         placeholder = "dd/mm/yyyy",
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
-                        onValueChange = { if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb = it }
+                        onValueChange = {
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb =
+                                it
+                        }
                     )
 
                     Spacer(modifier = Modifier.height(8.dp))
