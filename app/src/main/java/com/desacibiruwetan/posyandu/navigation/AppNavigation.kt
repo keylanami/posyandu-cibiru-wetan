@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -19,6 +20,27 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+
+    val handleBottomNav: (Int) -> Unit = { index ->
+        val route = when (index) {
+            0 -> Screen.Dashboard.route
+            1 -> Screen.Warga.route
+            // 2 -> Screen.Riwayat.route // TODO: Buka komentar jika screen Riwayat sudah ada
+            // 3 -> Screen.Profil.route // TODO: Buka komentar jika screen Profil sudah ada
+            else -> null
+        }
+
+        if (route != null) {
+            navController.navigate(route) {
+
+                popUpTo(Screen.Dashboard.route) {
+                    saveState = true
+                }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
 
     NavHost(
         navController = navController,
@@ -50,26 +72,20 @@ fun AppNavigation() {
             PersonalizationScreen(
                 onComplete = {
                     navController.navigate(Screen.Dashboard.route) {
-
                         popUpTo(0) { inclusive = true }
                     }
                 }
             )
         }
 
+
+        // main flow
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavigateToCariWarga = {
-                    navController.navigate(Screen.Warga.route) {
-                        launchSingleTop = true
-                    }
+                    handleBottomNav(1)
                 },
-                onNavItemSelected = { index ->
-                    when (index) {
-                        1 -> navController.navigate(Screen.Warga.route) { launchSingleTop = true }
-                        // TODO: Handle index 2 (Riwayat), 3 (Profil)
-                    }
-                }
+                onNavItemSelected = handleBottomNav
             )
         }
 
@@ -79,23 +95,17 @@ fun AppNavigation() {
                     navController.popBackStack()
                 },
                 onAddWargaClick = {
-                    // TODO: Arahkan ke screen Tambah Data Warga
+                    navController.navigate(Screen.TambahWarga.route)
                 },
-                onNavItemSelected = { index ->
-                    when (index) {
-                        0 -> {
-                            navController.popBackStack(Screen.Dashboard.route, inclusive = false)
-                        }
-                        // TODO: Handle index 2 (Riwayat), 3 (Profil)
-                    }
-                }
+                onNavItemSelected = handleBottomNav
             )
         }
 
+       // sub-screen
         composable(Screen.TambahWarga.route) {
             TambahWargaScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = { /* Handle bottom nav routing */ }
+                onNavItemSelected = handleBottomNav
             )
         }
 
@@ -108,28 +118,28 @@ fun AppNavigation() {
         composable(Screen.UpdateBalita.route) {
             UpdateBalitaScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = { /* Handle bottom nav routing */ }
+                onNavItemSelected = handleBottomNav
             )
         }
 
         composable(Screen.UpdateKb.route) {
             UpdateKbScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = { /* Handle bottom nav routing */ }
+                onNavItemSelected = handleBottomNav
             )
         }
 
         composable(Screen.UpdateWusPus.route) {
             UpdateWusPusScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = { /* Handle bottom nav routing */ }
+                onNavItemSelected = handleBottomNav
             )
         }
 
         composable(Screen.CatatKejadian.route) {
             CatatKejadianScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = { /* Handle bottom nav routing */ }
+                onNavItemSelected = handleBottomNav
             )
         }
     }
