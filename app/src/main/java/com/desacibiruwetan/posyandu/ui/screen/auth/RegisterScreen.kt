@@ -3,7 +3,9 @@ package com.desacibiruwetan.posyandu.ui.screen.auth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -46,47 +48,61 @@ fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: (
         if (newErrors.isEmpty()) onNavigateToPersonalization()
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
+                .padding(vertical = 24.dp)
                 .width(368.dp)
                 .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
                 .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(15.dp))
                 .padding(24.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.verticalScroll(rememberScrollState())
+            ) {
                 AuthHeader()
                 Spacer(modifier = Modifier.height(24.dp))
 
-                AppTextField("Nama", name, { name = it }, error = errors["name"])
                 AppTextField(
-                    "Email",
-                    email,
-                    { email = it },
+                    label = "Nama",
+                    value = name,
+                    onValueChange = { name = it },
+                    error = errors["name"]
+                )
+
+                AppTextField(
+                    label = "Email",
+                    value = email,
+                    onValueChange = { email = it },
                     error = errors["email"],
                     keyboardType = KeyboardType.Email
                 )
+
                 AppTextField(
-                    "Nomor Telepon",
-                    phone,
-                    { phone = it },
+                    label = "Nomor Telepon",
+                    value = phone,
+                    onValueChange = { phone = it },
                     error = errors["phone"],
                     keyboardType = KeyboardType.Phone
                 )
 
                 AppPasswordField(
-                    "Password",
-                    password,
-                    { password = it },
+                    label = "Password",
+                    value = password,
+                    onValueChange = { password = it },
                     error = errors["password"]
                 )
+
                 AppPasswordField(
-                    "Konfirmasi Password",
-                    confirmPassword,
-                    { confirmPassword = it },
+                    label = "Konfirmasi Password",
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
                     placeholder = "Konfirmasi Password",
                     error = errors["confirm"]
                 )
@@ -102,8 +118,7 @@ fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: (
                         withStyle(SpanStyle(color = TextDark)) { append("Sudah terdaftar sebagai kader? ") }
                         withStyle(
                             SpanStyle(
-                                color = PrimaryGreen,
-                                fontWeight = FontWeight.Bold
+                                color = PrimaryGreen, fontWeight = FontWeight.Bold
                             )
                         ) { append("Masuk") }
                     },
