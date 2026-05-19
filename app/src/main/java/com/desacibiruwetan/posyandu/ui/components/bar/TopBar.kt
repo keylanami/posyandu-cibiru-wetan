@@ -30,9 +30,7 @@ fun AppTopBar(
     onBackClick: () -> Unit
 ) {
 
-    val topbarList = listOf<String>(
-        "Kembali", "Detail Warga"
-    )
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -44,7 +42,7 @@ fun AppTopBar(
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = topbarList[0],
+            contentDescription = title,
             tint = SurfaceWhite,
             modifier = Modifier
                 .size(28.dp)
