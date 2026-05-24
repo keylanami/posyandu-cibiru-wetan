@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Female
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -29,12 +31,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
+import com.desacibiruwetan.posyandu.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
@@ -44,12 +48,25 @@ fun UpdateWusPusScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit
 ) {
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
 
-    var namaWarga by remember { mutableStateOf("istri atta halilintar (istri)") }
+    var namaWarga by remember { mutableStateOf("") }
     var namaPasangan by remember { mutableStateOf("") }
     var kategoriStatus by remember { mutableStateOf("WUS") }
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
+
+    if (showDialog) {
+        SearchWargaDialog(
+            onDismiss = { showDialog = false },
+            onWargaSelected = { warga ->
+                selectedWarga = warga
+                namaWarga = warga.name
+                namaPasangan = warga.namaPasangan
+            }
+        )
+    }
 
     Scaffold(
         topBar = { AppTopBar(title = "Update Wus/Pus", onBackClick = onBackClick) },
@@ -65,22 +82,31 @@ fun UpdateWusPusScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            UpdateHeaderCard(
-                name = namaWarga,
-                icon = Icons.Default.Female
-            ){
-                Spacer(modifier = Modifier.height(24.dp))
-
-                AppTextField(
-                    label = "Nama Warga",
-                    value = namaWarga,
-                    onValueChange = { namaWarga = it },
-                    placeholder = "Masukkan nama warga"
-                )
+            Box(modifier = Modifier.clickable { showDialog = true }) {
+                if (selectedWarga != null) {
+                    UpdateHeaderCard(
+                        title = "Update untuk",
+                        name = selectedWarga!!.name,
+                        icon = Icons.Default.Female
+                    ) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        AppTextField(
+                            label = "Nama Warga",
+                            value = namaWarga,
+                            onValueChange = { namaWarga = it },
+                            placeholder = "Masukkan nama warga"
+                        )
+                    }
+                } else {
+                    UpdateHeaderCard(
+                        title = "Pilih Warga",
+                        name = "Ketuk untuk mencari data",
+                        icon = Icons.Default.Search
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(24.dp))
-
 
             Box(
                 modifier = Modifier
@@ -97,10 +123,7 @@ fun UpdateWusPusScreen(
                         onValueChange = { namaPasangan = it }
                     )
 
-
-                    Column(modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 12.dp)) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                         Text(
                             text = "Kategori Status (Wus/Pus)",
                             style = MaterialTheme.typography.bodyMedium
@@ -127,8 +150,7 @@ fun UpdateWusPusScreen(
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
                         onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb =
-                                it
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb = it
                         }
                     )
 

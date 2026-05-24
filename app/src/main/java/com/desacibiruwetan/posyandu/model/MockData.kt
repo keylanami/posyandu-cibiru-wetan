@@ -16,6 +16,7 @@ data class DummyDetailWarga(
     val noKeluarga: String = "004",
     val pendidikanTerakhir: String = "S1 Keperawatan",
     val statusGakin: String = "Non Gakin",
+
 )
 
 object MockData {

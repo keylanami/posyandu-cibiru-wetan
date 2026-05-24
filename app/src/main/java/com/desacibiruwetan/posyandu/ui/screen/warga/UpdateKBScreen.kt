@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,6 +15,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.People
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,9 +27,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSwitch
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
@@ -42,13 +46,28 @@ fun UpdateKbScreen(
     onNavItemSelected: (Int) -> Unit
 ) {
 
-    var namaWarga by remember { mutableStateOf("ibu atta halilintar") }
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
+
+
+    var namaWarga by remember { mutableStateOf("") }
     var jenisKb by remember { mutableStateOf("") }
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var statusAktif by remember { mutableStateOf(true) }
     var keterangan by remember { mutableStateOf("") }
 
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
+
+    if (showDialog) {
+        SearchWargaDialog(
+            onDismiss = { showDialog = false },
+            onWargaSelected = { warga ->
+                selectedWarga = warga
+                namaWarga = warga.name
+            }
+        )
+    }
 
     Scaffold(
         topBar = { AppTopBar(title = "Update Data KB", onBackClick = onBackClick) },
@@ -64,22 +83,31 @@ fun UpdateKbScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            UpdateHeaderCard(
-                name = namaWarga,
-                icon = Icons.Default.People
-            ) {
-
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            AppTextField(
-                label = "Nama Warga",
-                value = namaWarga,
-                onValueChange = { namaWarga = it },
-                placeholder = "Masukkan nama warga"
-            )
+            Box(modifier = Modifier.clickable { showDialog = true }) {
+                if (selectedWarga != null) {
+                    UpdateHeaderCard(
+                        title = "Update untuk",
+                        name = selectedWarga!!.name,
+                        icon = Icons.Default.People
+                    ) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        AppTextField(
+                            label = "Nama Warga",
+                            value = namaWarga,
+                            onValueChange = { namaWarga = it },
+                            placeholder = "Masukkan nama warga"
+                        )
+                    }
+                } else {
+                    UpdateHeaderCard(
+                        title = "Pilih Warga",
+                        name = "Ketuk untuk mencari data",
+                        icon = Icons.Default.Search
+                    )
+                }
             }
 
+            Spacer(modifier = Modifier.height(24.dp))
 
             Box(
                 modifier = Modifier
@@ -103,8 +131,7 @@ fun UpdateKbScreen(
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
                         onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb =
-                                it
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb = it
                         }
                     )
 

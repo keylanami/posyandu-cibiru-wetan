@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Input
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.CoPresent
@@ -23,8 +25,8 @@ import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Input
 import androidx.compose.material.icons.filled.Output
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -42,10 +44,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.CategoryCard
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
@@ -57,10 +61,11 @@ import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 
 @Composable
 fun CatatKejadianScreen(
-    onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onBackClick: () -> Unit, onNavItemSelected: (Int) -> Unit
 ) {
-    var namaWarga by remember { mutableStateOf("istri atta halilintar (istri)") }
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
 
     val categories =
         listOf("Kelahiran", "Pindah Keluar", "Pindah Masuk", "Nikah", "Cerai", "Meninggal")
@@ -70,25 +75,36 @@ fun CatatKejadianScreen(
     var keterangan by remember { mutableStateOf("") }
 
 
-
-
     var namaBayi by remember { mutableStateOf("") }
     var jenisKelaminBayi by remember { mutableStateOf("") }
-    var tanggalLahirBayi by remember { mutableStateOf("") }
     var namaAyah by remember { mutableStateOf("") }
     var namaIbu by remember { mutableStateOf("") }
     var bbLahir by remember { mutableStateOf("") }
     var tbLahir by remember { mutableStateOf("") }
 
 
-
-
     var asalAlamat by remember { mutableStateOf("") }
     var tujuanAlamat by remember { mutableStateOf("") }
 
-
-
     var namaPasangan by remember { mutableStateOf("") }
+
+
+    if (showDialog) {
+        SearchWargaDialog(
+            onDismiss = { showDialog = false },
+            onWargaSelected = { warga ->
+                selectedWarga = warga
+
+                if (warga.gender == "Perempuan") {
+                    namaIbu = warga.name
+                    namaAyah = warga.namaPasangan
+                } else {
+                    namaAyah = warga.name
+                    namaIbu = warga.namaPasangan
+                }
+            })
+    }
+
 
     Scaffold(
         topBar = { AppTopBar(title = "Catat Kejadian", onBackClick = onBackClick) },
@@ -104,13 +120,23 @@ fun CatatKejadianScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
+            Box(modifier = Modifier.clickable { showDialog = true }) {
+                if (selectedWarga != null) {
+                    UpdateHeaderCard(
+                        title = "Catat kejadian untuk",
+                        name = selectedWarga!!.name,
+                        icon = Icons.Default.EditNote
+                    )
+                } else {
+                    UpdateHeaderCard(
+                        title = "Pilih Warga",
+                        name = "Ketuk untuk mencari data warga",
+                        icon = Icons.Default.Search
+                    )
+                }
+            }
 
-            UpdateHeaderCard(
-                name = namaWarga,
-                icon = Icons.Default.EditNote
-            )
             Spacer(modifier = Modifier.height(24.dp))
-
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -138,7 +164,7 @@ fun CatatKejadianScreen(
             ) {
                 CategoryCard(
                     "Pindah Masuk",
-                    Icons.Default.Input,
+                    Icons.AutoMirrored.Default.Input,
                     selectedCategory == "Pindah Masuk",
                     { selectedCategory = "Pindah Masuk" },
                     Modifier.weight(1f)
@@ -213,9 +239,11 @@ fun CatatKejadianScreen(
                                 onValueChange = { namaBayi = it })
 
 
-                            Column(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp)
+                            ) {
                                 Text(
                                     text = "Jenis Kelamin",
                                     style = MaterialTheme.typography.bodyMedium
@@ -223,12 +251,10 @@ fun CatatKejadianScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                                     AppRadioButton(
-                                        "Laki-laki",
-                                        jenisKelaminBayi == "Laki-laki"
+                                        "Laki-laki", jenisKelaminBayi == "Laki-laki"
                                     ) { jenisKelaminBayi = "Laki-laki" }
                                     AppRadioButton(
-                                        "Perempuan",
-                                        jenisKelaminBayi == "Perempuan"
+                                        "Perempuan", jenisKelaminBayi == "Perempuan"
                                     ) { jenisKelaminBayi = "Perempuan" }
                                 }
                             }
@@ -292,7 +318,7 @@ fun CatatKejadianScreen(
                         }
 
                         "Meninggal" -> {
-                          // gada input khusus
+                            // gada input khusus
                         }
                     }
 
@@ -313,24 +339,24 @@ fun CatatKejadianScreen(
                         placeholder = "dd/mm/yyyy",
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
-                        onValueChange = { if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalKejadian = it }
-                    )
+                        onValueChange = {
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalKejadian =
+                                it
+                        })
 
                     AppTextField(
                         label = if (selectedCategory == "Meninggal") "Penyebab / Catatan" else "Keterangan",
                         value = keterangan,
                         placeholder = "Tambahkan catatan jika diperlukan...",
                         singleLine = false,
-                        onValueChange = { keterangan = it }
-                    )
+                        onValueChange = { keterangan = it })
 
                     Spacer(modifier = Modifier.height(24.dp))
 
                     PrimaryButton(
                         text = "Simpan Data Kejadian",
                         icon = Icons.Default.AddCircleOutline,
-                        onClick = { /* TODO: Simpan data */ }
-                    )
+                        onClick = { /* TODO: Simpan data */ })
                 }
             }
 

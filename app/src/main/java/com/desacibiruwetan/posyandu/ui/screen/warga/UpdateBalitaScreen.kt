@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -39,9 +41,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
 import com.desacibiruwetan.posyandu.ui.components.input.AnimatedPillToggle
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
@@ -56,11 +60,26 @@ fun UpdateBalitaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit
 ) {
-    // State form
-    var namaBalita by remember { mutableStateOf("atta halilintar") }
+
+    var showDialog by remember { mutableStateOf(false) }
+    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
+
+
+
+    var namaBalita by remember { mutableStateOf("") }
     var isAsiEksklusif by remember { mutableStateOf(true) }
     var tanggalMulaiAsi by remember { mutableStateOf("") }
     var tanggalSelesaiAsi by remember { mutableStateOf("") }
+
+    if (showDialog) {
+        SearchWargaDialog(
+            onDismiss = { showDialog = false },
+            onWargaSelected = { warga ->
+                selectedWarga = warga
+                namaBalita = warga.name
+            }
+        )
+    }
 
     Scaffold(
         topBar = { AppTopBar(title = "Update Data Balita", onBackClick = onBackClick) },
@@ -76,34 +95,31 @@ fun UpdateBalitaScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
-                    .background(SurfaceWhite, RoundedCornerShape(15.dp))
-                    .padding(24.dp)
-            ) {
-            Column {
-                UpdateHeaderCard(
-                    name = namaBalita,
-                    icon = Icons.Default.ChildCare
-                ) {
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    AppTextField(
-                        label = "Nama Balita",
-                        value = namaBalita,
-                        onValueChange = { namaBalita = it },
-                        placeholder = "Masukkan nama balita"
+            Box(modifier = Modifier.clickable { showDialog = true }) {
+                if (selectedWarga != null) {
+                    UpdateHeaderCard(
+                        title = "Update untuk",
+                        name = selectedWarga!!.name,
+                        icon = Icons.Default.ChildCare
+                    ) {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        AppTextField(
+                            label = "Nama Balita",
+                            value = namaBalita,
+                            onValueChange = { namaBalita = it },
+                            placeholder = "Masukkan nama balita"
+                        )
+                    }
+                } else {
+                    UpdateHeaderCard(
+                        title = "Pilih Balita",
+                        name = "Ketuk untuk mencari data",
+                        icon = Icons.Default.Search
                     )
                 }
             }
-        }
 
             Spacer(modifier = Modifier.height(24.dp))
-
-
-
 
             Box(
                 modifier = Modifier
@@ -113,7 +129,6 @@ fun UpdateBalitaScreen(
                     .padding(24.dp)
             ) {
                 Column {
-                    // Header Card 2
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -131,7 +146,6 @@ fun UpdateBalitaScreen(
                             )
                         }
 
-
                         AnimatedPillToggle(
                             isYes = isAsiEksklusif,
                             onToggle = { isAsiEksklusif = it }
@@ -147,8 +161,7 @@ fun UpdateBalitaScreen(
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
                         onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiAsi =
-                                it
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiAsi = it
                         }
                     )
 
@@ -161,8 +174,7 @@ fun UpdateBalitaScreen(
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
                         onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalSelesaiAsi =
-                                it
+                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalSelesaiAsi = it
                         }
                     )
 
@@ -179,10 +191,7 @@ fun UpdateBalitaScreen(
                     PrimaryButton(
                         text = "Update Data Balita",
                         icon = Icons.Default.AddCircleOutline,
-                        onClick = {
-                            // TODO: Action Simpan
-                            println("Data Disimpan!")
-                        }
+                        onClick = { /* TODO */ }
                     )
                 }
             }
@@ -191,7 +200,6 @@ fun UpdateBalitaScreen(
         }
     }
 }
-
 
 @Composable
 fun CircularIconBox(icon: ImageVector) {
