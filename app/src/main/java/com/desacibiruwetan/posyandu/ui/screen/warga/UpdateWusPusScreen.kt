@@ -68,7 +68,16 @@ fun UpdateWusPusScreen(
             UpdateHeaderCard(
                 name = namaWarga,
                 icon = Icons.Default.Female
-            )
+            ){
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AppTextField(
+                    label = "Nama Warga",
+                    value = namaWarga,
+                    onValueChange = { namaWarga = it },
+                    placeholder = "Masukkan nama warga"
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 

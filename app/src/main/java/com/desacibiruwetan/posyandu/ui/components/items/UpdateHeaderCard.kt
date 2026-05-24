@@ -25,7 +25,7 @@ import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 @Composable
 fun UpdateHeaderCard(
-    title: String = "Update untuk", name: String, icon: ImageVector
+    title: String = "Update untuk", name: String, icon: ImageVector, content: @Composable () -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -34,25 +34,29 @@ fun UpdateHeaderCard(
             .background(SurfaceWhite, RoundedCornerShape(15.dp))
             .padding(24.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            CircularIconBox(icon = icon)
-            Spacer(modifier = Modifier.width(16.dp))
-            Column {
-                Text(
-                    text = title,
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 12.sp,
-                    color = Color(0xFF8B8B8B)
-                )
-                Text(
-                    text = name,
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = Color(0xFF272727)
-                )
+        Column {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CircularIconBox(icon = icon)
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Text(
+                        text = title,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = Color(0xFF8B8B8B)
+                    )
+                    Text(
+                        text = name,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = Color(0xFF272727)
+                    )
+                }
             }
+
+            content()
         }
     }
 }

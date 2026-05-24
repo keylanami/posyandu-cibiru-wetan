@@ -44,6 +44,7 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AnimatedPillToggle
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
@@ -82,29 +83,11 @@ fun UpdateBalitaScreen(
                     .background(SurfaceWhite, RoundedCornerShape(15.dp))
                     .padding(24.dp)
             ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CircularIconBox(icon = Icons.Default.ChildCare)
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Column {
-                            Text(
-                                text = "Update untuk",
-                                fontFamily = Inter,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 12.sp,
-                                color = Color(0xFF8B8B8B)
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "atta halilintar",
-                                fontFamily = Inter,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color(0xFF272727)
-                            )
-                        }
-                    }
-
+            Column {
+                UpdateHeaderCard(
+                    name = namaBalita,
+                    icon = Icons.Default.ChildCare
+                ) {
                     Spacer(modifier = Modifier.height(24.dp))
 
                     AppTextField(
@@ -115,6 +98,7 @@ fun UpdateBalitaScreen(
                     )
                 }
             }
+        }
 
             Spacer(modifier = Modifier.height(24.dp))
 

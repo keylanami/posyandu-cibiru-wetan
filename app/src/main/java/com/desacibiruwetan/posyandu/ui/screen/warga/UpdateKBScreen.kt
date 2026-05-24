@@ -25,13 +25,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSwitch
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
@@ -67,9 +67,19 @@ fun UpdateKbScreen(
             UpdateHeaderCard(
                 name = namaWarga,
                 icon = Icons.Default.People
-            )
+            ) {
+
 
             Spacer(modifier = Modifier.height(24.dp))
+
+            AppTextField(
+                label = "Nama Warga",
+                value = namaWarga,
+                onValueChange = { namaWarga = it },
+                placeholder = "Masukkan nama warga"
+            )
+            }
+
 
             Box(
                 modifier = Modifier
