@@ -1,7 +1,6 @@
 package com.desacibiruwetan.posyandu.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -26,14 +25,13 @@ fun AppNavigation() {
         val route = when (index) {
             0 -> Screen.Dashboard.route
             1 -> Screen.Warga.route
-             2 -> Screen.Riwayat.route
-            // 3 -> Screen.Profil.route
+            2 -> Screen.Riwayat.route
+             3 -> Screen.Profil.route
             else -> null
         }
 
         if (route != null) {
             navController.navigate(route) {
-
                 popUpTo(Screen.Dashboard.route) {
                     saveState = true
                 }
@@ -47,6 +45,8 @@ fun AppNavigation() {
         navController = navController,
         startDestination = Screen.Login.route
     ) {
+
+
 
         composable(Screen.Login.route) {
             LoginScreenWrapper(
@@ -80,13 +80,13 @@ fun AppNavigation() {
         }
 
 
-        // main flow
+
+
         composable(Screen.Dashboard.route) {
             DashboardScreen(
                 onNavigateToCariWarga = {
                     navController.navigate(Screen.Warga.route)
                 },
-                onNavItemSelected = handleBottomNav,
                 onNavigateToCatatKejadian = {
                     navController.navigate(Screen.CatatKejadian.route)
                 },
@@ -98,7 +98,8 @@ fun AppNavigation() {
                 },
                 onNavigateToUpdateWusPus = {
                     navController.navigate(Screen.UpdateWusPus.route)
-                }
+                },
+                onNavItemSelected = handleBottomNav
             )
         }
 
@@ -109,6 +110,9 @@ fun AppNavigation() {
                 },
                 onAddWargaClick = {
                     navController.navigate(Screen.TambahWarga.route)
+                },
+                onNavigateToDetailWarga = { nikWarga ->
+                    navController.navigate(Screen.DetailWarga.route)
                 },
                 onNavItemSelected = handleBottomNav
             )
@@ -121,7 +125,9 @@ fun AppNavigation() {
             )
         }
 
-       // sub-screen
+
+
+
         composable(Screen.TambahWarga.route) {
             TambahWargaScreen(
                 onBackClick = { navController.popBackStack() },
@@ -132,6 +138,7 @@ fun AppNavigation() {
         composable(Screen.DetailWarga.route) {
             DetailWargaScreen(
                 onBackClick = { navController.popBackStack() }
+                // Opsional: nikWarga = ... (bisa diimplementasi nanti pakai NavArgs)
             )
         }
 

@@ -28,6 +28,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.model.DummyDetailWarga
+import com.desacibiruwetan.posyandu.model.MockData
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.items.InfoKependudukanCard
@@ -38,27 +40,13 @@ import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 
-data class DummyDetailWarga(
-    val name: String = "Jaka Sambung",
-    val nik: String = "1234567890123456",
-    val gender: String = "Laki-laki",
-    val rtRw: String = "RT04 / RW02",
-    val noRumah: String = "B-12, Cluster GOBLOGG",
-    val noKk: String = "123456789013456",
-    val tanggalLahir: String = "12 Mei 1989",
-    val pekerjaan: String = "Penjudi handal",
-    val noBpjs: String = "1234567890123456",
-    val keterangan: String = "Suka bohong pas rapat bareng kepala desa",
-    val noKeluarga: String = "004",
-    val pendidikan1: String = "S1 Keperawatan",
-    val pendidikan2: String = "Non Gakin"
-)
-
 @Composable
 fun DetailWargaScreen(
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    nikWarga: String? = null
 ) {
-    val warga = DummyDetailWarga()
+    val warga = MockData.listWarga.find { it.nik == nikWarga } ?: MockData.listWarga.first()
+
 
     Scaffold(
         topBar = { AppTopBar(title = "Detail Warga", onBackClick = onBackClick) },
@@ -96,7 +84,7 @@ fun DetailWargaScreen(
 
                 val genderColor = if (warga.gender == "Laki-laki") Color(0xFF2C74B3) else Color(0xFFE94560)
 
-                BadgeInfo(text = warga.gender, bgColor = PrimaryGreen)
+                BadgeInfo(text = warga.gender, bgColor = genderColor)
                 BadgeInfo(text = warga.rtRw, bgColor = PrimaryGreen)
             }
 

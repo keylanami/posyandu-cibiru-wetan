@@ -19,6 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.model.MockData
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryFab
@@ -33,28 +34,23 @@ data class DummyWarga(val name: String, val nik: String, val rtRw: String)
 fun CariWargaScreen(
     onBackClick: () -> Unit,
     onAddWargaClick: () -> Unit,
+    onNavigateToDetailWarga: (String) -> Unit,
     onNavItemSelected: (Int) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val listWarga = remember {
-        listOf(
-            DummyWarga("Jaka Sambung", "1234567890123456", "RT04 / RW02"),
-            DummyWarga("Jaka Golok", "1234567890123456", "RT04 / RW02"),
-            DummyWarga("Jaka Tarub", "1234567890123456", "RT04 / RW02")
-        )
-    }
-
-    val filteredWarga = listWarga.filter {
-        it.name.contains(searchQuery, ignoreCase = true) || it.nik.contains(searchQuery)
+    val filteredWarga = remember(searchQuery) {
+        MockData.listWarga.filter {
+            it.name.contains(searchQuery, ignoreCase = true) || it.nik.contains(searchQuery)
+        }
     }
 
     Scaffold(
         topBar = { AppTopBar(title = "Cari Warga", onBackClick = onBackClick) },
         bottomBar = {
             AppNavBar(
-                selectedIndex = 1, // <-- Hardcode 1 karena ini screen Warga
-                onItemSelected = onNavItemSelected // Lempar kliknya ke luar
+                selectedIndex = 1,
+                onItemSelected = onNavItemSelected
             )
         },
         floatingActionButton = {
@@ -97,7 +93,7 @@ fun CariWargaScreen(
                             name = warga.name,
                             nik = warga.nik,
                             rtRw = warga.rtRw,
-                            onClick = { /* TODO: Navigasi ke Detail Warga */ }
+                            onClick = { onNavigateToDetailWarga(warga.nik) }
                         )
                     }
 

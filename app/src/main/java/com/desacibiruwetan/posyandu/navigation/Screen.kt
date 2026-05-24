@@ -15,4 +15,5 @@ sealed class Screen(val route: String) {
     object UpdateKb : Screen("update_kb")
     object UpdateWusPus : Screen("update_wuspus")
     object CatatKejadian : Screen("catat_kejadian")
+    object Profil : Screen("profil")
 }
