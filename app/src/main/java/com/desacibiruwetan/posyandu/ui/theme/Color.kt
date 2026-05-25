@@ -9,7 +9,7 @@ val SecondaryGreen = Color(0xFF7AA497)
 
 
 // Background & Surface
-val BgMint = Color(0xFFEDFFF9)
+val BgMint = Color(0xFFF9F9F9)
 val SurfaceWhite = Color(0xFFFFFFFF)
 val SurfaceLightGray = Color(0xFFFBFBFB)
 
