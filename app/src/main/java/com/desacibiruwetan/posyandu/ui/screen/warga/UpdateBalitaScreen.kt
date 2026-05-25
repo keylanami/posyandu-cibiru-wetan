@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -33,7 +32,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontStyle
@@ -48,11 +46,11 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
 import com.desacibiruwetan.posyandu.ui.components.input.AnimatedPillToggle
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 
 @Composable
@@ -63,8 +61,6 @@ fun UpdateBalitaScreen(
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
-
-
 
     var namaBalita by remember { mutableStateOf("") }
     var isAsiEksklusif by remember { mutableStateOf(true) }
@@ -82,8 +78,18 @@ fun UpdateBalitaScreen(
     }
 
     Scaffold(
-        topBar = { AppTopBar(title = "Update Data Balita", onBackClick = onBackClick) },
-        bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
+        topBar = {
+            AppTopBar(
+                title = "Update Data Balita",
+                onBackClick = onBackClick
+            )
+        },
+        bottomBar = {
+            AppNavBar(
+                selectedIndex = 1,
+                onItemSelected = onNavItemSelected
+            )
+        },
         containerColor = BgMint
     ) { paddingValues ->
         Column(
@@ -121,79 +127,74 @@ fun UpdateBalitaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
-                    .background(SurfaceWhite, RoundedCornerShape(15.dp))
-                    .padding(24.dp)
-            ) {
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            CircularIconBox(icon = Icons.Default.Face)
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Text(
-                                text = "ASI Eksklusif",
-                                fontFamily = Inter,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 15.sp,
-                                color = Color(0xFF272727)
-                            )
-                        }
 
-                        AnimatedPillToggle(
-                            isYes = isAsiEksklusif,
-                            onToggle = { isAsiEksklusif = it }
+            FormSectionCard(title = null) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CircularIconBox(icon = Icons.Default.Face)
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text(
+                            text = "ASI Eksklusif",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp,
+                            color = Color(0xFF272727)
                         )
                     }
 
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    AppTextField(
-                        label = "Tanggal Mulai ASI",
-                        value = tanggalMulaiAsi,
-                        placeholder = "dd/mm/yyyy",
-                        keyboardType = KeyboardType.Number,
-                        visualTransformation = DateVisualTransformation(),
-                        onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiAsi = it
-                        }
-                    )
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    AppTextField(
-                        label = "Tanggal Selesai ASI",
-                        value = tanggalSelesaiAsi,
-                        placeholder = "dd/mm/yyyy",
-                        keyboardType = KeyboardType.Number,
-                        visualTransformation = DateVisualTransformation(),
-                        onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalSelesaiAsi = it
-                        }
-                    )
-
-                    Text(
-                        text = "*Kosongkan jika masih dalam masa ASI",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Normal,
-                        fontStyle = FontStyle.Italic,
-                        fontSize = 12.sp,
-                        color = Color(0xFFC9C9C9),
-                        modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
-                    )
-
-                    PrimaryButton(
-                        text = "Update Data Balita",
-                        icon = Icons.Default.AddCircleOutline,
-                        onClick = { /* TODO */ }
+                    AnimatedPillToggle(
+                        isYes = isAsiEksklusif,
+                        onToggle = { isAsiEksklusif = it }
                     )
                 }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                AppTextField(
+                    label = "Tanggal Mulai ASI",
+                    value = tanggalMulaiAsi,
+                    placeholder = "dd/mm/yyyy",
+                    keyboardType = KeyboardType.Number,
+                    visualTransformation = DateVisualTransformation(),
+                    onValueChange = {
+                        if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiAsi =
+                            it
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                AppTextField(
+                    label = "Tanggal Selesai ASI",
+                    value = tanggalSelesaiAsi,
+                    placeholder = "dd/mm/yyyy",
+                    keyboardType = KeyboardType.Number,
+                    visualTransformation = DateVisualTransformation(),
+                    onValueChange = {
+                        if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalSelesaiAsi =
+                            it
+                    }
+                )
+
+                Text(
+                    text = "*Kosongkan jika masih dalam masa ASI",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Normal,
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 12.sp,
+                    color = Color(0xFFC9C9C9),
+                    modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
+                )
+
+                PrimaryButton(
+                    text = "Update Data Balita",
+                    icon = Icons.Default.AddCircleOutline,
+                    onClick = { /* TODO */ }
+                )
             }
 
             Spacer(modifier = Modifier.height(80.dp))
