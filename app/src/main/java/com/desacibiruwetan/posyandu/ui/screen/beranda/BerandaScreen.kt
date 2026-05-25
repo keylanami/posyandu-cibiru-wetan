@@ -1,7 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.beranda
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,331 +12,316 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowForwardIos
+import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.filled.Assignment
+import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar // <-- Import Reusable Component
+import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
+import com.desacibiruwetan.posyandu.ui.components.button.LargeActionCard
+import com.desacibiruwetan.posyandu.ui.components.button.SmallActionCard
+import com.desacibiruwetan.posyandu.ui.components.dialog.PilotSelectionDialog
+import com.desacibiruwetan.posyandu.ui.components.items.RecentHistoryItem
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
-import com.desacibiruwetan.posyandu.ui.theme.Poppins
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
-import com.desacibiruwetan.posyandu.ui.theme.TextDark
-
-val LightMintIconBg = Color(0xFFC7FFEC)
-
-// ─── Data ────────────────────────────────────────────────────────────────────
-
-data class ServiceData(
-    val title: String,
-    val description: String,
-    val icon: ImageVector,
-    val onClick: () -> Unit = {}
-)
-
-data class ServiceGroup(val groupLabel: String, val items: List<ServiceData>)
-
-// ─── Screen ──────────────────────────────────────────────────────────────────
 
 @Composable
 fun DashboardScreen(
     onNavigateToCariWarga: () -> Unit,
-    onNavItemSelected: (Int) -> Unit,
     onNavigateToCatatKejadian: () -> Unit,
     onNavigateToUpdateKb: () -> Unit,
     onNavigateToUpdateWusPus: () -> Unit,
     onNavigateToUpdateBalita: () -> Unit,
+    onNavigateToAdministrasiRt: () -> Unit,
+    onNavigateToBumil: () -> Unit,
+    onNavigateToRumahKeluarga: () -> Unit,
+    onNavItemSelected: (Int) -> Unit
 ) {
+    var showPilotDialog by remember { mutableStateOf(false) }
+
+    if (showPilotDialog) {
+        PilotSelectionDialog(
+            onDismiss = { showPilotDialog = false },
+            onOptionSelected = { option ->
+                println("Pilot terpilih: $option")
+                showPilotDialog = false
+                // TODO: Navigasi berdasarkan opsi Pilot yang dipilih
+            }
+        )
+    }
+
     Scaffold(
         containerColor = BgMint,
-        bottomBar = {
-            AppNavBar(
-                selectedIndex = 0,
-                onItemSelected = onNavItemSelected
-            )
-        }
+        bottomBar = { AppNavBar(selectedIndex = 0, onItemSelected = onNavItemSelected) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = paddingValues.calculateBottomPadding())
+                .verticalScroll(rememberScrollState())
         ) {
-            DashboardTopBar()
 
-            LazyColumn(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 20.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp)
+                    .height(179.dp)
+                    .background(
+                        color = PrimaryGreen,
+                        shape = RoundedCornerShape(bottomStart = 64.5.dp, bottomEnd = 64.5.dp)
+                    )
+                    .padding(horizontal = 24.dp, vertical = 40.dp)
             ) {
-                item { Spacer(modifier = Modifier.height(20.dp)) }
-                item { WelcomeBanner() }
-                item { Spacer(modifier = Modifier.height(28.dp)) }
-                item {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .background(Color.White),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Profile",
+                            tint = PrimaryGreen,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
                     Text(
-                        text = "Layanan",
+                        text = "Joan",
                         fontFamily = Inter,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = TextDark
+                        fontSize = 15.sp,
+                        color = Color.White
                     )
                 }
-                item { Spacer(modifier = Modifier.height(16.dp)) }
+            }
 
-                val serviceGroups = listOf(
-                    ServiceGroup(
-                        "Cari & Lihat Data",
-                        listOf(
-                            ServiceData(
-                                title = "Cari Warga",
-                                description = "Temukan data warga berdasarkan nama atau NIK",
-                                icon = Icons.Default.Search,
-                                onClick = onNavigateToCariWarga
-                            ),
-                            ServiceData(
-                                title = "Rumah & Keluarga",
-                                description = "Lihat data anggota keluarga per rumah tangga",
-                                icon = Icons.Default.Home
-                            )
-                        )
-                    ),
-                    ServiceGroup(
-                        "Catat & Perbarui",
-                        listOf(
-                            ServiceData(
-                                "Catat Kejadian",
-                                "Rekam kelahiran, kematian, atau kejadian penting",
-                                Icons.Default.Edit,
-                                onNavigateToCatatKejadian
-                            ),
-                            ServiceData(
-                                "Update KB",
-                                "Perbarui status penggunaan KB warga",
-                                Icons.Default.People,
-                                onNavigateToUpdateKb
-                            ),
-                            ServiceData(
-                                "Wus / Pus",
-                                "Data wanita dan pasangan usia subur",
-                                Icons.Default.Favorite,
-                                onNavigateToUpdateWusPus
-                            ),
-                            ServiceData(
-                                "Update Bumil",
-                                "Catat perkembangan ibu hamil di wilayah Anda",
-                                Icons.Default.Face,
-                            ),
-                            ServiceData(
-                                "Update Balita",
-                                "Input tumbuh kembang dan gizi balita",
-                                Icons.Default.Face,
-                                onNavigateToUpdateBalita
-                            )
-                        )
-                    ),
-                    ServiceGroup(
-                        "Administrasi",
-                        listOf(
-                            ServiceData(
-                                "Administrasi RT",
-                                "Kelola surat dan dokumen administrasi RT",
-                                Icons.Default.Settings
-                            )
-                        )
-                    )
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+
+                Text(
+                    text = "Cari & Lihat Data",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = Color(0xFF272727)
                 )
-
-                items(serviceGroups) { group ->
-                    ServiceGroupSection(group = group)
-                    Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    LargeActionCard(
+                        title = "Cari Warga",
+                        icon = Icons.Default.People,
+                        iconBgColor = Color(0xFFC7FFEC),
+                        onClick = onNavigateToCariWarga,
+                        modifier = Modifier.weight(1f)
+                    )
+                    LargeActionCard(
+                        title = "Rumah & Keluarga",
+                        icon = Icons.Default.Home,
+                        iconBgColor = Color(0xFFC7FFEC),
+                        onClick = { onNavigateToRumahKeluarga },
+                        modifier = Modifier.weight(1f)
+                    )
                 }
 
-                item { Spacer(modifier = Modifier.height(32.dp)) }
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text(
+                    text = "Perbarui Data",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = Color(0xFF272727)
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallActionCard(
+                        "Catat Kejadian",
+                        Icons.Default.Edit,
+                        Color(0xFFFFFFC7),
+                        onClick = onNavigateToCatatKejadian,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmallActionCard(
+                        "Wus/Pus",
+                        Icons.Default.Favorite,
+                        Color(0xFFD6E4FF),
+                        onClick = onNavigateToUpdateWusPus,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmallActionCard(
+                        "Bumil",
+                        Icons.Default.Face,
+                        Color(0xFFFFD6E4),
+                        onClick = { onNavigateToBumil },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallActionCard(
+                        "Balita",
+                        Icons.Default.ChildCare,
+                        Color(0xFFC7FFEC),
+                        onClick = onNavigateToUpdateBalita,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmallActionCard(
+                        "KB",
+                        Icons.Default.People,
+                        Color(0xFFFFFFC7),
+                        onClick = onNavigateToUpdateKb,
+                        modifier = Modifier.weight(1f)
+                    )
+                    SmallActionCard(
+                        "Administrasi RT",
+                        Icons.Default.Settings,
+                        Color(0xFFD6E4FF),
+                        onClick = { onNavigateToAdministrasiRt },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallActionCard(
+                        "Pilot",
+                        Icons.Default.Face,
+                        Color(0xFFC7FFEC),
+                        onClick = { showPilotDialog = true },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.weight(2f))
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+
+
+
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(123.dp)
+                        .background(
+                            Color(0xFF1B9E75),
+                            RoundedCornerShape(15.dp)
+                        )
+                        .padding(24.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Column {
+                        Text(
+                            text = "Data akurat, warga sejahtera",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+
+
+
+
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+
+
+
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFF4FAF8), RoundedCornerShape(15.dp))
+                        .border(1.dp, Color(0xFFE9E9E9), RoundedCornerShape(15.dp))
+                        .padding(24.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Riwayat Terbaru",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = Color(0xFF272727)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        RecentHistoryItem(
+                            title = "Catat kejadian",
+                            subtitle = "Kelahiran - Sumarsih",
+                            date = "10 Mei 2026",
+                            icon = Icons.AutoMirrored.Filled.Assignment,
+                            iconBgColor = Color(0xFFFFFFC7)
+                        )
+                        RecentHistoryItem(
+                            title = "Catat kejadian",
+                            subtitle = "Wafat - Mulyodawg",
+                            date = "11 Mei 2026",
+                            icon = Icons.AutoMirrored.Filled.Assignment,
+                            iconBgColor = Color(0xFFFFFFC7)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
-    }
-}
-
-// ─── Top Bar Khusus Dashboard ────────────────────────────────────────────────
-
-@Composable
-fun DashboardTopBar() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(color = PrimaryGreen)
-            .statusBarsPadding()
-            .padding(horizontal = 24.dp)
-            .height(64.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Box(
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(SurfaceWhite),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = Icons.Default.Person,
-                contentDescription = "Profile Picture",
-                tint = PrimaryGreen,
-                modifier = Modifier.size(32.dp)
-            )
-        }
-        Spacer(modifier = Modifier.width(16.dp))
-        Text(
-            text = "Joan",
-            fontFamily = Inter,
-            fontWeight = FontWeight.Bold,
-            fontSize = 15.sp,
-            color = SurfaceWhite
-        )
-    }
-}
-
-// ─── Welcome Banner ───────────────────────────────────────────────────────────
-
-@Composable
-fun WelcomeBanner() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(173.dp)
-            .background(color = Color(0xFF16805E), shape = RoundedCornerShape(15.dp))
-            .padding(24.dp),
-        contentAlignment = Alignment.CenterStart
-    ) {
-        Column {
-            Text(
-                text = "Selamat Datang, Joan!",
-                fontFamily = Inter,
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                color = SurfaceWhite
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
-                fontFamily = Inter,
-                fontWeight = FontWeight.Medium,
-                fontSize = 15.sp,
-                color = SurfaceWhite
-            )
-        }
-    }
-}
-
-// ─── Service Group Section ────────────────────────────────────────────────────
-
-@Composable
-fun ServiceGroupSection(group: ServiceGroup) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Text(
-            text = group.groupLabel.uppercase(),
-            fontFamily = Poppins,
-            fontWeight = FontWeight.Bold,
-            fontSize = 11.sp,
-            color = TextDark.copy(alpha = 0.45f),
-            letterSpacing = 1.2.sp
-        )
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            group.items.forEach { service ->
-                ServiceRow(service = service)
-            }
-        }
-    }
-}
-
-// ─── Service Row ─────────────────────────────────────────────────────────────
-
-@Composable
-fun ServiceRow(service: ServiceData) {
-    Row(
-        modifier = Modifier
-            .shadow(
-                elevation = 6.dp,
-                spotColor = Color(0x30DFDFDF),
-                ambientColor = Color(0x30DFDFDF),
-                shape = RoundedCornerShape(12.dp)
-            )
-            .background(color = PrimaryGreen, shape = RoundedCornerShape(12.dp))
-            .fillMaxWidth()
-            .clickable { service.onClick() }
-            .padding(horizontal = 20.dp, vertical = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-
-        Box(
-            modifier = Modifier
-                .size(44.dp)
-                .clip(CircleShape)
-                .background(color = LightMintIconBg),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = service.icon,
-                contentDescription = service.title,
-                tint = PrimaryGreen,
-                modifier = Modifier.size(24.dp)
-            )
-        }
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = service.title,
-                fontFamily = Poppins,
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp,
-                color = SurfaceWhite
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = service.description,
-                fontFamily = Poppins,
-                fontWeight = FontWeight.Normal,
-                fontSize = 11.sp,
-                color = SurfaceWhite.copy(alpha = 0.75f),
-                lineHeight = 15.sp
-            )
-        }
-
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = null,
-            tint = SurfaceWhite.copy(alpha = 0.4f),
-            modifier = Modifier.size(14.dp)
-        )
     }
 }
