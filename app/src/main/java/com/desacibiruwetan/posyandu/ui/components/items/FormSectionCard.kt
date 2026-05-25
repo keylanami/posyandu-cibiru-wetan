@@ -30,8 +30,8 @@ import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 @Composable
 fun FormSectionCard(
-    title: String,
-    icon: ImageVector = Icons.Default.Info,
+    title: String? = null, // Diubah menjadi nullable
+    icon: ImageVector? = Icons.Default.Info,
     content: @Composable () -> Unit
 ) {
     Box(
@@ -47,24 +47,27 @@ fun FormSectionCard(
             .padding(24.dp)
     ) {
         Column {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = PrimaryGreen,
-                    modifier = Modifier.size(24.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = title,
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
-                    color = PrimaryGreen
-                )
+            if (title != null) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (icon != null) {
+                        Icon(
+                            imageVector = icon,
+                            contentDescription = null,
+                            tint = PrimaryGreen,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                    }
+                    Text(
+                        text = title,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 15.sp,
+                        color = PrimaryGreen
+                    )
+                }
+                Spacer(modifier = Modifier.height(24.dp))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             content()
         }
