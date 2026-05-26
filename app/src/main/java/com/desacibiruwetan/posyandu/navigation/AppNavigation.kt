@@ -9,11 +9,23 @@ import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
 import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreen
 import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
 import com.desacibiruwetan.posyandu.ui.screen.riwayat.RiwayatScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.AdministrasiRtScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.CariWargaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.CatatKejadianScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.DetailWargaScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotBencanaAlamScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotKelSehatBerkualitasScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotKesBuNakScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotKesehatanPusScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotKeuanganSehatScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotPHBSScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotPeduliLingkunganScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotSiagaKebakaraanScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.PilotStuntingScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.RumahKeluargaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.TambahWargaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
+import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 
@@ -26,7 +38,7 @@ fun AppNavigation() {
             0 -> Screen.Dashboard.route
             1 -> Screen.Warga.route
             2 -> Screen.Riwayat.route
-             3 -> Screen.Profil.route
+            3 -> Screen.Profil.route
             else -> null
         }
 
@@ -45,7 +57,6 @@ fun AppNavigation() {
         navController = navController,
         startDestination = Screen.Login.route
     ) {
-
 
 
         composable(Screen.Login.route) {
@@ -98,6 +109,18 @@ fun AppNavigation() {
                 },
                 onNavigateToUpdateWusPus = {
                     navController.navigate(Screen.UpdateWusPus.route)
+                },
+                onNavigateToAdministrasiRt = {
+                    navController.navigate(Screen.AdministrasiRt.route)
+                },
+                onNavigateToBumil = {
+                    navController.navigate(Screen.UpdateBumil.route)
+                },
+                onNavigateToRumahKeluarga = {
+                    navController.navigate(Screen.RumahKeluarga.route)
+                },
+                onNavigateToPilot = { route ->
+                    navController.navigate(route)
                 },
                 onNavItemSelected = handleBottomNav
             )
@@ -165,6 +188,84 @@ fun AppNavigation() {
 
         composable(Screen.CatatKejadian.route) {
             CatatKejadianScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+
+        composable(Screen.AdministrasiRt.route) {
+            AdministrasiRtScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+
+        composable(Screen.RumahKeluarga.route) {
+            RumahKeluargaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+
+        composable(Screen.UpdateBumil.route) {
+            UpdateBumilScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+
+
+
+        composable(Screen.PilotStunting.route) {
+            PilotStuntingScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotPhbs.route) {
+            PilotPHBSScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotKia.route) {
+            PilotKesBuNakScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotKebakaran.route) {
+            PilotSiagaKebakaraanScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotBencana.route) {
+            PilotBencanaAlamScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotLingkungan.route) {
+            PilotPeduliLingkunganScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotKeluargaSehat.route) {
+            PilotKelSehatBerkualitasScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotKeuangan.route) {
+            PilotKeuanganSehatScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+        composable(Screen.PilotKesehatanPus.route) {
+            PilotKesehatanPusScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav
             )
