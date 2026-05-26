@@ -199,169 +199,171 @@ fun DashboardScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = "Perbarui Data",
-                fontFamily = Inter,
-                fontWeight = FontWeight.Bold,
-                fontSize = 13.sp,
-                color = Color(0xFF272727)
-            )
-            Spacer(modifier = Modifier.height(12.dp))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                SmallActionCard(
-                    "Catat Kejadian",
-                    Icons.Default.Edit,
-                    Color(0xFFFFFFC7),
-                    onClick = onNavigateToCatatKejadian,
-                    modifier = Modifier.weight(1f)
+            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
+                Text(
+                    text = "Perbarui Data",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 13.sp,
+                    color = Color(0xFF272727)
                 )
-                SmallActionCard(
-                    "Wus/Pus",
-                    Icons.Default.Favorite,
-                    Color(0xFFD6E4FF),
-                    onClick = onNavigateToUpdateWusPus,
-                    modifier = Modifier.weight(1f)
-                )
-                SmallActionCard(
-                    "Bumil",
-                    Icons.Default.Face,
-                    Color(0xFFFFD6E4),
-                    onClick = onNavigateToBumil,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                SmallActionCard(
-                    "Balita",
-                    Icons.Default.ChildCare,
-                    Color(0xFFC7FFEC),
-                    onClick = onNavigateToUpdateBalita,
-                    modifier = Modifier.weight(1f)
-                )
-                SmallActionCard(
-                    "KB",
-                    Icons.Default.People,
-                    Color(0xFFFFFFC7),
-                    onClick = onNavigateToUpdateKb,
-                    modifier = Modifier.weight(1f)
-                )
-                SmallActionCard(
-                    "Administrasi RT",
-                    Icons.Default.Settings,
-                    Color(0xFFD6E4FF),
-                    onClick = onNavigateToAdministrasiRt,
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                SmallActionCard(
-                    "Pilot",
-                    Icons.Default.Face,
-                    Color(0xFFC7FFEC),
-                    onClick = { showPilotDialog = true },
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.weight(2f))
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-
-
-
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(123.dp)
-                    .background(
-                        Color(0xFF1B9E75),
-                        RoundedCornerShape(15.dp)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallActionCard(
+                        "Catat Kejadian",
+                        Icons.Default.Edit,
+                        Color(0xFFFFFFC7),
+                        onClick = onNavigateToCatatKejadian,
+                        modifier = Modifier.weight(1f)
                     )
-                    .padding(24.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                Column {
-                    Text(
-                        text = "Data akurat, warga sejahtera",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp,
-                        color = Color.White
+                    SmallActionCard(
+                        "Wus/Pus",
+                        Icons.Default.Favorite,
+                        Color(0xFFD6E4FF),
+                        onClick = onNavigateToUpdateWusPus,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Normal,
-                        fontSize = 12.sp,
-                        color = Color.White
+                    SmallActionCard(
+                        "Bumil",
+                        Icons.Default.Face,
+                        Color(0xFFFFD6E4),
+                        onClick = onNavigateToBumil,
+                        modifier = Modifier.weight(1f)
                     )
                 }
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
 
-
-
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-
-
-
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFFF4FAF8), RoundedCornerShape(15.dp))
-                    .border(1.dp, Color(0xFFE9E9E9), RoundedCornerShape(15.dp))
-                    .padding(24.dp)
-            ) {
-                Column {
-                    Text(
-                        text = "Riwayat Terbaru",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = Color(0xFF272727)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallActionCard(
+                        "Balita",
+                        Icons.Default.ChildCare,
+                        Color(0xFFC7FFEC),
+                        onClick = onNavigateToUpdateBalita,
+                        modifier = Modifier.weight(1f)
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    RecentHistoryItem(
-                        title = "Catat kejadian",
-                        subtitle = "Kelahiran - Sumarsih",
-                        date = "10 Mei 2026",
-                        icon = Icons.AutoMirrored.Filled.Assignment,
-                        iconBgColor = Color(0xFFFFFFC7)
+                    SmallActionCard(
+                        "KB",
+                        Icons.Default.People,
+                        Color(0xFFFFFFC7),
+                        onClick = onNavigateToUpdateKb,
+                        modifier = Modifier.weight(1f)
                     )
-                    RecentHistoryItem(
-                        title = "Catat kejadian",
-                        subtitle = "Wafat - Mulyodawg",
-                        date = "11 Mei 2026",
-                        icon = Icons.AutoMirrored.Filled.Assignment,
-                        iconBgColor = Color(0xFFFFFFC7)
+                    SmallActionCard(
+                        "Administrasi RT",
+                        Icons.Default.Settings,
+                        Color(0xFFD6E4FF),
+                        onClick = onNavigateToAdministrasiRt,
+                        modifier = Modifier.weight(1f)
                     )
                 }
-            }
+                Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(80.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    SmallActionCard(
+                        "Pilot",
+                        Icons.Default.Face,
+                        Color(0xFFC7FFEC),
+                        onClick = { showPilotDialog = true },
+                        modifier = Modifier.weight(1f)
+                    )
+                    Spacer(modifier = Modifier.weight(2f))
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+
+
+
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(123.dp)
+                        .background(
+                            Color(0xFF1B9E75),
+                            RoundedCornerShape(15.dp)
+                        )
+                        .padding(24.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Column {
+                        Text(
+                            text = "Data akurat, warga sejahtera",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 20.sp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Normal,
+                            fontSize = 12.sp,
+                            color = Color.White
+                        )
+                    }
+                }
+
+
+
+
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+
+
+
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Color(0xFFF4FAF8), RoundedCornerShape(15.dp))
+                        .border(1.dp, Color(0xFFE9E9E9), RoundedCornerShape(15.dp))
+                        .padding(24.dp)
+                ) {
+                    Column {
+                        Text(
+                            text = "Riwayat Terbaru",
+                            fontFamily = Inter,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 13.sp,
+                            color = Color(0xFF272727)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        RecentHistoryItem(
+                            title = "Catat kejadian",
+                            subtitle = "Kelahiran - Sumarsih",
+                            date = "10 Mei 2026",
+                            icon = Icons.AutoMirrored.Filled.Assignment,
+                            iconBgColor = Color(0xFFFFFFC7)
+                        )
+                        RecentHistoryItem(
+                            title = "Catat kejadian",
+                            subtitle = "Wafat - Mulyodawg",
+                            date = "11 Mei 2026",
+                            icon = Icons.AutoMirrored.Filled.Assignment,
+                            iconBgColor = Color(0xFFFFFFC7)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(80.dp))
+            }
         }
     }
 }
