@@ -30,14 +30,7 @@ fun PilotBencanaAlamScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit
 ){
-//
-//    Bencana Alam
-//            Kerusakan Ekosistem Eksploitasi
-//    Kerusakan Ekosistem Bencana
-//    Abrasi
-//    Alih Fungsi Lahan
-//    Restorasi Lahan
-//            Kerusakan Fasilitas
+
 
     var bencanaAlam by remember { mutableStateOf("") }
     var kerusakanEkosistemEksploitasi by remember { mutableStateOf("") }
