@@ -20,6 +20,10 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 
 @Composable
 fun PilotPeduliLingkunganScreen(
@@ -34,6 +38,14 @@ fun PilotPeduliLingkunganScreen(
 //            Bak Sampah Desa
 //    Rumah Ventilasi Baik
 //    KLB
+
+    var keluargaPunyaBakSampah by remember { mutableStateOf("") }
+    var anggotaBankSampah by remember { mutableStateOf("") }
+    var keluargaPakaiSPal by remember { mutableStateOf("") }
+    var kasusBanjir by remember { mutableStateOf("") }
+    var bakSampahDesa by remember { mutableStateOf("") }
+    var rumahVentilasiBaik by remember { mutableStateOf("") }
+    var klb by remember { mutableStateOf("") }
 
 
     Scaffold(
@@ -56,59 +68,59 @@ fun PilotPeduliLingkunganScreen(
             FormSectionCard(title = null) {
                 AppTextField(
                     label = "Keluarga Punya Bak Sampah",
-                    value = "",
+                    value = keluargaPunyaBakSampah,
                     placeholder = "Masukkan jumlah keluarga dengan bak sampah",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { keluargaPunyaBakSampah = it}
                 )
 
                 AppTextField(
                     label = "Anggota Bank Sampah",
-                    value = "",
+                    value = anggotaBankSampah,
                     placeholder = "Masukkan jumlah anggota bank sampah",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { anggotaBankSampah = it }
                 )
 
                 AppTextField(
                     label = "Keluarga Pakai Spal",
-                    value = "",
+                    value = keluargaPakaiSPal,
                     placeholder = "Masukkan jumlah keluarga dengan pal",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { keluargaPakaiSPal = it }
 
                 )
 
                 AppTextField(
                     label = "Kasus Banjir",
-                    value = "",
+                    value = kasusBanjir,
                     placeholder = "Masukkan jumlah kasus banjir",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { kasusBanjir = it}
                 )
 
                 AppTextField(
                     label = "Bak Sampah Desa",
-                    value = "",
+                    value = bakSampahDesa,
                     placeholder = "Masukkan jumlah bak sampah desa",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { bakSampahDesa = it }
                 )
 
                 AppTextField(
                     label = "Rumah Ventilasi Baik",
-                    value = "",
+                    value = rumahVentilasiBaik,
                     placeholder = "Masukkan jumlah rumah ventilasi baik",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { rumahVentilasiBaik = it }
                 )
 
                 AppTextField(
                     label = "KLB",
-                    value = "",
+                    value = klb,
                     placeholder = "Masukkan jumlah KLB",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { klb = it }
                 )
 
                 Spacer(Modifier.height(24.dp))
@@ -119,6 +131,8 @@ fun PilotPeduliLingkunganScreen(
                     onClick = { /* TODO */ }
                 )
             }
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }
