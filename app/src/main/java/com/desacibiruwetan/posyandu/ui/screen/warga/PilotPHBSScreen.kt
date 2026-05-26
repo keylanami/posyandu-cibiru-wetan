@@ -17,6 +17,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -62,36 +64,42 @@ fun PilotPHBSScreen(
                     label = "Patuh Protokol Kesehatan",
                     value = patuhProtokolKesehatan,
                     placeholder = "Masukkan jumlah patuh protokol kesehatan",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { patuhProtokolKesehatan = it }
                 )
                 AppTextField(
                     label = "Rumah Jamban Sehat",
                     value = rumahJambanSehat,
                     placeholder = "Masukkan jumlah rumah jamban sehat",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { rumahJambanSehat = it }
                 )
                 AppTextField(
                     label = "Rumah Air Bersih",
                     value = rumahAirBersih,
                     placeholder = "Masukkan jumlah rumah air bersih",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { rumahAirBersih = it }
                 )
                 AppTextField(
                     label = "Kasus Diare",
                     value = kasusDiare,
                     placeholder = "Masukkan jumlah kasus diare",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kasusDiare = it }
                 )
                 AppTextField(
                     label = "Rumah Tanpa Asap Rokok",
                     value = rumahTanpaAsapRokok,
                     placeholder = "Masukkan jumlah rumah tanpa asap rokok",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { rumahTanpaAsapRokok = it }
                 )
                 AppTextField(
                     label = "BABS",
                     value = babs,
                     placeholder = "Masukkan jumlah BABS",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { babs = it }
                 )
 
