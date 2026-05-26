@@ -12,6 +12,10 @@ import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -36,6 +40,14 @@ fun PilotKelSehatBerkualitasScreen(
 //    Bayi Lahir Cukup Bulan
 //            Gangguan Jiwa Keluarga
 
+    var keluargaDengan2Anak by remember { mutableStateOf("") }
+    var berobatFaskes by remember { mutableStateOf("") }
+    var penyakitMenular by remember { mutableStateOf("") }
+    var penyakitTidakMenular by remember { mutableStateOf("") }
+    var bayiLahirSehat by remember { mutableStateOf("") }
+    var bayiLahirCukupBulan by remember { mutableStateOf("") }
+    var gangguanJiwaKeluarga by remember { mutableStateOf("") }
+
     Scaffold(
         topBar = { AppTopBar(title = "Keluarga Sehat Berkualitas", onBackClick = onBackClick) },
         bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
@@ -59,7 +71,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah keluarga dengan 2 anak",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { keluargaDengan2Anak = it}
                 )
 
                 AppTextField(
@@ -67,7 +79,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah berobat faskes",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { berobatFaskes = it }
                 )
 
                 AppTextField(
@@ -75,7 +87,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah penyakit menular",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { penyakitMenular = it}
                 )
 
                 AppTextField(
@@ -83,7 +95,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah penyakit tidak menular",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { penyakitTidakMenular = it}
                 )
 
                 AppTextField(
@@ -91,7 +103,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah bayi lahir sehat",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { bayiLahirSehat = it }
                 )
 
                 AppTextField(
@@ -99,7 +111,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah bayi lahir cukup bulan",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { bayiLahirCukupBulan = it}
                 )
 
                 AppTextField(
@@ -107,7 +119,7 @@ fun PilotKelSehatBerkualitasScreen(
                     value = "",
                     placeholder = "Masukkan jumlah gangguan jiwa keluarga",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { /* TODO */ }
+                    onValueChange = { gangguanJiwaKeluarga = it }
                 )
 
                 Spacer(Modifier.height(24.dp))
