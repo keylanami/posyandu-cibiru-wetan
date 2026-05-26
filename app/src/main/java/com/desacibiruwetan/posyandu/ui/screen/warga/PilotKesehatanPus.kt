@@ -124,6 +124,8 @@ fun PilotKesehatanPusScreen(
                     onClick = { /* TODO */ }
                 )
             }
+
+            Spacer(Modifier.height(24.dp))
         }
 
     }
