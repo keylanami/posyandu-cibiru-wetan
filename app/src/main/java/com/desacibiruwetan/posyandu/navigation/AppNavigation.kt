@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -8,6 +9,7 @@ import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
 import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
 import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreen
 import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
+import com.desacibiruwetan.posyandu.ui.screen.profile.ProfilScreen
 import com.desacibiruwetan.posyandu.ui.screen.riwayat.RiwayatScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.AdministrasiRtScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.CariWargaScreen
@@ -44,7 +46,7 @@ fun AppNavigation() {
 
         if (route != null) {
             navController.navigate(route) {
-                popUpTo(Screen.Dashboard.route) {
+                popUpTo(navController.graph.findStartDestination().id) {
                     saveState = true
                 }
                 launchSingleTop = true
@@ -144,6 +146,18 @@ fun AppNavigation() {
         composable(Screen.Riwayat.route) {
             RiwayatScreen(
                 onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav
+            )
+        }
+
+        composable(Screen.Profil.route) {
+            ProfilScreen(
+                onBackClick = { navController.popBackStack() },
+                onLogoutClick = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(0) { inclusive = true }
+                    }
+                },
                 onNavItemSelected = handleBottomNav
             )
         }

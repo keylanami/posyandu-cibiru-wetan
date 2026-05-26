@@ -51,6 +51,7 @@ import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 
 @Composable
 fun ProfilScreen(
+    onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit
 ) {
