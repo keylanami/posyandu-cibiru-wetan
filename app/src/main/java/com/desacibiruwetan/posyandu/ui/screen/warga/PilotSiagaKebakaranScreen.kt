@@ -17,6 +17,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -70,42 +71,49 @@ fun PilotSiagaKebakaraanScreen(
                     label = "Kebakaran Rumah Tangga",
                     value = kebakaranRumahTangga,
                     placeholder = "Masukkan jumlah kebakaran rumah tangga",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kebakaranRumahTangga = it }
                 )
                 AppTextField(
                     label = "Kebakaran Non Rumah Tangga",
                     value = kebakaranNonRumahTangga,
                     placeholder = "Masukkan jumlah kebakaran non rumah tangga",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kebakaranNonRumahTangga = it }
                 )
                 AppTextField(
                     label = "Rumah Punya APAR atau Air",
                     value = rumahPunyaAPARatauAir,
                     placeholder = "Masukkan jumlah rumah dengan APAR atau air",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { rumahPunyaAPARatauAir = it }
                 )
                 AppTextField(
                     label = "Rumah Semi Permanen Kayu",
                     value = rumahSemiPermanenKayu,
                     placeholder = "Masukkan jumlah rumah semi permanen kayu",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { rumahSemiPermanenKayu = it }
                 )
                 AppTextField(
                     label = "Rumah Punya P3K",
                     value = rumahPunyaP3K,
                     placeholder = "Masukkan jumlah rumah dengan P3K",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { rumahPunyaP3K = it }
                 )
                 AppTextField(
                     label = "Kecelakaan Rumah Tangga",
                     value = kecelakaanRumahTangga,
                     placeholder = "Masukkan jumlah kecelakaan rumah tangga",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kecelakaanRumahTangga = it }
                 )
                 AppTextField(
                     label = "Instalasi Hydrant",
                     value = instalasiHydrant,
                     placeholder = "Masukkan jumlah instalasi hydrant",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { instalasiHydrant = it }
                 )
 
