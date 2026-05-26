@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -70,12 +71,14 @@ fun PilotKesBuNakScreen(
                     label = "Ibu Hamil Rutin Periksa",
                     value = ibuHamilRutinPeriksa,
                     placeholder = "Masukkan jumlah ibu hamil rutin periksa",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { ibuHamilRutinPeriksa = it }
                 )
 
                 AppTextField(
                     label = "Persalinan Tenaga Kesehatan",
                     value = persalinanTenagaKesehatan,
+                    keyboardType = KeyboardType.Number,
                     placeholder = "Masukkan jumlah persalinan tenaga kesehatan",
                     onValueChange = { persalinanTenagaKesehatan = it }
                 )
@@ -84,6 +87,7 @@ fun PilotKesBuNakScreen(
                     label = "Kematian Ibu Nifas",
                     value = kematianIbuNifas,
                     placeholder = "Masukkan jumlah kematian ibu nifas",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kematianIbuNifas = it }
                 )
 
@@ -91,6 +95,7 @@ fun PilotKesBuNakScreen(
                     label = "Kanker Serviks",
                     value = kankerServiks,
                     placeholder = "Masukkan jumlah kanker serviks",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kankerServiks = it }
                 )
 
@@ -98,6 +103,7 @@ fun PilotKesBuNakScreen(
                     label = "Imunisasi Bayi Balita",
                     value = imunisasiBayiBalita,
                     placeholder = "Masukkan jumlah imunisasi bayi balita",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { imunisasiBayiBalita = it }
                 )
 
@@ -105,6 +111,7 @@ fun PilotKesBuNakScreen(
                     label = "Bayi Balita Sakit Terdata",
                     value = bayiBalitaSakitTerdata,
                     placeholder = "Masukkan jumlah bayi balita sakit terdata",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { bayiBalitaSakitTerdata = it }
                 )
 
@@ -112,6 +119,7 @@ fun PilotKesBuNakScreen(
                     label = "Kematian Bayi Balita",
                     value = kematianBayiBalita,
                     placeholder = "Masukkan jumlah kematian bayi balita",
+                    keyboardType = KeyboardType.Number,
                     onValueChange = { kematianBayiBalita = it }
                 )
 
