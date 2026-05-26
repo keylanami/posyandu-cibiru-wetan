@@ -30,14 +30,6 @@ fun PilotKesBuNakScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit
 ){
-//    Ibu Hamil Rutin Periksa
-//            Persalinan Tenaga Kesehatan
-//    Kematian Ibu Nifas
-//    Kanker Serviks
-//            Imunisasi Bayi Balita
-//    Bayi Balita Sakit Terdata
-//            Kematian Bayi Balita
-
 
     var ibuHamilRutinPeriksa by remember { mutableStateOf("") }
     var persalinanTenagaKesehatan by remember { mutableStateOf("") }
