@@ -4,20 +4,29 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class RumahSchema(
+data class RumahRequest(
+    val alamat: String,
+
+    @Json(name = "no_rumah")
+    val noRumah: String,
+)
+
+
+@JsonClass(generateAdapter = true)
+data class RumahData(
     val id: Int,
+
     @Json(name = "rt_id")
     val rtId: Int,
 
     @Json(name = "nomor_rumah")
     val nomorRumah: String,
 
-    val alamat: String? = null,
+    val alamat: String?= null,
 
     @Json(name = "created_at")
-    val createdAt: String? = null,
+    val createdAt: String?= null,
 
     @Json(name = "updated_at")
-    val updatedAt: String? = null
-
+    val updateAt: String?= null
 )

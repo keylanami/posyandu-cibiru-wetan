@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.data.model
 
+import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
