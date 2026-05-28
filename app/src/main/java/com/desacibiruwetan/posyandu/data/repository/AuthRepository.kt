@@ -45,4 +45,26 @@ class AuthRepository(private val apiService: ApiService) {
             emit(UiState.Error("Tidak ada internet: ${e.localizedMessage}"))
         }
     }
+
+
+
+
+    suspend fun logout(token: String): Flow<UiState<BaseResponse<Any>>> = flow {
+        emit(UiState.Loading)
+
+        try {
+            val response = apiService.logout(token)
+
+            if (response.isSuccessful && response.body() != null) {
+                emit(UiState.Success(response.body()!!))
+            } else {
+                emit(UiState.Error("Gagal Log Out" + response.message()))
+            }
+        } catch (e: Exception) {
+            emit(UiState.Error("Tidak ada internet: ${e.localizedMessage}"))
+        }
+
+    }
+
+
 }
