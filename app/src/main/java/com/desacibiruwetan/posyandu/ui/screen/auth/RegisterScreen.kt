@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -12,22 +13,80 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.data.model.RegisterRequest
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AuthHeader
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppPasswordField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.TextDark
+import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
-fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: () -> Unit) {
-    var name by remember { mutableStateOf("") }
+fun RegisterScreenWrapper(
+    onNavigateToPersonalization: () -> Unit,
+    onNavigateToLogin: () -> Unit,
+    viewmodel: AuthViewmodel
+) {
+    val context = LocalContext.current
+    val registerState by viewmodel.registerState.collectAsState()
+
+    LaunchedEffect(registerState) {
+        when (registerState) {
+            is UiState.Success -> {
+                Toast.makeText(context, "Pendaftaran Berhasil!", Toast.LENGTH_SHORT).show()
+                viewmodel.resetRegisterState()
+                onNavigateToPersonalization()
+            }
+
+            is UiState.Error -> {
+                val errorMessage = (registerState as UiState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                viewmodel.resetRegisterState()
+            }
+
+            else -> {}
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        RegisterScreen(
+            isLoading = registerState is UiState.Loading,
+            onNavigateToLogin = onNavigateToLogin,
+            onRegisterSubmit = { request ->
+                viewmodel.register(request)
+            }
+        )
+
+        // Overlay Loading
+        if (registerState is UiState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
+        }
+    }
+}
+
+@Composable
+fun RegisterScreen(
+    isLoading: Boolean,
+    onNavigateToLogin: () -> Unit,
+    onRegisterSubmit: (RegisterRequest) -> Unit
+) {
+    var nik by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -37,15 +96,24 @@ fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: (
 
     fun validate() {
         val newErrors = mutableMapOf<String, String?>()
-        if (name.isBlank()) newErrors["name"] = "Nama wajib diisi"
+        if (nik.length < 16) newErrors["nik"] = "NIK harus 16 digit"
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) newErrors["email"] =
             "Email tidak valid"
         if (phone.length < 10) newErrors["phone"] = "Nomor telepon minimal 10 digit"
-        if (password.length < 6) newErrors["password"] = "Password minimal 6 karakter"
+        if (password.length < 8) newErrors["password"] = "Password minimal 8 karakter"
         if (confirmPassword != password) newErrors["confirm"] = "Password tidak cocok"
 
         errors = newErrors
-        if (newErrors.isEmpty()) onNavigateToPersonalization()
+        if (newErrors.isEmpty() && !isLoading) {
+            val request = RegisterRequest(
+                nik = nik,
+                email = email,
+                phoneNumber = phone,
+                password = password,
+                passwordConfirmation = confirmPassword
+            )
+            onRegisterSubmit(request)
+        }
     }
 
     Box(
@@ -70,10 +138,11 @@ fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: (
                 Spacer(modifier = Modifier.height(24.dp))
 
                 AppTextField(
-                    label = "Nama",
-                    value = name,
-                    onValueChange = { name = it },
-                    error = errors["name"]
+                    label = "NIK",
+                    value = nik,
+                    onValueChange = { nik = it },
+                    error = errors["nik"],
+                    keyboardType = KeyboardType.Number
                 )
 
                 AppTextField(
@@ -109,7 +178,10 @@ fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: (
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                PrimaryButton(text = "Daftar", onClick = { validate() })
+                PrimaryButton(
+                    text = if (isLoading) "Memproses..." else "Daftar",
+                    onClick = { validate() }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -118,11 +190,12 @@ fun RegisterScreen(onNavigateToPersonalization: () -> Unit, onNavigateToLogin: (
                         withStyle(SpanStyle(color = TextDark)) { append("Sudah terdaftar sebagai kader? ") }
                         withStyle(
                             SpanStyle(
-                                color = PrimaryGreen, fontWeight = FontWeight.Bold
+                                color = PrimaryGreen,
+                                fontWeight = FontWeight.Bold
                             )
                         ) { append("Masuk") }
                     },
-                    modifier = Modifier.clickable { onNavigateToLogin() },
+                    modifier = Modifier.clickable(enabled = !isLoading) { onNavigateToLogin() },
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

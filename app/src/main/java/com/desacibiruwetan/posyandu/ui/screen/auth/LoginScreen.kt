@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.auth
 
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
@@ -14,7 +15,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -22,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AuthHeader
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppPasswordField
@@ -29,37 +33,87 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PosyanduCibiruTheme
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
-fun LoginScreenWrapper(onNavigateToRegister: () -> Unit) {
+fun LoginScreenWrapper(
+    onNavigateToRegister: () -> Unit,
+    onNavigateToDashboard: () -> Unit,
+    viewmodel: AuthViewmodel
+) {
+    val context = LocalContext.current
+    val loginState by viewmodel.loginState.collectAsState()
     var isDarkTheme by remember { mutableStateOf(false) }
 
-    AnimatedContent(
-        targetState = isDarkTheme,
-        transitionSpec = {
-            (fadeIn(tween(600)) + scaleIn(
-                tween(600),
-                transformOrigin = TransformOrigin(1f, 0f)
-            )) togetherWith
-                    (fadeOut(tween(600)) + scaleOut(
-                        tween(600),
-                        transformOrigin = TransformOrigin(1f, 0f)
-                    ))
-        },
-        label = "ThemeWaveTransition"
-    ) { targetTheme ->
-        PosyanduCibiruTheme(darkTheme = targetTheme) {
-            LoginScreen(
-                isDarkTheme = targetTheme,
-                onThemeToggle = { isDarkTheme = !isDarkTheme },
-                onNavigateToRegister = onNavigateToRegister
-            )
+
+    LaunchedEffect(loginState) {
+        when (loginState) {
+            is UiState.Success -> {
+                Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
+                viewmodel.resetLoginState()
+                onNavigateToDashboard()
+            }
+
+            is UiState.Error -> {
+                val errorMessage = (loginState as UiState.Error).message
+                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                viewmodel.resetLoginState()
+            }
+
+            else -> {}
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedContent(
+            targetState = isDarkTheme,
+            transitionSpec = {
+                (fadeIn(tween(600)) + scaleIn(
+                    tween(600),
+                    transformOrigin = TransformOrigin(1f, 0f)
+                )) togetherWith
+                        (fadeOut(tween(600)) + scaleOut(
+                            tween(600),
+                            transformOrigin = TransformOrigin(1f, 0f)
+                        ))
+            },
+            label = "ThemeWaveTransition"
+        ) { targetTheme ->
+            PosyanduCibiruTheme(darkTheme = targetTheme) {
+                LoginScreen(
+                    isDarkTheme = targetTheme,
+                    isLoading = loginState is UiState.Loading, // Pass loading state
+                    onThemeToggle = { isDarkTheme = !isDarkTheme },
+                    onNavigateToRegister = onNavigateToRegister,
+                    onLoginSubmit = { email, password ->
+                        viewmodel.login(email, password, "Android Device")
+                    }
+                )
+            }
+        }
+
+        // Overlay Loading
+        if (loginState is UiState.Loading) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f)),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = Color.White)
+            }
         }
     }
 }
 
 @Composable
-fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit, onNavigateToRegister: () -> Unit) {
+fun LoginScreen(
+    isDarkTheme: Boolean,
+    isLoading: Boolean,
+    onThemeToggle: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    onLoginSubmit: (String, String) -> Unit
+) {
     var emailText by remember { mutableStateOf("") }
     var passwordText by remember { mutableStateOf("") }
     var emailError by remember { mutableStateOf<String?>(null) }
@@ -79,12 +133,16 @@ fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit, onNavigateToReg
             passwordError = "Password minimal 6 karakter"; isValid = false
         } else passwordError = null
 
-        if (isValid) println("Login Sukses: $emailText")
+        if (isValid && !isLoading) {
+            onLoginSubmit(emailText, passwordText)
+        }
     }
 
-    Box(modifier = Modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.background)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
         IconButton(
             onClick = onThemeToggle,
             modifier = Modifier
@@ -129,7 +187,11 @@ fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit, onNavigateToReg
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                PrimaryButton(text = "Masuk", onClick = { validateLogin() })
+                // Ubah text berdasarkan status loading
+                PrimaryButton(
+                    text = if (isLoading) "Memeriksa..." else "Masuk",
+                    onClick = { validateLogin() }
+                )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -152,7 +214,7 @@ fun LoginScreen(isDarkTheme: Boolean, onThemeToggle: () -> Unit, onNavigateToReg
                             )
                         ) { append("Daftar") }
                     },
-                    modifier = Modifier.clickable { onNavigateToRegister() }
+                    modifier = Modifier.clickable(enabled = !isLoading) { onNavigateToRegister() }
                 )
             }
         }

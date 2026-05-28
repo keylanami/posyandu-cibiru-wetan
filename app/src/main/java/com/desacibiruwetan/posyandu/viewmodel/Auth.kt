@@ -36,6 +36,10 @@ class AuthViewmodel(private val repository: AuthRepository): ViewModel() {
         }
     }
 
+    fun resetLoginState(){
+        _loginState.value = UiState.Idle
+    }
+
     fun register(request: RegisterRequest){
         viewModelScope.launch {
             repository.register(request).collect { state ->
