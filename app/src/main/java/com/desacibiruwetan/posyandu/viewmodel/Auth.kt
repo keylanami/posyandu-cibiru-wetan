@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
+import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.data.repository.AuthRepository
@@ -16,6 +17,14 @@ class AuthViewmodel(private val repository: AuthRepository): ViewModel() {
     private val _loginState = MutableStateFlow<UiState<BaseResponse<LoginData>>>(UiState.Idle)
     val loginState: StateFlow<UiState<BaseResponse<LoginData>>> = _loginState.asStateFlow()
 
+    private val _registerState = MutableStateFlow<UiState<BaseResponse<Any>>>(UiState.Idle)
+    val registerState: StateFlow<UiState<BaseResponse<Any>>> = _registerState.asStateFlow()
+
+    private val _logoutState = MutableStateFlow<UiState<BaseResponse<Any>>>(UiState.Idle)
+    val logoutState: StateFlow<UiState<BaseResponse<Any>>> = _logoutState.asStateFlow()
+
+
+
     fun login(email: String, password: String, deviceName: String) {
         viewModelScope.launch {
            val req = LoginRequest(email, password, deviceName)
@@ -27,5 +36,29 @@ class AuthViewmodel(private val repository: AuthRepository): ViewModel() {
         }
     }
 
+    fun register(request: RegisterRequest){
+        viewModelScope.launch {
+            repository.register(request).collect { state ->
+                _registerState.value = state
+            }
+        }
+    }
+
+    fun resetRegisterState(){
+        _registerState.value = UiState.Idle
+    }
+
+
+    fun logout(token: String) {
+        viewModelScope.launch {
+            repository.logout(token).collect { state ->
+                _logoutState.value = state
+            }
+        }
+    }
+
+    fun resetLogoutState(){
+        _logoutState.value = UiState.Idle
+    }
 
 }
