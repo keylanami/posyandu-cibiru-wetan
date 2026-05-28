@@ -1,4 +1,4 @@
-package com.desacibiruwetan.posyandu.model
+package com.desacibiruwetan.posyandu.data.model
 
 
 data class DummyDetailWarga(

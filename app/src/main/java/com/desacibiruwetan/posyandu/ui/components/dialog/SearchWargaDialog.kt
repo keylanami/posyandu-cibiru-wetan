@@ -24,8 +24,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.desacibiruwetan.posyandu.model.DummyDetailWarga
-import com.desacibiruwetan.posyandu.model.MockData
+import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
+import com.desacibiruwetan.posyandu.data.model.MockData
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.items.WargaItemCard
