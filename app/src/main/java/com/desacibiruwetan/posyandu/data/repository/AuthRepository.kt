@@ -2,6 +2,7 @@ package com.desacibiruwetan.posyandu.data.repository
 
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
+import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
@@ -18,6 +19,25 @@ class AuthRepository(private val apiService: ApiService) {
 
             if (response.isSuccessful && response.body() != null) {
                 emit(UiState.Success(response.body()!!))
+            } else {
+                emit(UiState.Error(response.message()))
+            }
+        } catch (e: Exception) {
+            emit(UiState.Error("Tidak ada internet: ${e.localizedMessage}"))
+        }
+    }
+
+
+
+    suspend fun register(request: RegisterRequest): Flow<UiState<BaseResponse<Any>>> = flow {
+        emit(UiState.Loading)
+
+        try {
+            val response = apiService.register(request)
+
+            if (response.isSuccessful && response.body() != null) {
+                emit(UiState.Success(response.body()!!))
+
             } else {
                 emit(UiState.Error(response.message()))
             }

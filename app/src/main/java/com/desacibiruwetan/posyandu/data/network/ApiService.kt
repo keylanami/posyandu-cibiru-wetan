@@ -2,6 +2,7 @@ package com.desacibiruwetan.posyandu.data.network
 
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
+import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST
@@ -12,6 +13,13 @@ interface ApiService {
     suspend fun login(
         @Body request: LoginRequest
     ): Response<BaseResponse<LoginData>>
+
+
+    @POST("register")
+    suspend fun register(
+        @Body request: RegisterRequest
+    ): Response<BaseResponse<Any>>
+
 
 //    @POST("rumahs")
 //    suspend fun postRumah(
