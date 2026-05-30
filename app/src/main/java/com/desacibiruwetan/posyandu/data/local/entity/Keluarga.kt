@@ -9,6 +9,8 @@ data class KeluargaEntity(
     @PrimaryKey(autoGenerate = true)
     val localId: Int = 0,
     val serverId: Int?= null,
+    val rumahId: Int,
+
     val noKK: String,
     val isNgontrak: Boolean,
     val isGakin: Boolean?= null,

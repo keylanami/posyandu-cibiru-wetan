@@ -7,6 +7,9 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class KeluargaReq(
+
+    @Json(name = "rumah_id")
+    val rumahId: Int?= null,
     @Json(name = "no_kk")
     val noKK: String,
     val isNgontrak: Boolean,
@@ -21,7 +24,7 @@ data class KeluargaData(
     @Json(name = "rumah_id")
     val rumahId: Int,
 
-    @Json(name = "noKK")
+    @Json(name = "no_kk")
     val noKK: String,
 
     val isNgontrak: Boolean,

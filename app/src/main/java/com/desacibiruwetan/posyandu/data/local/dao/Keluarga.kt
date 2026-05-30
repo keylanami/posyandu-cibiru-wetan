@@ -26,7 +26,7 @@ interface KeluargaDao{
     @Query("delete from tabel_keluarga")
     suspend fun deleteAllKeluargaLocal()
 
-    @Query("select * from tabel_keluarga where localId = :id limit 1")
-    fun getKeluargaById(id: Int): Flow<KeluargaEntity>
+    @Query("select * from tabel_keluarga where rumahId = :id order by localId desc")
+    fun getKeluargaByRumahId(id: Int): Flow<KeluargaEntity>
 
 }

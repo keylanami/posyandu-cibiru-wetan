@@ -86,8 +86,8 @@ class KeluargaRepository(
     }
 
 
-    fun getDetailKeluarga(localId: Int): Flow<KeluargaEntity>{
-        return keluargaDao.getKeluargaById(localId)
+    fun getDetailKeluarga(rumahId: Int): Flow<KeluargaEntity>{
+        return keluargaDao.getKeluargaByRumahId(rumahId)
     }
 
 
