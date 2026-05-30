@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.data.network
 
+import com.desacibiruwetan.posyandu.data.model.KeluargaData
+import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
@@ -58,13 +60,30 @@ interface ApiService {
     ): Response<BaseResponse<RumahData>>
 
 
+    @GET("keluargas")
+    suspend fun getAllKeluarga(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<KeluargaData>>>
 
 
+    @GET("keluargas/{id}")
+    suspend fun getKeluargaById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<KeluargaData>>
 
+    @POST("rumahs/{rumahId}/keluargas")
+    suspend fun postDataKeluarga(
+        @Header("Authorization") token: String,
+        @Path("rumahId") rumahId: Int,
+        @Body request: KeluargaReq
+    ): Response<BaseResponse<KeluargaData>>
 
-//    @POST("rumahs")
-//    suspend fun postRumah(
-//        @Header("Authorization") token: String,
-//        @Body request: RumahRequest
-//    ): Response<BaseResponse<RumahResponse>>
+    @PUT("keluargas/{id}")
+    suspend fun putKeluarga(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: KeluargaReq
+    ): Response<BaseResponse<KeluargaData>>
+
 }

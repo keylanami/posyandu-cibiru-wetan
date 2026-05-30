@@ -1,0 +1,123 @@
+package com.desacibiruwetan.posyandu.data.repository
+
+import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
+import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
+import com.desacibiruwetan.posyandu.data.model.KeluargaReq
+import com.desacibiruwetan.posyandu.data.network.ApiService
+import kotlinx.coroutines.flow.Flow
+
+class KeluargaRepository(
+    private val apiService: ApiService,
+    private val keluargaDao: KeluargaDao
+) {
+
+    fun getAllKeluargaLocal(): Flow<List<KeluargaEntity>>{
+        return keluargaDao.getAllKeluargaDao()
+    }
+
+    suspend fun pullDataFromServer(token: String){
+
+        try {
+            val response = apiService.getAllKeluarga(token)
+
+            if (response.isSuccessful){
+                val dataServer = response.body()?.data ?: emptyList()
+
+                dataServer.forEach { keluargaServer ->
+                    val keluargaLokalBaru = KeluargaEntity(
+                        serverId = keluargaServer.id,
+                        noKK = keluargaServer.noKK,
+                        isNgontrak = keluargaServer.isNgontrak,
+                        isGakin = keluargaServer.isGakin,
+                        createdAt = keluargaServer.createdAt,
+                        updatedAt = keluargaServer.updatedAt,
+                        isSynced = true
+                    )
+
+                    keluargaDao.insertKeluargaLocal(keluargaLokalBaru)
+                }
+            }
+
+        } catch (e: Exception){
+            println("Gagal tarik server, pakai data lokal: ${e.localizedMessage}")
+        }
+    }
+
+
+    suspend fun addNewKeluarga(token: String, rumahId: Int, noKK: String, isNgontrak: Boolean, isGakin: Boolean){
+        val entitasBaru = KeluargaEntity(
+            noKK = noKK,
+            isNgontrak = isNgontrak,
+            isGakin = isGakin,
+            isSynced = true
+        )
+
+        val localIdBaru = keluargaDao.insertKeluargaLocal(entitasBaru)
+
+        try {
+            val request = KeluargaReq(
+                noKK = noKK,
+                isNgontrak = isNgontrak,
+                isGakin = isGakin,
+            )
+
+            val response = apiService.postDataKeluarga(token, rumahId, request)
+
+            if (response.isSuccessful){
+                val dataServer = response.body()?.data
+
+                if (dataServer!= null){
+                    val keluargaSukses = entitasBaru.copy(
+                        localId = localIdBaru.toInt(),
+                        serverId = dataServer.id,
+                        isSynced = true
+                    )
+
+                    keluargaDao.insertKeluargaLocal(keluargaSukses)
+
+                }
+            }
+
+        } catch (e: Exception){
+            println("Sedang offline, data keluarga disimpan di memori HP dulu.")
+
+        }
+    }
+
+
+    fun getDetailKeluarga(localId: Int): Flow<KeluargaEntity>{
+        return keluargaDao.getKeluargaById(localId)
+    }
+
+
+    suspend fun updateKeluarga(token: String, keluargaLokal: KeluargaEntity, noKKBaru: String, isNgontrakBaru: Boolean, isGakinBaru: Boolean){
+        val keluargaUpdate = keluargaLokal.copy(
+            noKK = noKKBaru,
+            isNgontrak = isNgontrakBaru,
+            isGakin = isGakinBaru,
+            isSynced = true
+        )
+        keluargaDao.insertKeluargaLocal(keluargaUpdate)
+
+        try {
+            val request = KeluargaReq(
+                noKK = noKKBaru,
+                isNgontrak = isNgontrakBaru,
+                isGakin = isGakinBaru,
+            )
+            val response = apiService.putKeluarga(token, keluargaUpdate.serverId, request)
+
+            if (response.isSuccessful){
+                keluargaDao.updateKeluargaLocal(keluargaUpdate.copy(isSynced = true))
+            }
+
+        } catch (e: Exception){
+            println("Sedang offline, data keluarga disimpan di memori HP dulu.")
+
+        }
+
+    }
+
+
+}
