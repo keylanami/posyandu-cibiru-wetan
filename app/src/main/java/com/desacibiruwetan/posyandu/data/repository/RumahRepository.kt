@@ -105,6 +105,10 @@ class RumahRepository(
             val request = RumahRequest(alamat = alamatBaru, noRumah = noRumahBaru)
             val response = apiService.putRumah(token, rumahUpdate.serverId, request)
 
+            if (response.isSuccessful){
+                rumahDao.updateRumahLocal(rumahUpdate.copy(isSynced = true))
+            }
+
         } catch (e: Exception){
             println("Sedang offline, data rumah disimpan di memori HP dulu.")
         }
