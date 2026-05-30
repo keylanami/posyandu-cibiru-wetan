@@ -13,7 +13,9 @@ data class RumahEntity(
 
     val rtId: Int?= null,
     val noRumah: String,
-    val alamat: String,
+    val alamat: String?= null,
+    val createdAt: String?= null,
+    val updatedAt: String?= null,
 
     val isSynced: Boolean = false
 

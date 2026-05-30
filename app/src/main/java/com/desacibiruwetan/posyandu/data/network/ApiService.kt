@@ -3,10 +3,15 @@ package com.desacibiruwetan.posyandu.data.network
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
+import com.desacibiruwetan.posyandu.data.model.RumahData
+import com.desacibiruwetan.posyandu.data.model.RumahRequest
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -26,6 +31,34 @@ interface ApiService {
     suspend fun logout(
         @Header("Authorization") token: String
     ): Response<BaseResponse<Any>>
+
+
+    @GET("rumahs")
+    suspend fun getAllRumah(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<RumahData>>>
+
+    @GET("rumahs/{id}")
+    suspend fun getRumahById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<RumahData>>
+
+    @POST("rumahs")
+    suspend fun postRumah(
+        @Header("Authorization") token: String,
+        @Body request: RumahRequest
+    ): Response<BaseResponse<RumahData>>
+
+    @PUT("rumahs/{id}")
+    suspend fun putRumah(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: RumahRequest
+    ): Response<BaseResponse<RumahData>>
+
+
+
 
 
 

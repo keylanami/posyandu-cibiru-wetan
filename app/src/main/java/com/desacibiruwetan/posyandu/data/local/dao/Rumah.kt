@@ -26,4 +26,7 @@ interface RumahDao{
 
     @Query("delete from tabel_rumah")
     suspend fun deleteAllRumahLocal()
+
+    @Query("select * from tabel_rumah where localId = :id limit 1")
+    fun getRumahById(id: Int): Flow<RumahEntity>
 }
