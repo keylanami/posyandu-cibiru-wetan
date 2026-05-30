@@ -16,6 +16,10 @@ class KeluargaRepository(
         return keluargaDao.getAllKeluargaDao()
     }
 
+    fun getDetailKeluargaPerRumah(rumahId: Int): Flow<List<KeluargaEntity>>{
+        return keluargaDao.getKeluargaByRumahId(rumahId)
+    }
+
     suspend fun pullDataFromServer(token: String){
 
         try {
@@ -27,6 +31,7 @@ class KeluargaRepository(
                 dataServer.forEach { keluargaServer ->
                     val keluargaLokalBaru = KeluargaEntity(
                         serverId = keluargaServer.id,
+                        rumahId = keluargaServer.rumahId,
                         noKK = keluargaServer.noKK,
                         isNgontrak = keluargaServer.isNgontrak,
                         isGakin = keluargaServer.isGakin,
@@ -47,10 +52,11 @@ class KeluargaRepository(
 
     suspend fun addNewKeluarga(token: String, rumahId: Int, noKK: String, isNgontrak: Boolean, isGakin: Boolean){
         val entitasBaru = KeluargaEntity(
+            rumahId = rumahId,
             noKK = noKK,
             isNgontrak = isNgontrak,
             isGakin = isGakin,
-            isSynced = true
+            isSynced = false
         )
 
         val localIdBaru = keluargaDao.insertKeluargaLocal(entitasBaru)
@@ -86,25 +92,21 @@ class KeluargaRepository(
     }
 
 
-    fun getDetailKeluarga(rumahId: Int): Flow<KeluargaEntity>{
-        return keluargaDao.getKeluargaByRumahId(rumahId)
-    }
-
-
     suspend fun updateKeluarga(token: String, keluargaLokal: KeluargaEntity, noKKBaru: String, isNgontrakBaru: Boolean, isGakinBaru: Boolean){
         val keluargaUpdate = keluargaLokal.copy(
             noKK = noKKBaru,
             isNgontrak = isNgontrakBaru,
             isGakin = isGakinBaru,
-            isSynced = true
+            isSynced = false
         )
-        keluargaDao.insertKeluargaLocal(keluargaUpdate)
+        keluargaDao.updateKeluargaLocal(keluargaUpdate)
 
         try {
             val request = KeluargaReq(
                 noKK = noKKBaru,
                 isNgontrak = isNgontrakBaru,
                 isGakin = isGakinBaru,
+                rumahId = keluargaUpdate.rumahId
             )
             val response = apiService.putKeluarga(token, keluargaUpdate.serverId, request)
 

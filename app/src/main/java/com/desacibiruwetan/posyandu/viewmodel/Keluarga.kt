@@ -24,11 +24,11 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
         }
     }
 
-//    fun tambahKeluarga(token: String, noKk: String, isNgontrak: Boolean, isGakin: Boolean){
-//        viewModelScope.launch {
-//            repository.addNewKeluarga(token, isNgontrak, isGakin )
-//        }
-//    }
+    fun tambahKeluarga(token: String, rumahId: Int, noKk: String, isNgontrak: Boolean, isGakin: Boolean){
+        viewModelScope.launch {
+            repository.addNewKeluarga(token,  rumahId, noKk, isNgontrak, isGakin )
+        }
+    }
 
     fun updateKeluarga(token: String, keluargaLocal: KeluargaEntity, noKKBaru: String, isNgontrakBaru: Boolean, isGakinBaru: Boolean){
         viewModelScope.launch {
