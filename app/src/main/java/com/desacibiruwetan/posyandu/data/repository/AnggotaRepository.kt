@@ -20,7 +20,35 @@ class AnggotaRepository(
     }
 
     suspend fun pullDataFromServer(token: String) {
+        try {
+            val response = apiService.getAllAnggota("Bearer $token")
 
+            if (response.isSuccessful) {
+                val dataServer = response.body()?.data ?: emptyList()
+
+                dataServer.forEach { anggotaServer ->
+                    val anggotaLokalBaru = AnggotaEntity(
+                        serverId = anggotaServer.id,
+                        keluargaId = anggotaServer.keluargaId,
+                        nik = anggotaServer.nik,
+                        nama = anggotaServer.nama,
+                        tanggalLahir = anggotaServer.tanggalLahir,
+                        jenisKelamin = anggotaServer.jenisKelamin,
+                        pendidikanTerakhir = anggotaServer.pendidikanTerakhir,
+                        pekerjaan = anggotaServer.pekerjaan,
+                        noBpjs = anggotaServer.noBpjs,
+                        keterangan = anggotaServer.keterangan,
+                        createdAt = anggotaServer.createdAt,
+                        updatedAt = anggotaServer.updatedAt,
+                        isSynced = true
+                    )
+
+                    anggotaDao.insertAnggotaLocal(anggotaLokalBaru)
+                }
+            }
+        } catch (e: Exception) {
+            println("Gagal tarik data anggota dari server, pakai data lokal: ${e.localizedMessage}")
+        }
     }
 
 

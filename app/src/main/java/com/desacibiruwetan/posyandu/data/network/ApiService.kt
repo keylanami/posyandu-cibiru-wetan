@@ -90,6 +90,11 @@ interface ApiService {
     ): Response<BaseResponse<KeluargaData>>
 
 
+    @GET("anggotas")
+    suspend fun getAllAnggota(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<AnggotaData>>>
+
 
     @GET("anggotas/{id}")
     suspend fun getInfoAnggotaById(
