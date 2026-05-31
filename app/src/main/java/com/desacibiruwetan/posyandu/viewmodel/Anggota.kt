@@ -19,9 +19,10 @@ class AnggotaViewmodel(private val repository: AnggotaRepository): ViewModel() {
         initialValue =  emptyList()
     )
 
-    fun syncDataDariServer(token: String) {
+    fun syncDataAnggotaDariServer(token: String) {
          viewModelScope.launch { repository.pullDataFromServer(token) }
     }
+
 
     fun getAnggotaKeluarga(keluargaId: Int): Flow<List<AnggotaEntity>> {
         return repository.getDetailAnggotaPerKeluarga(keluargaId)
