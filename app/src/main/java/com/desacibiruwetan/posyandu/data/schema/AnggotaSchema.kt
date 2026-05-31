@@ -1,0 +1,31 @@
+package com.desacibiruwetan.posyandu.data.schema
+
+import com.squareup.moshi.Json
+
+data class AnggotaSchema(
+    val id: Int,
+    @Json(name = "keluarga_id")
+    val keluargaId: Int,
+    val nik: String,
+    val nama: String,
+
+    @Json(name = "tanggal_lahir")
+    val tanggalLahir: String,
+
+    @Json(name = "jenis_kelamin")
+    val jenisKelamin: String,
+
+    @Json(name = "pendidikan_terakhir")
+    val pendidikanTerakhir: String?= null,
+    val pekerjaan: String?= null,
+
+    @Json(name = "no_bpjs")
+    val noBpjs: String?= null,
+    val keterangan: String?= null,
+
+    @Json(name = "created_at")
+    val createdAt: String?= null,
+
+    @Json(name = "updated_at")
+    val updatedAt: String?= null
+)
