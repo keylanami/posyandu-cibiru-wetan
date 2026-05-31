@@ -6,8 +6,6 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class AnggotaReq(
 
-    val keluargaId: Int,
-
     val nik: String,
     val nama: String,
 

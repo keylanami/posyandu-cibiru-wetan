@@ -9,17 +9,32 @@ import kotlinx.coroutines.flow.Flow
 class AnggotaRepository(
     private val apiService: ApiService,
     private val anggotaDao: AnggotaDao
-){
+) {
 
     fun getAllAnggotaLocal(): Flow<List<AnggotaEntity>> {
         return anggotaDao.getAllAnggotaDao()
     }
 
-   fun getDetailAnggotaPerRumah(rumahId: Int): Flow<List<AnggotaEntity>>{
-       return anggotaDao.getAnggotaByKeluargaId(rumahId)
-   }
+    fun getDetailAnggotaPerKeluarga(keluargaId: Int): Flow<List<AnggotaEntity>> {
+        return anggotaDao.getAnggotaByKeluargaId(keluargaId)
+    }
 
-    suspend fun addNewAnggota(token: String, keluargaId: Int, nik: String, nama: String, tanggalLahir: String, jenisKelamin: String, pendidikanTerakhir: String, noBpjs: String, keterangan: String){
+    suspend fun pullDataFromServer(token: String) {
+
+    }
+
+
+    suspend fun addNewAnggota(
+        token: String,
+        keluargaId: Int,
+        nik: String,
+        nama: String,
+        tanggalLahir: String,
+        jenisKelamin: String,
+        pendidikanTerakhir: String,
+        noBpjs: String,
+        keterangan: String
+    ) {
         val entitasBaru = AnggotaEntity(
             keluargaId = keluargaId,
             nik = nik,
@@ -31,12 +46,11 @@ class AnggotaRepository(
             keterangan = keterangan,
             isSynced = false
         )
-        
+
         val localIdBaru = anggotaDao.insertAnggotaLocal(entitasBaru)
-        
+
         try {
             val request = AnggotaReq(
-                keluargaId = keluargaId,
                 nik = nik,
                 nama = nama,
                 tanggalLahir = tanggalLahir,
@@ -48,25 +62,35 @@ class AnggotaRepository(
             val response = apiService.postAnggota(token, keluargaId, request)
 
 
-            if (response.isSuccessful){
+            if (response.isSuccessful) {
                 val dataServer = response.body()?.data
 
-                if (dataServer!=null){
+                if (dataServer != null) {
                     val anggotaSukses = entitasBaru.copy(
                         localId = localIdBaru.toInt(),
                         serverId = dataServer.id,
                         isSynced = true
                     )
 
-                    anggotaDao.insertAnggotaLocal(anggotaSukses)
+                    anggotaDao.updateAnggotaLocal(anggotaSukses)
                 }
             }
-        } catch (e: Exception){
+        } catch (e: Exception) {
             println("Sedang offline, data anggota disimpan di memori HP dulu")
         }
     }
 
-    suspend fun updateAnggota(token: String, anggotaLokal: AnggotaEntity, nikBaru: String, namaBaru: String, tanggalLahirBaru: String, jenisKelaminBaru: String, pendidikanTerakhirBaru: String, noBpjsBaru: String, keteranganBaru: String){
+    suspend fun updateAnggota(
+        token: String,
+        anggotaLokal: AnggotaEntity,
+        nikBaru: String,
+        namaBaru: String,
+        tanggalLahirBaru: String,
+        jenisKelaminBaru: String,
+        pendidikanTerakhirBaru: String,
+        noBpjsBaru: String,
+        keteranganBaru: String
+    ) {
         val anggotaUpdate = anggotaLokal.copy(
             nik = nikBaru,
             nama = namaBaru,
@@ -80,26 +104,28 @@ class AnggotaRepository(
 
         anggotaDao.updateAnggotaLocal(anggotaUpdate)
 
-        try {
 
-            val request = AnggotaReq(
-                nik = nikBaru,
-                nama = namaBaru,
-                tanggalLahir = tanggalLahirBaru,
-                jenisKelamin = jenisKelaminBaru,
-                pendidikanTerakhir = pendidikanTerakhirBaru,
-                noBpjs = noBpjsBaru,
-                keterangan = keteranganBaru,
-                keluargaId = anggotaUpdate.keluargaId
-            )
+        if (anggotaUpdate.serverId != null) {
 
-            val response = apiService.putAnggotaId(token, anggotaUpdate.keluargaId, request)
+            try {
+                val request = AnggotaReq(
+                    nik = nikBaru,
+                    nama = namaBaru,
+                    tanggalLahir = tanggalLahirBaru,
+                    jenisKelamin = jenisKelaminBaru,
+                    pendidikanTerakhir = pendidikanTerakhirBaru,
+                    noBpjs = noBpjsBaru,
+                    keterangan = keteranganBaru
+                )
 
-            if (response.isSuccessful){
-                anggotaDao.updateAnggotaLocal(anggotaUpdate.copy(isSynced = true))
+                val response = apiService.putAnggotaId(token, anggotaUpdate.serverId, request)
+
+                if (response.isSuccessful) {
+                    anggotaDao.updateAnggotaLocal(anggotaUpdate.copy(isSynced = true))
+                }
+            } catch (e: Exception) {
+                println("Sedang offline, data anggota disimpan di memori HP dulu")
             }
-        } catch (e: Exception){
-            println("Sedang offline, data anggota disimpan di memori HP dulu")
         }
     }
 }
