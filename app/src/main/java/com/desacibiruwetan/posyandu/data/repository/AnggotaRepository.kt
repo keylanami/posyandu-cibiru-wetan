@@ -17,7 +17,7 @@ class AnggotaRepository(
 
     suspend fun pullDataFromServer(token: String) {
         try {
-            val response = apiService.getAllAnggota("Bearer $token")
+            val response = apiService.getAllAnggota(token)
             if (response.isSuccessful) {
                 val dataServer = response.body()?.data ?: emptyList()
                 dataServer.forEach { anggotaServer ->
