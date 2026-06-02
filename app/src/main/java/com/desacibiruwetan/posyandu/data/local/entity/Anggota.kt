@@ -16,8 +16,13 @@ data class AnggotaEntity(
     val pendidikanTerakhir: String?= null,
     val pekerjaan: String?= null,
     val noBpjs: String?= null,
+    val statusKeluarga: String,
+    val statusSipil: String,
+    val statusWarga: String,
     val keterangan: String?= null,
     val createdAt: String?= null,
     val updatedAt: String?= null,
-    val isSynced: Boolean = false
+    val isSynced: Boolean = false,
+    val usia: String,
+    val kategoriUsia: String
 )

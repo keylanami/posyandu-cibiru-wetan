@@ -29,15 +29,15 @@ class AnggotaViewmodel(private val repository: AnggotaRepository): ViewModel() {
     }
 
 
-    fun tambahAnggota(token: String, keluargaId: Int, nik: String, nama: String, tanggalLahir: String, jenisKelamin: String, pendidikanTerakhir: String, noBpjs: String, keterangan: String){
+    fun tambahAnggota(token: String, keluargaId: Int, nik: String, nama: String, tanggalLahir: String, jenisKelamin: String, pendidikanTerakhir: String, noBpjs: String, statusKeluarga: String, statusSipil: String, statusWarga: String, keterangan: String, usia: String, kategoriUsia: String){
         viewModelScope.launch {
-            repository.addNewAnggota(token, keluargaId, nik, nama, tanggalLahir, jenisKelamin, pendidikanTerakhir, noBpjs, keterangan)
+            repository.addNewAnggota(token, keluargaId, nik, nama, tanggalLahir, jenisKelamin, pendidikanTerakhir, noBpjs, statusKeluarga, statusSipil, statusWarga, keterangan, usia, kategoriUsia)
         }
     }
 
-    fun updateAnggota(token: String, anggotaLokal: AnggotaEntity, nikBaru: String, namaBaru: String, tanggalLahirBaru: String, jenisKelaminBaru: String, pendidikanTerakhirBaru: String, noBpjsBaru: String, keteranganBaru: String){
+    fun updateAnggota(token: String, anggotaLokal: AnggotaEntity, nikBaru: String, namaBaru: String, tanggalLahirBaru: String, jenisKelaminBaru: String, pendidikanTerakhirBaru: String, noBpjsBaru: String, keteranganBaru: String, statusKeluargaBaru: String, statusSipilBaru: String, statusWargaBaru: String, usiaBaru: String, kategoriUsiaBaru: String) {
         viewModelScope.launch {
-            repository.updateAnggota(token, anggotaLokal, nikBaru, namaBaru, tanggalLahirBaru, jenisKelaminBaru, pendidikanTerakhirBaru, noBpjsBaru, keteranganBaru)
+            repository.updateAnggota(token, anggotaLokal, nikBaru, namaBaru, tanggalLahirBaru, jenisKelaminBaru, pendidikanTerakhirBaru, noBpjsBaru, keteranganBaru, statusKeluargaBaru, statusSipilBaru, statusWargaBaru, usiaBaru, kategoriUsiaBaru)
         }
     }
 }
