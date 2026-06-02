@@ -10,6 +10,7 @@ import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.model.RumahData
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
+import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -31,6 +32,10 @@ interface ApiService {
         @Body request: RegisterRequest
     ): Response<BaseResponse<Any>>
 
+    @GET("user")
+    suspend fun getMe(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<UserSchema>>
 
     @POST("logout")
     suspend fun logout(

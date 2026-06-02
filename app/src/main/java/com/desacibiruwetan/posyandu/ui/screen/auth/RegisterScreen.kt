@@ -32,7 +32,6 @@ import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
 fun RegisterScreenWrapper(
-    onNavigateToPersonalization: () -> Unit,
     onNavigateToLogin: () -> Unit,
     viewmodel: AuthViewmodel
 ) {
@@ -42,9 +41,9 @@ fun RegisterScreenWrapper(
     LaunchedEffect(registerState) {
         when (registerState) {
             is UiState.Success -> {
-                Toast.makeText(context, "Pendaftaran Berhasil!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "Pendaftaran Berhasil! Silakan Login", Toast.LENGTH_SHORT).show()
                 viewmodel.resetRegisterState()
-                onNavigateToPersonalization()
+                onNavigateToLogin()
             }
 
             is UiState.Error -> {
@@ -66,7 +65,6 @@ fun RegisterScreenWrapper(
             }
         )
 
-        // Overlay Loading
         if (registerState is UiState.Loading) {
             Box(
                 modifier = Modifier

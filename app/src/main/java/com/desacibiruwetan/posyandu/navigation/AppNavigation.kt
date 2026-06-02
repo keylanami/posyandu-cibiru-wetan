@@ -100,11 +100,6 @@ fun AppNavigation() {
 
         composable(Screen.Register.route) {
             RegisterScreenWrapper(
-                onNavigateToPersonalization = {
-                    navController.navigate(Screen.Personalization.route) {
-                        popUpTo(Screen.Register.route) { inclusive = true }
-                    }
-                },
                 onNavigateToLogin = {
                     navController.popBackStack()
                 },

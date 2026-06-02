@@ -6,6 +6,7 @@ import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
+import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
@@ -46,6 +47,20 @@ class AuthRepository(private val apiService: ApiService) {
         }
     }
 
+    suspend fun getMe(token: String): Flow<UiState<BaseResponse<UserSchema>>> = flow { emit(UiState.Loading)
+        try {
+
+            val response = apiService.getMe("Bearer $token")
+
+            if (response.isSuccessful && response.body() != null) {
+                emit(UiState.Success(response.body()!!))
+            } else {
+                emit(UiState.Error("Gagal mengambil data user: ${response.message()}"))
+            }
+        } catch (e: Exception) {
+            emit(UiState.Error("Tidak ada internet: ${e.localizedMessage}"))
+        }
+    }
 
 
 
