@@ -53,7 +53,7 @@ class RumahRepository(
         val entitasBaru = RumahEntity(
             noRumah = noRumah,
             alamat = alamat,
-            isSynced = true
+            isSynced = false
         )
 
         val localIdBaru = rumahDao.insertRumahLocal(entitasBaru)
@@ -97,7 +97,7 @@ class RumahRepository(
         val rumahUpdate = rumahLokal.copy(
             alamat = alamatBaru,
             noRumah = noRumahBaru,
-            isSynced = true
+            isSynced = false
         )
         rumahDao.updateRumahLocal(rumahUpdate)
 
