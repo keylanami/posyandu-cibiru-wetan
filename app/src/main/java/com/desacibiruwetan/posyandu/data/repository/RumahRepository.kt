@@ -48,7 +48,7 @@ class RumahRepository(
 
 
     // to insert or save
-    suspend fun addNewRumah(token: String, alamat: String, noRumah: String){
+    suspend fun addNewRumah(token: String, alamat: String, noRumah: String): Long{
 
         val entitasBaru = RumahEntity(
             noRumah = noRumah,
@@ -83,7 +83,7 @@ class RumahRepository(
         } catch (e: Exception){
             println("Sedang offline, data rumah disimpan di memori HP dulu.")
         }
-
+        return localIdBaru
     }
 
 

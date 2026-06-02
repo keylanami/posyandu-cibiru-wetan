@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.viewmodel
 
+import android.service.notification.Condition.newId
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
@@ -24,9 +25,10 @@ class RumahViewmodel(private val repository: RumahRepository): ViewModel(){
     }
 
 
-    fun tambahRumah(token: String, alamat: String, noRumah: String){
+    fun tambahRumah(token: String, alamat: String, noRumah: String, onSuccess: (Int) -> Unit){
         viewModelScope.launch {
-            repository.addNewRumah(token, alamat, noRumah)
+            val newId = repository.addNewRumah(token, alamat, noRumah)
+            onSuccess(newId.toInt())
         }
     }
 

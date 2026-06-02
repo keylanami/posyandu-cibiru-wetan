@@ -20,7 +20,7 @@ class AnggotaViewmodel(private val repository: AnggotaRepository): ViewModel() {
     )
 
     fun syncDataAnggotaDariServer(token: String) {
-         viewModelScope.launch { repository.pullDataFromServer(token) }
+         viewModelScope.launch { repository.pullDataFromServer("Bearer $token") }
     }
 
 

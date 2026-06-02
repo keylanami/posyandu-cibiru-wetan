@@ -50,7 +50,7 @@ class KeluargaRepository(
     }
 
 
-    suspend fun addNewKeluarga(token: String, rumahId: Int, noKK: String, isNgontrak: Boolean, isGakin: Boolean){
+    suspend fun addNewKeluarga(token: String, rumahId: Int, noKK: String, isNgontrak: Boolean, isGakin: Boolean): Long{
         val entitasBaru = KeluargaEntity(
             rumahId = rumahId,
             noKK = noKK,
@@ -89,6 +89,7 @@ class KeluargaRepository(
             println("Sedang offline, data keluarga disimpan di memori HP dulu.")
 
         }
+        return localIdBaru
     }
 
 

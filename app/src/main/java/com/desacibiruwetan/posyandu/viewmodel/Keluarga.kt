@@ -24,9 +24,10 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
         }
     }
 
-    fun tambahKeluarga(token: String, rumahId: Int, noKk: String, isNgontrak: Boolean, isGakin: Boolean){
+    fun tambahKeluarga(token: String, rumahId: Int, noKk: String, isNgontrak: Boolean, isGakin: Boolean, onSuccess: (Int) -> Unit){
         viewModelScope.launch {
-            repository.addNewKeluarga(token,  rumahId, noKk, isNgontrak, isGakin )
+            val newId = repository.addNewKeluarga(token, rumahId, noKk, isNgontrak, isGakin)
+            onSuccess(newId.toInt())
         }
     }
 
