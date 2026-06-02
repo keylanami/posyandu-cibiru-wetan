@@ -23,14 +23,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
-
 @Composable
-fun InfoKependudukanCard(warga: DummyDetailWarga) {
+fun InfoKependudukanCard(warga: AnggotaEntity) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -62,37 +61,39 @@ fun InfoKependudukanCard(warga: DummyDetailWarga) {
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(Color(0xFFDCDCDC)))
+            Box(modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(Color(0xFFDCDCDC)))
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    InfoItem(label = "No Rumah", value = warga.noRumah)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "No Kartu Keluarga", value = warga.noKk)
-                    Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Tanggal Lahir", value = warga.tanggalLahir)
                     Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "Pekerjaan", value = warga.pekerjaan)
+                    InfoItem(label = "Status Keluarga", value = warga.statusKeluarga)
                     Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "No BPJS", value = warga.noBpjs)
+                    InfoItem(label = "Pekerjaan", value = warga.pekerjaan ?: "-")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    InfoItem(label = "No BPJS", value = warga.noBpjs ?: "-")
                 }
 
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
-                    InfoItem(label = "No keluarga", value = warga.noKeluarga)
+                    InfoItem(label = "Status Sipil", value = warga.statusSipil)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Spacer(modifier = Modifier.height(46.dp))
-                    InfoItem(label = "Pendidikan", value = warga.pendidikanTerakhir)
+                    InfoItem(label = "Status Warga", value = warga.statusWarga)
                     Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "Pendidikan", value = warga.statusGakin)
+                    InfoItem(label = "Pendidikan", value = warga.pendidikanTerakhir ?: "-")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    InfoItem(label = "ID Keluarga", value = warga.keluargaId.toString())
                 }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            InfoItem(label = "Keterangan", value = warga.keterangan)
+            InfoItem(label = "Keterangan", value = warga.keterangan ?: "-")
         }
     }
 }

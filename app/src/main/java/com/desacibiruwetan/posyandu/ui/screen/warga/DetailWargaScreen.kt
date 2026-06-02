@@ -22,13 +22,14 @@ import androidx.compose.material.icons.filled.PregnantWoman
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.desacibiruwetan.posyandu.data.model.MockData
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.items.InfoKependudukanCard
@@ -37,15 +38,16 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
-
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun DetailWargaScreen(
     onBackClick: () -> Unit,
-    nikWarga: String? = null
+    nikWarga: String? = null,
+    anggotaViewModel: AnggotaViewmodel
 ) {
-    val warga = MockData.listWarga.find { it.nik == nikWarga } ?: MockData.listWarga.first()
-
+    val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
+    val warga = listWargaAsli.find { it.nik == nikWarga }
 
     Scaffold(
         topBar = { AppTopBar(title = "Detail Warga", onBackClick = onBackClick) },
@@ -61,94 +63,95 @@ fun DetailWargaScreen(
         ) {
             Spacer(modifier = Modifier.height(32.dp))
 
-            Text(
-                text = warga.name,
-                fontFamily = Inter,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = Color(0xFF272727)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "NIK : ${warga.nik}",
-                fontFamily = Inter,
-                fontWeight = FontWeight.Medium,
-                fontSize = 15.sp,
-                color = Color(0xFFA1A1A1)
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-
-                val genderColor = if (warga.gender == "Laki-laki") Color(0xFF2C74B3) else Color(0xFFE94560)
-
-                BadgeInfo(text = warga.gender, bgColor = genderColor)
-                BadgeInfo(text = warga.rtRw, bgColor = PrimaryGreen)
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Column(modifier = Modifier.fillMaxWidth()) {
+            if (warga != null) {
                 Text(
-                    text = "Status Kesehatan",
+                    text = warga.nama,
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF272727)
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "NIK : ${warga.nik}",
                     fontFamily = Inter,
                     fontWeight = FontWeight.Medium,
                     fontSize = 15.sp,
-                    color = Color(0xFF272727)
+                    color = Color(0xFFA1A1A1)
                 )
-                Spacer(modifier = Modifier.height(12.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    StatusChip(
-                        text = "KB Aktif",
-                        icon = Icons.Default.FamilyRestroom,
-                        containerColor = Color(0xFFDF8B89),
-                        borderColor = Color(0xFF9A3F3C),
-                        contentColor = Color(0xFF9A3F3C)
-                    )
-                    StatusChip(
-                        text = "Balita",
-                        icon = Icons.Default.ChildCare,
-                        containerColor = Color(0xFFC7FFEC),
-                        borderColor = PrimaryGreen,
-                        contentColor = PrimaryGreen
-                    )
-                    StatusChip(
-                        text = "Bumil(negatif)",
-                        icon = Icons.Default.PregnantWoman,
-                        containerColor = Color(0xFFF9F9F9),
-                        borderColor = Color(0xFFACACAC),
-                        contentColor = Color(0xFFACACAC)
-                    )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    val genderColor =
+                        if (warga.jenisKelamin == "Laki-laki") Color(0xFF2C74B3) else Color(
+                            0xFFE94560
+                        )
+                    BadgeInfo(text = warga.jenisKelamin, bgColor = genderColor)
+                    BadgeInfo(text = "${warga.usia} Tahun", bgColor = PrimaryGreen)
                 }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        "Status Kesehatan",
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 15.sp,
+                        color = Color(0xFF272727)
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        StatusChip(
+                            text = "KB Aktif",
+                            icon = Icons.Default.FamilyRestroom,
+                            containerColor = Color(0xFFDF8B89),
+                            borderColor = Color(0xFF9A3F3C),
+                            contentColor = Color(0xFF9A3F3C)
+                        )
+                        StatusChip(
+                            text = "Balita",
+                            icon = Icons.Default.ChildCare,
+                            containerColor = Color(0xFFC7FFEC),
+                            borderColor = PrimaryGreen,
+                            contentColor = PrimaryGreen
+                        )
+                        StatusChip(
+                            text = "Bumil",
+                            icon = Icons.Default.PregnantWoman,
+                            containerColor = Color(0xFFF9F9F9),
+                            borderColor = Color(0xFFACACAC),
+                            contentColor = Color(0xFFACACAC)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                InfoKependudukanCard(warga = warga)
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                PrimaryButton(
+                    text = "Lengkapi Data Tambahan",
+                    icon = Icons.Default.AddCircleOutline,
+                    onClick = { /* TODO */ })
+                Spacer(modifier = Modifier.height(16.dp))
+                PrimaryButton(
+                    text = "Lihat Riwayat Kunjungan",
+                    icon = Icons.Default.History,
+                    containerColor = Color(0xFFD5D5D5),
+                    contentColor = Color(0xFF272727),
+                    onClick = { /* TODO */ })
+
+            } else {
+                Text("Data warga tidak ditemukan.", color = Color.Gray)
             }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            InfoKependudukanCard(warga = warga)
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            PrimaryButton(
-                text = "Lengkapi Data Tambahan",
-                icon = Icons.Default.AddCircleOutline,
-                onClick = { /* TODO */ }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            PrimaryButton(
-                text = "Lihat Riwayat Kunjungan",
-                icon = Icons.Default.History,
-                containerColor = Color(0xFFD5D5D5),
-                contentColor = Color(0xFF272727),
-                onClick = { /* TODO */ }
-            )
-
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
