@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -10,14 +11,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 
 // Import Network & Repository
+import com.desacibiruwetan.posyandu.data.local.database.AppDatabase
 import com.desacibiruwetan.posyandu.data.network.ApiConfig
+import com.desacibiruwetan.posyandu.data.repository.AnggotaRepository
 import com.desacibiruwetan.posyandu.data.repository.AuthRepository
+import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
+import com.desacibiruwetan.posyandu.data.repository.RumahRepository
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 
 // Import Screens
 import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
 import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
-import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreenWrapper // FIX: Ubah jadi Wrapper
+import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreenWrapper
 import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
 import com.desacibiruwetan.posyandu.ui.screen.profile.ProfilScreen
 import com.desacibiruwetan.posyandu.ui.screen.riwayat.RiwayatScreen
@@ -46,14 +54,46 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val database = AppDatabase.getDatabase(context)
+    val apiService = ApiConfig.getApiService()
 
     val authViewModel: AuthViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val apiService = ApiConfig.getApiService()
                 val repository = AuthRepository(apiService)
                 return AuthViewmodel(repository) as T
+            }
+        }
+    )
+
+    val rumahViewModel: RumahViewmodel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val repository = RumahRepository(apiService, database.rumahDao())
+                return RumahViewmodel(repository) as T
+            }
+        }
+    )
+
+    val keluargaViewModel: KeluargaViewmodel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val repository = KeluargaRepository(apiService, database.keluargaDao())
+                return KeluargaViewmodel(repository) as T
+            }
+        }
+    )
+
+    val anggotaViewModel: AnggotaViewmodel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val repository = AnggotaRepository(apiService, database.anggotaDao())
+                return AnggotaViewmodel(repository) as T
             }
         }
     )
@@ -82,13 +122,9 @@ fun AppNavigation() {
         navController = navController,
         startDestination = Screen.Login.route
     ) {
-
-
         composable(Screen.Login.route) {
             LoginScreenWrapper(
-                onNavigateToRegister = {
-                    navController.navigate(Screen.Register.route)
-                },
+                onNavigateToRegister = { navController.navigate(Screen.Register.route) },
                 onNavigateToDashboard = {
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(0) { inclusive = true }
@@ -100,9 +136,7 @@ fun AppNavigation() {
 
         composable(Screen.Register.route) {
             RegisterScreenWrapper(
-                onNavigateToLogin = {
-                    navController.popBackStack()
-                },
+                onNavigateToLogin = { navController.popBackStack() },
                 viewmodel = authViewModel
             )
         }
@@ -116,7 +150,6 @@ fun AppNavigation() {
                 }
             )
         }
-
 
         composable(Screen.Dashboard.route) {
             DashboardScreen(
@@ -137,8 +170,11 @@ fun AppNavigation() {
             CariWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 onAddWargaClick = { navController.navigate(Screen.TambahWarga.route) },
-                onNavigateToDetailWarga = { nikWarga -> navController.navigate(Screen.DetailWarga.route) },
-                onNavItemSelected = handleBottomNav
+                onNavigateToDetailWarga = { nikWarga ->
+                    navController.navigate("${Screen.DetailWarga.route}/$nikWarga")
+                },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel
             )
         }
 
@@ -153,7 +189,6 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    // TODO: Panggil viewmodel.logout(token) di dalam ProfilScreen
                     navController.navigate(Screen.Login.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -163,11 +198,20 @@ fun AppNavigation() {
         }
 
         composable(Screen.TambahWarga.route) {
-            TambahWargaScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            TambahWargaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel
+            )
         }
 
-        composable(Screen.DetailWarga.route) {
-            DetailWargaScreen(onBackClick = { navController.popBackStack() })
+        composable("${Screen.DetailWarga.route}/{nik}") { backStackEntry ->
+            val nik = backStackEntry.arguments?.getString("nik")
+            DetailWargaScreen(
+                onBackClick = { navController.popBackStack() },
+                nikWarga = nik,
+                anggotaViewModel = anggotaViewModel
+            )
         }
 
         composable(Screen.UpdateBalita.route) {
@@ -191,13 +235,17 @@ fun AppNavigation() {
         }
 
         composable(Screen.RumahKeluarga.route) {
-            RumahKeluargaScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            RumahKeluargaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                rumahViewModel = rumahViewModel,
+                keluargaViewModel = keluargaViewModel
+            )
         }
 
         composable(Screen.UpdateBumil.route) {
             UpdateBumilScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
         }
-
 
         composable(Screen.PilotStunting.route) {
             PilotStuntingScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
