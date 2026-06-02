@@ -1,18 +1,10 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -24,15 +16,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -47,35 +36,116 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
+import java.time.LocalDate
+import java.time.Period
+import java.time.format.DateTimeFormatter
+
+// FUNGSI VALIDASI INPUT TANGGAL (Pencegah Bug Hari & Bulan)
+fun isValidDateInput(input: String): Boolean {
+    if (input.isEmpty()) return true
+    if (!input.all { it.isDigit() }) return false
+    if (input.length > 8) return false
+
+    // Validasi Hari (Digit ke 1-2)
+    if (input.length >= 1 && input[0] > '3') return false // Gak bisa ketik 4X untuk hari
+    if (input.length >= 2) {
+        val day = input.substring(0, 2).toIntOrNull() ?: 0
+        if (day !in 1..31) return false // Cegah 00 atau 32
+    }
+
+    // Validasi Bulan (Digit ke 3-4)
+    if (input.length >= 3 && input[2] > '1') return false // Bulan gak bisa ketik 2X
+    if (input.length >= 4) {
+        val month = input.substring(2, 4).toIntOrNull() ?: 0
+        if (month !in 1..12) return false // Cegah 00 atau 13
+
+        // Validasi Hari berdasarkan Bulan (Misal: Februari maks 29, April maks 30)
+        val day = input.substring(0, 2).toIntOrNull() ?: 0
+        if (month == 2 && day > 29) return false
+        if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false
+    }
+
+    return true
+}
 
 @Composable
 fun TambahWargaScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    anggotaViewModel: AnggotaViewmodel
 ) {
-    // --- State Data Identitas ---
-    val rt = "04"
-    val rw = "02"
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
+    val token = if (rawToken.isNotEmpty()) "Bearer $rawToken" else ""
+    val userRt = sharedPreferences.getString("USER_RT", "04") ?: "04"
+    val userRw = sharedPreferences.getString("USER_RW", "02") ?: "02"
+
+    // --- State Data ---
     var noRumah by remember { mutableStateOf("") }
     var noKeluarga by remember { mutableStateOf("") }
     var noKk by remember { mutableStateOf("") }
     var namaLengkap by remember { mutableStateOf("") }
-    var jenisKelamin by remember { mutableStateOf("") }
+    var jenisKelamin by remember { mutableStateOf("Laki-laki") }
     var nik by remember { mutableStateOf("") }
-    var tanggalLahir by remember { mutableStateOf("") }
-    var statusKeluarga by remember { mutableStateOf("") }
+    var tanggalLahirRaw by remember { mutableStateOf("") }
 
-    // --- State Data Sosial ---
+    var statusKeluarga by remember { mutableStateOf("") }
+    var statusSipil by remember { mutableStateOf("") }
     var pendidikan by remember { mutableStateOf("") }
     var pekerjaan by remember { mutableStateOf("") }
     var noBpjs by remember { mutableStateOf("") }
     var kategoriGakin by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
 
-    // Option Lists
-    val statusKeluargaOptions = listOf("Kepala Keluarga", "Istri", "Anak")
+    val statusKeluargaOptions = listOf(
+        "Kepala Keluarga",
+        "Suami",
+        "Istri",
+        "Anak",
+        "Menantu",
+        "Cucu",
+        "Orang Tua",
+        "Mertua",
+        "Famili Lain",
+        "Pembantu",
+        "Lainnya"
+    )
+    val statusSipilOptions =
+        listOf("Belum Kawin", "Kawin Tercatat", "Kawin Belum Tercatat", "Cerai Hidup", "Cerai Mati")
     val pendidikanOptions = listOf("Tidak Sekolah", "SD", "SMP", "SMA", "Diploma", "S1", "S2", "S3")
     val gakinOptions = listOf("Non GAKIN (Mampu)", "GAKIN (Keluarga Miskin)")
+
+    // Penghitung Usia & Kategori Usia Otomatis
+    fun prosesDataLahir(rawInput: String): Triple<String, String, String> {
+        if (rawInput.length != 8) return Triple("", "", "")
+        return try {
+            val formatterInput = DateTimeFormatter.ofPattern("ddMMyyyy")
+            val birthDate = LocalDate.parse(rawInput, formatterInput)
+            val currentDate = LocalDate.now()
+            val period = Period.between(birthDate, currentDate)
+
+            val formatApi = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+            val apiDateString = birthDate.format(formatApi)
+            val usiaString = period.years.toString()
+            val kategori = when {
+                period.years < 5 -> "Balita"
+                period.years in 5..11 -> "Anak-anak"
+                period.years in 12..25 -> "Remaja"
+                period.years in 26..45 -> "Dewasa"
+                period.years in 46..65 -> "Lansia"
+                else -> "Manula"
+            }
+            Triple(apiDateString, usiaString, kategori)
+        } catch (e: Exception) {
+            Triple(
+                "",
+                "",
+                ""
+            ) // Akan dipanggil kalau ada input aneh seperti 29 Feb di tahun bukan kabisat
+        }
+    }
 
     Scaffold(
         topBar = { AppTopBar(title = "Tambah Warga Baru", onBackClick = onBackClick) },
@@ -92,7 +162,7 @@ fun TambahWargaScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Data Identitas",
+                "Data Identitas",
                 fontFamily = Inter,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -111,14 +181,14 @@ fun TambahWargaScreen(
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                         AppTextField(
                             label = "RT",
-                            value = rt,
+                            value = userRt,
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier.weight(1f)
                         )
                         AppTextField(
                             label = "RW",
-                            value = rw,
+                            value = userRw,
                             onValueChange = {},
                             readOnly = true,
                             modifier = Modifier.weight(1f)
@@ -132,18 +202,16 @@ fun TambahWargaScreen(
                             placeholder = "00",
                             keyboardType = KeyboardType.Number,
                             modifier = Modifier.weight(1f),
-                            onValueChange = { if (it.all { char -> char.isDigit() }) noRumah = it }
-                        )
+                            onValueChange = { if (it.all { char -> char.isDigit() }) noRumah = it })
                         AppTextField(
-                            label = "No Keluarga",
+                            label = "Keluarga ID",
                             value = noKeluarga,
                             placeholder = "00",
                             keyboardType = KeyboardType.Number,
                             modifier = Modifier.weight(1f),
                             onValueChange = {
                                 if (it.all { char -> char.isDigit() }) noKeluarga = it
-                            }
-                        )
+                            })
                     }
 
                     AppTextField(
@@ -151,22 +219,16 @@ fun TambahWargaScreen(
                         value = noKk,
                         placeholder = "Masukkan Nomor Kartu Keluarga",
                         keyboardType = KeyboardType.Number,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) noKk = it }
-                    )
-
+                        onValueChange = { if (it.all { char -> char.isDigit() }) noKk = it })
                     AppTextField(
                         label = "Nama Lengkap",
                         value = namaLengkap,
                         placeholder = "Masukkan Nama Lengkap",
-                        onValueChange = { if (it.length <= 100) namaLengkap = it }
-                    )
+                        onValueChange = { if (it.length <= 100) namaLengkap = it })
 
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 12.dp)
-                    ) {
+                    Column(modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp)) {
                         Text(text = "Jenis Kelamin", style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(8.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -188,18 +250,19 @@ fun TambahWargaScreen(
                         keyboardType = KeyboardType.Number,
                         onValueChange = {
                             if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
-                        }
-                    )
+                        })
 
+                    // PENERAPAN VALIDASI TANGGAL LAHIR
                     AppTextField(
                         label = "Tanggal Lahir",
-                        value = tanggalLahir,
+                        value = tanggalLahirRaw,
                         placeholder = "dd/mm/yyyy",
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
-                        onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalLahir =
-                                it
+                        onValueChange = { newValue ->
+                            if (isValidDateInput(newValue)) {
+                                tanggalLahirRaw = newValue
+                            }
                         }
                     )
 
@@ -208,14 +271,18 @@ fun TambahWargaScreen(
                         value = statusKeluarga,
                         options = statusKeluargaOptions,
                         onValueChange = { statusKeluarga = it })
+                    AppDropdownField(
+                        label = "Status Sipil",
+                        value = statusSipil,
+                        options = statusSipilOptions,
+                        onValueChange = { statusSipil = it })
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
             Text(
-                text = "Data Sosial",
+                "Data Sosial",
                 fontFamily = Inter,
                 fontWeight = FontWeight.Bold,
                 fontSize = 20.sp,
@@ -236,46 +303,84 @@ fun TambahWargaScreen(
                         value = pendidikan,
                         options = pendidikanOptions,
                         onValueChange = { pendidikan = it })
-
                     AppTextField(
                         label = "Pekerjaan",
                         value = pekerjaan,
                         placeholder = "Contoh: Buruh, Pedagang, PNS",
                         onValueChange = { pekerjaan = it })
-
                     AppTextField(
                         label = "No BPJS",
                         value = noBpjs,
                         placeholder = "Masukkan nomor BPJS",
                         keyboardType = KeyboardType.Number,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) noBpjs = it }
-                    )
-
+                        onValueChange = { if (it.all { char -> char.isDigit() }) noBpjs = it })
                     AppDropdownField(
                         label = "Kategori GAKIN",
                         value = kategoriGakin,
                         options = gakinOptions,
                         onValueChange = { kategoriGakin = it })
-
                     AppTextField(
                         label = "Keterangan Tambahan",
                         value = keterangan,
                         placeholder = "Tambah catatan jika diperlukan...",
                         singleLine = false,
-                        onValueChange = { keterangan = it }
-                    )
+                        onValueChange = { keterangan = it })
                 }
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
             PrimaryButton(
                 text = "Simpan Warga Baru",
                 icon = Icons.Default.AddCircleOutline,
                 onClick = {
-                    // TODO: Validasi form dan proses simpan data ke Backend/Room Database
-                    println("Simpan Data: $namaLengkap, $nik, $tanggalLahir")
+                    if (nik.length < 16) {
+                        Toast.makeText(context, "NIK harus 16 digit!", Toast.LENGTH_SHORT).show()
+                        return@PrimaryButton
+                    }
+                    if (tanggalLahirRaw.length < 8) {
+                        Toast.makeText(
+                            context,
+                            "Lengkapi Tanggal Lahir (8 digit)!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@PrimaryButton
+                    }
+
+                    // Hitung Usia dan Ekstrak Tanggal
+                    val (apiDate, calculatedUsia, calculatedKategori) = prosesDataLahir(
+                        tanggalLahirRaw
+                    )
+
+                    if (apiDate.isEmpty()) {
+                        Toast.makeText(
+                            context,
+                            "Format tanggal lahir tidak sesuai kalender!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@PrimaryButton
+                    }
+
+                    val keluargaId = noKeluarga.toIntOrNull() ?: 1
+
+                    anggotaViewModel.tambahAnggota(
+                        token = token,
+                        keluargaId = keluargaId,
+                        nik = nik,
+                        nama = namaLengkap,
+                        tanggalLahir = apiDate,
+                        jenisKelamin = jenisKelamin,
+                        pendidikanTerakhir = pendidikan,
+                        noBpjs = noBpjs,
+                        statusKeluarga = statusKeluarga,
+                        statusSipil = statusSipil,
+                        statusWarga = "Aktif",
+                        keterangan = keterangan,
+                        usia = calculatedUsia,
+                        kategoriUsia = calculatedKategori
+                    )
+                    Toast.makeText(context, "Anggota berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                    onBackClick()
                 }
             )
 
