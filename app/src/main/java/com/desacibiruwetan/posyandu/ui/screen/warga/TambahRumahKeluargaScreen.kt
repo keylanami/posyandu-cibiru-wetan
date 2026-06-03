@@ -32,8 +32,7 @@ fun RumahKeluargaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     rumahViewModel: RumahViewmodel,
-    keluargaViewModel: KeluargaViewmodel,
-    userName: String
+    keluargaViewModel: KeluargaViewmodel
 ) {
     val context = LocalContext.current
 

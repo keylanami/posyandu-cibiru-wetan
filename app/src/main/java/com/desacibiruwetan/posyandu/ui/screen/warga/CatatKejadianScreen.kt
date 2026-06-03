@@ -61,7 +61,9 @@ import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 
 @Composable
 fun CatatKejadianScreen(
-    onBackClick: () -> Unit, onNavItemSelected: (Int) -> Unit, userName: String
+    onBackClick: () -> Unit,
+    onNavItemSelected: (Int) -> Unit,
+
 ) {
 
     var showDialog by remember { mutableStateOf(false) }

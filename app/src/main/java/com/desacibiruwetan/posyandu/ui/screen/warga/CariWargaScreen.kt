@@ -26,7 +26,6 @@ fun CariWargaScreen(
     onNavigateToDetailWarga: (String) -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
-    userName: String?
 ) {
     var searchQuery by remember { mutableStateOf("") }
 

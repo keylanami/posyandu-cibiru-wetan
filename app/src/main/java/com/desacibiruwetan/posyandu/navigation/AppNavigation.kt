@@ -30,7 +30,6 @@ import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 
 // Import Screens
 import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
-import com.desacibiruwetan.posyandu.ui.screen.auth.PersonalizationScreen
 import com.desacibiruwetan.posyandu.ui.screen.auth.RegisterScreenWrapper
 import com.desacibiruwetan.posyandu.ui.screen.beranda.DashboardScreen
 import com.desacibiruwetan.posyandu.ui.screen.profile.ProfilScreen
@@ -56,7 +55,6 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
-import androidx.core.content.edit
 
 @Composable
 fun AppNavigation() {
@@ -101,15 +99,23 @@ fun AppNavigation() {
 
     val getMeState by authViewModel.getMeState.collectAsState()
 
-
     fun safeFormatToken(rawToken: String): String {
         return if (rawToken.startsWith("Bearer ")) rawToken else "Bearer $rawToken"
     }
 
+    // 1. TARIK DATA SAAT APLIKASI PERTAMA KALI DIBUKA (Auto Login)
     LaunchedEffect(Unit) {
         val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
         if (rawToken.isNotEmpty()) {
-            authViewModel.getMe(safeFormatToken(rawToken))
+            val formattedToken = safeFormatToken(rawToken)
+
+            // Ping Session
+            authViewModel.getMe(formattedToken)
+
+            // FIX: TRIGGER SINKRONISASI DATA API -> KE SQLITE (ROOM)
+            rumahViewModel.syncDataRumah(formattedToken)
+            keluargaViewModel.syncDataKeluarga(formattedToken)
+            anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
         }
     }
 
@@ -148,7 +154,13 @@ fun AppNavigation() {
                 onNavigateToDashboard = {
                     val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
                     if (rawToken.isNotEmpty()) {
-                        authViewModel.getMe(safeFormatToken(rawToken))
+                        val formattedToken = safeFormatToken(rawToken)
+                        authViewModel.getMe(formattedToken)
+
+                        // FIX: TRIGGER SINKRONISASI SETELAH LOGIN SUKSES
+                        rumahViewModel.syncDataRumah(formattedToken)
+                        keluargaViewModel.syncDataKeluarga(formattedToken)
+                        anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
                     }
 
                     navController.navigate(Screen.Dashboard.route) {
@@ -164,12 +176,6 @@ fun AppNavigation() {
                 onNavigateToLogin = { navController.popBackStack() },
                 viewmodel = authViewModel
             )
-        }
-
-        composable(Screen.Personalization.route) {
-            PersonalizationScreen(onComplete = {
-                navController.navigate(Screen.Dashboard.route) { popUpTo(0) { inclusive = true } }
-            })
         }
 
         composable(Screen.Dashboard.route) {
@@ -195,9 +201,7 @@ fun AppNavigation() {
                 onAddWargaClick = { navController.navigate(Screen.TambahWarga.route) },
                 onNavigateToDetailWarga = { nikWarga -> navController.navigate("${Screen.DetailWarga.route}/$nikWarga") },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel,
-                userName = userName,
-
+                anggotaViewModel = anggotaViewModel
             )
         }
 
@@ -213,7 +217,7 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    sharedPreferences.edit { clear() }
+                    sharedPreferences.edit().clear().apply()
                     navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
                 },
                 onNavItemSelected = handleBottomNav,
@@ -225,8 +229,7 @@ fun AppNavigation() {
             TambahWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel,
-                userName = userName
+                anggotaViewModel = anggotaViewModel
             )
         }
 
@@ -235,8 +238,7 @@ fun AppNavigation() {
             DetailWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 nikWarga = nik,
-                anggotaViewModel = anggotaViewModel,
-                userName = userName
+                anggotaViewModel = anggotaViewModel
             )
         }
 
@@ -264,8 +266,7 @@ fun AppNavigation() {
         composable(Screen.CatatKejadian.route) {
             CatatKejadianScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = handleBottomNav,
-                userName = userName
+                onNavItemSelected = handleBottomNav
             )
         }
         composable(Screen.AdministrasiRt.route) {
@@ -280,8 +281,7 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 rumahViewModel = rumahViewModel,
-                keluargaViewModel = keluargaViewModel,
-                userName = userName
+                keluargaViewModel = keluargaViewModel
             )
         }
         composable(Screen.UpdateBumil.route) {
