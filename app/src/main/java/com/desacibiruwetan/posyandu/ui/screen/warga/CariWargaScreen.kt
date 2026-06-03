@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -28,6 +30,12 @@ fun CariWargaScreen(
     anggotaViewModel: AnggotaViewmodel,
 ) {
     var searchQuery by remember { mutableStateOf("") }
+
+    val context = LocalContext.current
+    val sharedPreferences = remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
+    val userRt = sharedPreferences.getString("USER_RT", "00") ?: "00"
+    val userRw = sharedPreferences.getString("USER_RW", "00") ?: "00"
+    val displayRtRw = "RT $userRt / RW $userRw"
 
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
 
@@ -83,7 +91,7 @@ fun CariWargaScreen(
                         WargaItemCard(
                             name = warga.nama,
                             nik = warga.nik,
-                            rtRw = warga.statusKeluarga,
+                            rtRw = displayRtRw,
                             onClick = { onNavigateToDetailWarga(warga.nik) }
                         )
                     }

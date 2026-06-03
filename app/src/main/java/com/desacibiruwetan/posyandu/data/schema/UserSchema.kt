@@ -11,6 +11,9 @@ data class UserSchema(
     val phoneNumber: String,
     val email: String,
 
+    val rt: String? = null,
+    val rw: String? = null,
+
     @Json(name = "email_verified_at")
     val emailVerifiedAt: String?,
 

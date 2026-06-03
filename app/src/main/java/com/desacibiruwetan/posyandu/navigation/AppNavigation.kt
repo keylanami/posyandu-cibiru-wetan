@@ -55,6 +55,7 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
+import androidx.core.content.edit
 
 @Composable
 fun AppNavigation() {
@@ -103,22 +104,6 @@ fun AppNavigation() {
         return if (rawToken.startsWith("Bearer ")) rawToken else "Bearer $rawToken"
     }
 
-    // 1. TARIK DATA SAAT APLIKASI PERTAMA KALI DIBUKA (Auto Login)
-    LaunchedEffect(Unit) {
-        val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
-        if (rawToken.isNotEmpty()) {
-            val formattedToken = safeFormatToken(rawToken)
-
-            // Ping Session
-            authViewModel.getMe(formattedToken)
-
-            // FIX: TRIGGER SINKRONISASI DATA API -> KE SQLITE (ROOM)
-            rumahViewModel.syncDataRumah(formattedToken)
-            keluargaViewModel.syncDataKeluarga(formattedToken)
-            anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
-        }
-    }
-
     val userName = when (val state = getMeState) {
         is UiState.Success -> {
             val email = state.data.data?.email ?: ""
@@ -152,17 +137,6 @@ fun AppNavigation() {
             LoginScreenWrapper(
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) },
                 onNavigateToDashboard = {
-                    val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
-                    if (rawToken.isNotEmpty()) {
-                        val formattedToken = safeFormatToken(rawToken)
-                        authViewModel.getMe(formattedToken)
-
-                        // FIX: TRIGGER SINKRONISASI SETELAH LOGIN SUKSES
-                        rumahViewModel.syncDataRumah(formattedToken)
-                        keluargaViewModel.syncDataKeluarga(formattedToken)
-                        anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
-                    }
-
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -179,6 +153,18 @@ fun AppNavigation() {
         }
 
         composable(Screen.Dashboard.route) {
+            LaunchedEffect(Unit) {
+                val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
+                if (rawToken.isNotEmpty()) {
+                    val formattedToken = safeFormatToken(rawToken)
+
+                    authViewModel.getMe(formattedToken)
+                    rumahViewModel.syncDataRumah(formattedToken)
+                    keluargaViewModel.syncDataKeluarga(formattedToken)
+                    anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
+                }
+            }
+
             DashboardScreen(
                 onNavigateToCariWarga = { navController.navigate(Screen.Warga.route) },
                 onNavigateToCatatKejadian = { navController.navigate(Screen.CatatKejadian.route) },
@@ -217,7 +203,7 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    sharedPreferences.edit().clear().apply()
+                    sharedPreferences.edit { clear() }
                     navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
                 },
                 onNavItemSelected = handleBottomNav,

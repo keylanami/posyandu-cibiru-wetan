@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.components.dialog
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,30 +16,42 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
-import com.desacibiruwetan.posyandu.data.model.MockData
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.items.WargaItemCard
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun SearchWargaDialog(
-    onDismiss: () -> Unit, onWargaSelected: (DummyDetailWarga) -> Unit
+    onDismiss: () -> Unit,
+    onWargaSelected: (AnggotaEntity) -> Unit,
+    anggotaViewModel: AnggotaViewmodel
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val filteredWarga = remember(searchQuery) {
-        MockData.listWarga.filter {
-            it.name.contains(searchQuery, ignoreCase = true) || it.nik.contains(searchQuery)
+    val context = LocalContext.current
+    val sharedPreferences = remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
+    val userRt = sharedPreferences.getString("USER_RT", "00") ?: "00"
+    val userRw = sharedPreferences.getString("USER_RW", "00") ?: "00"
+    val displayRtRw = "RT $userRt / RW $userRw"
+
+    val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
+
+    val filteredWarga = remember(searchQuery, listWargaAsli) {
+        listWargaAsli.filter {
+            it.nama.contains(searchQuery, ignoreCase = true) || it.nik.contains(searchQuery)
         }
     }
 
@@ -73,10 +86,14 @@ fun SearchWargaDialog(
                 ) {
                     items(filteredWarga) { warga ->
                         WargaItemCard(
-                            name = warga.name, nik = warga.nik, rtRw = warga.rtRw, onClick = {
+                            name = warga.nama,
+                            nik = warga.nik,
+                            rtRw = displayRtRw,
+                            onClick = {
                                 onWargaSelected(warga)
                                 onDismiss()
-                            })
+                            }
+                        )
                     }
                 }
             }

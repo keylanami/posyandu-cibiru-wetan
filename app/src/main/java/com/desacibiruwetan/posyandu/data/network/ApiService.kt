@@ -45,7 +45,7 @@ interface ApiService {
 
     @GET("rumahs")
     suspend fun getAllRumah(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
     ): Response<BaseResponse<List<RumahData>>>
 
     @GET("rumahs/{id}")
