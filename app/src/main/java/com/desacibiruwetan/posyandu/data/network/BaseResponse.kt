@@ -9,5 +9,5 @@ data class BaseResponse<T>(
     val success: Boolean,
     val message: String,
     val data: T?,
-    val error: Any?= null
+    val errors: Any?= null
 )
