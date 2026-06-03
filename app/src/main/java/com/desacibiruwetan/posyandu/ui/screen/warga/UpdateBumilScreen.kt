@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -23,16 +24,18 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun UpdateBumilScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String
+    userName: String,
+    anggotaViewmodel: AnggotaViewmodel
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
-    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
+    var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
     var namaIbu by remember { mutableStateOf("") }
     var namaSuami by remember { mutableStateOf("") }
@@ -47,16 +50,18 @@ fun UpdateBumilScreen(
     var sedangMenyusui by remember { mutableStateOf(false) }
     var keterangan by remember { mutableStateOf("") }
 
+
     if (showDialog) {
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
                 selectedWarga = warga
-                namaIbu = warga.name
-                namaSuami = warga.namaPasangan
-                noKk = warga.noKk
-                nik = warga.nik
-            }
+                namaIbu = warga.nama
+                // namaSuami = warga.namaPasangan
+                // noKk = warga.noKk
+                 nik = warga.nik
+            },
+            anggotaViewModel = anggotaViewmodel
         )
     }
 
@@ -78,7 +83,7 @@ fun UpdateBumilScreen(
             Box(modifier = Modifier.clickable { showDialog = true }) {
                 if (selectedWarga != null) {
                     UpdateHeaderCard(
-                        name = selectedWarga!!.name,
+                        name = selectedWarga!!.nama,
                         icon = Icons.Default.PregnantWoman
                     ) {
                         Spacer(modifier = Modifier.height(24.dp))

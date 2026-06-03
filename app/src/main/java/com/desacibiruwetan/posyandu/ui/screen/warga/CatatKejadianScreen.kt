@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -58,16 +59,18 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun CatatKejadianScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
+    anggotaViewmodel: AnggotaViewmodel
 
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
-    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
+    var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
     val categories =
         listOf("Kelahiran", "Pindah Keluar", "Pindah Masuk", "Nikah", "Cerai", "Meninggal")
@@ -97,14 +100,17 @@ fun CatatKejadianScreen(
             onWargaSelected = { warga ->
                 selectedWarga = warga
 
-                if (warga.gender == "Perempuan") {
-                    namaIbu = warga.name
-                    namaAyah = warga.namaPasangan
+                if (warga.jenisKelamin == "Perempuan") {
+                    namaIbu = warga.nama
+                    namaAyah = warga.nama
                 } else {
-                    namaAyah = warga.name
-                    namaIbu = warga.namaPasangan
+                    namaAyah = warga.nama
+                    namaIbu = warga.nama
                 }
-            })
+
+            },
+            anggotaViewModel = anggotaViewmodel
+        )
     }
 
 
@@ -126,7 +132,7 @@ fun CatatKejadianScreen(
                 if (selectedWarga != null) {
                     UpdateHeaderCard(
                         title = "Catat kejadian untuk",
-                        name = selectedWarga!!.name,
+                        name = selectedWarga!!.nama,
                         icon = Icons.Default.EditNote
                     )
                 } else {

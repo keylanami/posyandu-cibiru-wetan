@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -34,16 +35,18 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun UpdateKbScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String
+    userName: String,
+    anggotaViewmodel: AnggotaViewmodel
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
-    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
+    var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
     var namaWarga by remember { mutableStateOf("") }
     var jenisKb by remember { mutableStateOf("") }
@@ -51,15 +54,18 @@ fun UpdateKbScreen(
     var statusAktif by remember { mutableStateOf(true) }
     var keterangan by remember { mutableStateOf("") }
 
+
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
+
 
     if (showDialog) {
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
                 selectedWarga = warga
-                namaWarga = warga.name
-            }
+                namaWarga = warga.nama
+            },
+            anggotaViewModel = anggotaViewmodel
         )
     }
 
@@ -93,7 +99,7 @@ fun UpdateKbScreen(
                 if (selectedWarga != null) {
                     UpdateHeaderCard(
                         title = "Update untuk",
-                        name = selectedWarga!!.name,
+                        name = selectedWarga!!.nama,
                         icon = Icons.Default.People
                     ) {
                         Spacer(modifier = Modifier.height(24.dp))

@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
@@ -38,15 +39,17 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun UpdateWusPusScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String
+    userName: String,
+    anggotaViewmodel: AnggotaViewmodel
 ) {
     var showDialog by remember { mutableStateOf(false) }
-    var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }
+    var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
     var namaWarga by remember { mutableStateOf("") }
     var namaPasangan by remember { mutableStateOf("") }
@@ -54,16 +57,18 @@ fun UpdateWusPusScreen(
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
 
+
     if (showDialog) {
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
                 selectedWarga = warga
-                namaWarga = warga.name
-                namaPasangan = warga.namaPasangan
-            }
+                namaWarga = warga.nama
+            },
+            anggotaViewModel = anggotaViewmodel
         )
     }
+
 
     Scaffold(
         topBar = {
@@ -93,7 +98,7 @@ fun UpdateWusPusScreen(
                 if (selectedWarga != null) {
                     UpdateHeaderCard(
                         title = "Update untuk",
-                        name = selectedWarga!!.name,
+                        name = selectedWarga!!.nama,
                         icon = Icons.Default.Female
                     ) {
                         Spacer(modifier = Modifier.height(24.dp))
