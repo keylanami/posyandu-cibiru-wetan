@@ -73,7 +73,8 @@ fun isValidDateInput(input: String): Boolean {
 fun TambahWargaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    anggotaViewModel: AnggotaViewmodel
+    anggotaViewModel: AnggotaViewmodel,
+    userName: String
 ) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)

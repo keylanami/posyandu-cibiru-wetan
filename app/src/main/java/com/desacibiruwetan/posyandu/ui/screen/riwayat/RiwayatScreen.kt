@@ -28,7 +28,8 @@ data class DummyRiwayat(
 @Composable
 fun RiwayatScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ) {
     val listRiwayat = remember {
         listOf(

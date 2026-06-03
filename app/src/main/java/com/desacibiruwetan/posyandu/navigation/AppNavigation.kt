@@ -1,6 +1,11 @@
 package com.desacibiruwetan.posyandu.navigation
 
+import android.content.Context
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -13,6 +18,7 @@ import androidx.navigation.compose.rememberNavController
 // Import Network & Repository
 import com.desacibiruwetan.posyandu.data.local.database.AppDatabase
 import com.desacibiruwetan.posyandu.data.network.ApiConfig
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.data.repository.AnggotaRepository
 import com.desacibiruwetan.posyandu.data.repository.AuthRepository
 import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
@@ -50,6 +56,7 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
+import androidx.core.content.edit
 
 @Composable
 fun AppNavigation() {
@@ -57,46 +64,64 @@ fun AppNavigation() {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
     val apiService = ApiConfig.getApiService()
+    val sharedPreferences =
+        remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
 
     val authViewModel: AuthViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repository = AuthRepository(apiService)
-                return AuthViewmodel(repository) as T
-            }
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                AuthViewmodel(AuthRepository(apiService)) as T
         }
     )
 
     val rumahViewModel: RumahViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repository = RumahRepository(apiService, database.rumahDao())
-                return RumahViewmodel(repository) as T
-            }
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                RumahViewmodel(RumahRepository(apiService, database.rumahDao())) as T
         }
     )
 
     val keluargaViewModel: KeluargaViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repository = KeluargaRepository(apiService, database.keluargaDao())
-                return KeluargaViewmodel(repository) as T
-            }
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                KeluargaViewmodel(KeluargaRepository(apiService, database.keluargaDao())) as T
         }
     )
 
     val anggotaViewModel: AnggotaViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
-            override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                val repository = AnggotaRepository(apiService, database.anggotaDao())
-                return AnggotaViewmodel(repository) as T
-            }
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao())) as T
         }
     )
+
+    val getMeState by authViewModel.getMeState.collectAsState()
+
+
+    fun safeFormatToken(rawToken: String): String {
+        return if (rawToken.startsWith("Bearer ")) rawToken else "Bearer $rawToken"
+    }
+
+    LaunchedEffect(Unit) {
+        val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
+        if (rawToken.isNotEmpty()) {
+            authViewModel.getMe(safeFormatToken(rawToken))
+        }
+    }
+
+    val userName = when (val state = getMeState) {
+        is UiState.Success -> {
+            val email = state.data.data?.email ?: ""
+            if (email.contains("@")) email.substringBefore("@") else email.ifEmpty { "Kader" }
+        }
+
+        is UiState.Loading -> "Memuat..."
+        else -> "Kader"
+    }
 
     val handleBottomNav: (Int) -> Unit = { index ->
         val route = when (index) {
@@ -109,23 +134,23 @@ fun AppNavigation() {
 
         if (route != null) {
             navController.navigate(route) {
-                popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
-                }
+                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                 launchSingleTop = true
                 restoreState = true
             }
         }
     }
 
-    NavHost(
-        navController = navController,
-        startDestination = Screen.Login.route
-    ) {
+    NavHost(navController = navController, startDestination = Screen.Login.route) {
         composable(Screen.Login.route) {
             LoginScreenWrapper(
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) },
                 onNavigateToDashboard = {
+                    val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
+                    if (rawToken.isNotEmpty()) {
+                        authViewModel.getMe(safeFormatToken(rawToken))
+                    }
+
                     navController.navigate(Screen.Dashboard.route) {
                         popUpTo(0) { inclusive = true }
                     }
@@ -142,13 +167,9 @@ fun AppNavigation() {
         }
 
         composable(Screen.Personalization.route) {
-            PersonalizationScreen(
-                onComplete = {
-                    navController.navigate(Screen.Dashboard.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
-                }
-            )
+            PersonalizationScreen(onComplete = {
+                navController.navigate(Screen.Dashboard.route) { popUpTo(0) { inclusive = true } }
+            })
         }
 
         composable(Screen.Dashboard.route) {
@@ -162,7 +183,9 @@ fun AppNavigation() {
                 onNavigateToBumil = { navController.navigate(Screen.UpdateBumil.route) },
                 onNavigateToRumahKeluarga = { navController.navigate(Screen.RumahKeluarga.route) },
                 onNavigateToPilot = { route -> navController.navigate(route) },
-                onNavItemSelected = handleBottomNav
+                onNavItemSelected = handleBottomNav,
+                authViewModel = authViewModel,
+                userName = userName
             )
         }
 
@@ -170,18 +193,19 @@ fun AppNavigation() {
             CariWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 onAddWargaClick = { navController.navigate(Screen.TambahWarga.route) },
-                onNavigateToDetailWarga = { nikWarga ->
-                    navController.navigate("${Screen.DetailWarga.route}/$nikWarga")
-                },
+                onNavigateToDetailWarga = { nikWarga -> navController.navigate("${Screen.DetailWarga.route}/$nikWarga") },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                userName = userName,
+
             )
         }
 
         composable(Screen.Riwayat.route) {
             RiwayatScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = handleBottomNav
+                onNavItemSelected = handleBottomNav,
+                userName = userName
             )
         }
 
@@ -189,11 +213,11 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    navController.navigate(Screen.Login.route) {
-                        popUpTo(0) { inclusive = true }
-                    }
+                    sharedPreferences.edit { clear() }
+                    navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
                 },
-                onNavItemSelected = handleBottomNav
+                onNavItemSelected = handleBottomNav,
+                authViewModel = authViewModel
             )
         }
 
@@ -201,7 +225,8 @@ fun AppNavigation() {
             TambahWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                userName = userName
             )
         }
 
@@ -210,69 +235,124 @@ fun AppNavigation() {
             DetailWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 nikWarga = nik,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                userName = userName
             )
         }
 
         composable(Screen.UpdateBalita.route) {
-            UpdateBalitaScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            UpdateBalitaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
-
         composable(Screen.UpdateKb.route) {
-            UpdateKbScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            UpdateKbScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
-
         composable(Screen.UpdateWusPus.route) {
-            UpdateWusPusScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            UpdateWusPusScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
-
         composable(Screen.CatatKejadian.route) {
-            CatatKejadianScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            CatatKejadianScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
-
         composable(Screen.AdministrasiRt.route) {
-            AdministrasiRtScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            AdministrasiRtScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
-
         composable(Screen.RumahKeluarga.route) {
             RumahKeluargaScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 rumahViewModel = rumahViewModel,
-                keluargaViewModel = keluargaViewModel
+                keluargaViewModel = keluargaViewModel,
+                userName = userName
             )
         }
-
         composable(Screen.UpdateBumil.route) {
-            UpdateBumilScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            UpdateBumilScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
-
         composable(Screen.PilotStunting.route) {
-            PilotStuntingScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotStuntingScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotPhbs.route) {
-            PilotPHBSScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotPHBSScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotKia.route) {
-            PilotKesBuNakScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotKesBuNakScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotKebakaran.route) {
-            PilotSiagaKebakaraanScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotSiagaKebakaraanScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotBencana.route) {
-            PilotBencanaAlamScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotBencanaAlamScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotLingkungan.route) {
-            PilotPeduliLingkunganScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotPeduliLingkunganScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotKeluargaSehat.route) {
-            PilotKelSehatBerkualitasScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotKelSehatBerkualitasScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotKeuangan.route) {
-            PilotKeuanganSehatScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotKeuanganSehatScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
         composable(Screen.PilotKesehatanPus.route) {
-            PilotKesehatanPusScreen(onBackClick = { navController.popBackStack() }, onNavItemSelected = handleBottomNav)
+            PilotKesehatanPusScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                userName = userName
+            )
         }
     }
 }

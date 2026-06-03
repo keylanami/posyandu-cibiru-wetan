@@ -6,7 +6,6 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class UserSchema(
     val id: Int,
-    val name: String,
 
     @Json(name = "phone_number")
     val phoneNumber: String,

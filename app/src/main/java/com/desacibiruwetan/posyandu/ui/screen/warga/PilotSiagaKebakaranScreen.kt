@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,7 +28,8 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 @Composable
 fun PilotSiagaKebakaraanScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ){
 
 //    Kebakaran Rumah Tangga

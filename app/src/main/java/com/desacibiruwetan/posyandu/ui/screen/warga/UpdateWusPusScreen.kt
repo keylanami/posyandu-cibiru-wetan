@@ -42,7 +42,8 @@ import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 @Composable
 fun UpdateWusPusScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<DummyDetailWarga?>(null) }

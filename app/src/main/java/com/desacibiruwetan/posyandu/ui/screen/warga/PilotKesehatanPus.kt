@@ -28,7 +28,8 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 @Composable
 fun PilotKesehatanPusScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ){
 
     var ibuMelahirkanBayiSehat by remember { mutableStateOf("") }

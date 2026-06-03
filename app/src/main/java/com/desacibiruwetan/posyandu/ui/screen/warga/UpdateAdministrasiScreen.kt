@@ -32,7 +32,8 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 @Composable
 fun AdministrasiRtScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ) {
 
     var bulan by remember { mutableStateOf("") }

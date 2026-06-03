@@ -2,14 +2,12 @@ package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -18,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
@@ -35,7 +32,8 @@ fun RumahKeluargaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     rumahViewModel: RumahViewmodel,
-    keluargaViewModel: KeluargaViewmodel
+    keluargaViewModel: KeluargaViewmodel,
+    userName: String
 ) {
     val context = LocalContext.current
 

@@ -56,7 +56,8 @@ import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 @Composable
 fun UpdateBalitaScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ) {
 
     var showDialog by remember { mutableStateOf(false) }

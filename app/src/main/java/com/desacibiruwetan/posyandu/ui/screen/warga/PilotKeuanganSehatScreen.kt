@@ -28,7 +28,8 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 @Composable
 fun PilotKeuanganSehatScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ){
 
 

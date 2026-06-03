@@ -50,7 +50,7 @@ class AuthRepository(private val apiService: ApiService) {
     suspend fun getMe(token: String): Flow<UiState<BaseResponse<UserSchema>>> = flow { emit(UiState.Loading)
         try {
 
-            val response = apiService.getMe(token)
+            val response = apiService.getMe("Bearer $token")
 
             if (response.isSuccessful && response.body() != null) {
                 emit(UiState.Success(response.body()!!))

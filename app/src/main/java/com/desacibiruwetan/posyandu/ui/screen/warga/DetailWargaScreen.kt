@@ -44,7 +44,8 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 fun DetailWargaScreen(
     onBackClick: () -> Unit,
     nikWarga: String? = null,
-    anggotaViewModel: AnggotaViewmodel
+    anggotaViewModel: AnggotaViewmodel,
+    userName: String
 ) {
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
     val warga = listWargaAsli.find { it.nik == nikWarga }

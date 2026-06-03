@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
-import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Face
@@ -53,6 +52,7 @@ import com.desacibiruwetan.posyandu.ui.components.items.RecentHistoryItem
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
 fun DashboardScreen(
@@ -65,7 +65,9 @@ fun DashboardScreen(
     onNavigateToBumil: () -> Unit,
     onNavigateToRumahKeluarga: () -> Unit,
     onNavigateToPilot: (String) -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    authViewModel: AuthViewmodel,
+    userName: String
 ) {
     var showPilotDialog by remember { mutableStateOf(false) }
 
@@ -73,7 +75,6 @@ fun DashboardScreen(
         PilotSelectionDialog(
             onDismiss = { showPilotDialog = false },
             onOptionSelected = { option ->
-                println("Pilot terpilih: $option")
                 showPilotDialog = false
                 val route = when (option) {
                     "Peduli Stunting" -> Screen.PilotStunting.route
@@ -104,10 +105,7 @@ fun DashboardScreen(
                 .padding(bottom = paddingValues.calculateBottomPadding())
                 .verticalScroll(rememberScrollState())
         ) {
-
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
+            Box(modifier = Modifier.fillMaxWidth()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -118,9 +116,7 @@ fun DashboardScreen(
                         )
                 )
 
-                Column(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
+                Column(modifier = Modifier.fillMaxWidth()) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -142,8 +138,9 @@ fun DashboardScreen(
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
+
                         Text(
-                            text = "Joan",
+                            text = userName, // Langsung tampilkan
                             fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,
@@ -178,16 +175,16 @@ fun DashboardScreen(
                                 horizontalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
                                 LargeActionCard(
-                                    title = "Cari Warga",
-                                    icon = Icons.Default.People,
-                                    iconBgColor = Color(0xFFC7FFEC),
+                                    "Cari Warga",
+                                    Icons.Default.People,
+                                    Color(0xFFC7FFEC),
                                     onClick = onNavigateToCariWarga,
                                     modifier = Modifier.weight(1f)
                                 )
                                 LargeActionCard(
-                                    title = "Rumah & Keluarga",
-                                    icon = Icons.Default.Home,
-                                    iconBgColor = Color(0xFFC7FFEC),
+                                    "Rumah & Keluarga",
+                                    Icons.Default.Home,
+                                    Color(0xFFC7FFEC),
                                     onClick = onNavigateToRumahKeluarga,
                                     modifier = Modifier.weight(1f)
                                 )
@@ -201,14 +198,13 @@ fun DashboardScreen(
 
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
                 Text(
-                    text = "Perbarui Data",
+                    "Perbarui Data",
                     fontFamily = Inter,
                     fontWeight = FontWeight.Bold,
                     fontSize = 13.sp,
                     color = Color(0xFF272727)
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -238,7 +234,6 @@ fun DashboardScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -267,7 +262,6 @@ fun DashboardScreen(
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -284,24 +278,17 @@ fun DashboardScreen(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-
-
-
-
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(123.dp)
-                        .background(
-                            Color(0xFF1B9E75),
-                            RoundedCornerShape(15.dp)
-                        )
+                        .background(Color(0xFF1B9E75), RoundedCornerShape(15.dp))
                         .padding(24.dp),
                     contentAlignment = Alignment.CenterStart
                 ) {
                     Column {
                         Text(
-                            text = "Data akurat, warga sejahtera",
+                            "Data akurat, warga sejahtera",
                             fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 20.sp,
@@ -309,7 +296,7 @@ fun DashboardScreen(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
+                            "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
                             fontFamily = Inter,
                             fontWeight = FontWeight.Normal,
                             fontSize = 12.sp,
@@ -318,15 +305,7 @@ fun DashboardScreen(
                     }
                 }
 
-
-
-
-
                 Spacer(modifier = Modifier.height(32.dp))
-
-
-
-
 
                 Box(
                     modifier = Modifier
@@ -337,27 +316,26 @@ fun DashboardScreen(
                 ) {
                     Column {
                         Text(
-                            text = "Riwayat Terbaru",
+                            "Riwayat Terbaru",
                             fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 13.sp,
                             color = Color(0xFF272727)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-
                         RecentHistoryItem(
-                            title = "Catat kejadian",
-                            subtitle = "Kelahiran - Sumarsih",
-                            date = "10 Mei 2026",
-                            icon = Icons.AutoMirrored.Filled.Assignment,
-                            iconBgColor = Color(0xFFFFFFC7)
+                            "Catat kejadian",
+                            "Kelahiran - Sumarsih",
+                            "10 Mei 2026",
+                            Icons.AutoMirrored.Filled.Assignment,
+                            Color(0xFFFFFFC7)
                         )
                         RecentHistoryItem(
-                            title = "Catat kejadian",
-                            subtitle = "Wafat - Mulyodawg",
-                            date = "11 Mei 2026",
-                            icon = Icons.AutoMirrored.Filled.Assignment,
-                            iconBgColor = Color(0xFFFFFFC7)
+                            "Catat kejadian",
+                            "Wafat - Mulyodawg",
+                            "11 Mei 2026",
+                            Icons.AutoMirrored.Filled.Assignment,
+                            Color(0xFFFFFFC7)
                         )
                     }
                 }

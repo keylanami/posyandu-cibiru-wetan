@@ -28,7 +28,8 @@ import androidx.compose.runtime.setValue
 @Composable
 fun PilotPeduliLingkunganScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit
+    onNavItemSelected: (Int) -> Unit,
+    userName: String
 ){
 //
 //    Keluarga Punya Bak Sampah
