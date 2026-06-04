@@ -84,20 +84,6 @@ fun AppTopBar(
                     color = SurfaceWhite
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Box(
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape)
-                        .background(Color.White.copy(alpha = 0.2f)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "User Profile",
-                        tint = SurfaceWhite,
-                        modifier = Modifier.size(18.dp)
-                    )
-                }
             }
         }
     }

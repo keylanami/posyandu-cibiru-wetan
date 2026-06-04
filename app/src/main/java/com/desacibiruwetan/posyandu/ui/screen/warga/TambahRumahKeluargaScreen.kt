@@ -8,7 +8,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Female
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -27,6 +33,7 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RumahKeluargaScreen(
     onBackClick: () -> Unit,
@@ -43,9 +50,15 @@ fun RumahKeluargaScreen(
     var namaWarga by remember { mutableStateOf("") }
     var noRumah by remember { mutableStateOf("") }
     var alamat by remember { mutableStateOf("") }
-    var rt by remember { mutableStateOf("04") }
-    var rw by remember { mutableStateOf("02") }
+
+    val listKeluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
+
+    val rt = sharedPreferences.getString("USER_RT", "00") ?: "00"
+    val rw = sharedPreferences.getString("USER_RW", "00") ?: "00"
+
     var noKk by remember { mutableStateOf("") }
+    var expandedKK by remember { mutableStateOf(false) }
+
     var isNgontrak by remember { mutableStateOf(false) }
     var isGakin by remember { mutableStateOf(false) }
 
@@ -107,12 +120,59 @@ fun RumahKeluargaScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             FormSectionCard(title = "Data Keluarga") {
-                AppTextField(
-                    label = "No KK",
-                    value = noKk,
-                    keyboardType = KeyboardType.Number,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) noKk = it }
+
+                Text(
+                    text = "Pilih Nomor Kartu Keluarga (KK)",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
                 )
+
+
+                ExposedDropdownMenuBox(
+                    expanded = expandedKK,
+                    onExpandedChange = { expandedKK = !expandedKK },
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    OutlinedTextField(
+                        value = noKk,
+                        onValueChange = {},
+                        readOnly = true,
+                        label = { Text("No KK") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKK)
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedContainerColor = BgMint,
+                            unfocusedContainerColor = BgMint
+                        ),
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth()
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = expandedKK,
+                        onDismissRequest = { expandedKK = false }
+                    ) {
+                        if (listKeluarga.isEmpty()) {
+                            DropdownMenuItem(
+                                text = { Text("Data Kosong (Lakukan Sinkronisasi)") },
+                                onClick = { expandedKK = false }
+                            )
+                        } else {
+                            listKeluarga.forEach { keluarga ->
+                                DropdownMenuItem(
+                                    text = { Text(keluarga.noKK) },
+                                    onClick = {
+                                        noKk = keluarga.noKK
+                                        expandedKK = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
 
                 Column(modifier = Modifier
                     .fillMaxWidth()
