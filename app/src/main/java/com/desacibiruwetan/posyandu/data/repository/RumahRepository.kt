@@ -25,7 +25,7 @@ class RumahRepository(
     suspend fun pullDataFromServer(token: String){
         Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
-            val response = apiService.getAllRumah(token)
+            val response = apiService.getAllRumah("Bearer $token")
             Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
             if (response.isSuccessful) {
                 val dataServer = response.body()?.data ?: emptyList()

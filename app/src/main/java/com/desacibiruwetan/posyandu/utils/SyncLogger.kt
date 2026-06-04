@@ -18,7 +18,7 @@ suspend fun syncAllAndLog(
     Log.d(TAG, "Token: Bearer ${token.take(8)}...")
 
     try {
-        rumahRepo.pullDataFromServer("Bearer $token")
+        rumahRepo.pullDataFromServer(token)
         val rumah = rumahRepo.getAllRumahLocal().first()
         Log.d(TAG, "Rumah    => ${rumah.size} data")
         rumah.forEach { Log.d(TAG, "  rumah id=${it.localId} serverId=${it.serverId} noRumah=${it.noRumah} synced=${it.isSynced}") }

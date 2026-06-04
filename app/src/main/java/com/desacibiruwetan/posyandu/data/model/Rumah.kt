@@ -19,7 +19,7 @@ data class RumahData(
     @Json(name = "rt_id")
     val rtId: Int,
 
-    @Json(name = "nomor_rumah")
+    @Json(name = "no_rumah")
     val nomorRumah: String,
 
     val alamat: String?= null,
