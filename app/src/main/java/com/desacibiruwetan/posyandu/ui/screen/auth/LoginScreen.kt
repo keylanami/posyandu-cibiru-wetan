@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.auth
 
+import android.content.Context
 import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
@@ -34,6 +35,7 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PosyanduCibiruTheme
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
+import androidx.core.content.edit
 
 @Composable
 fun LoginScreenWrapper(
@@ -49,6 +51,15 @@ fun LoginScreenWrapper(
     LaunchedEffect(loginState) {
         when (loginState) {
             is UiState.Success -> {
+                val loginData = (loginState as UiState.Success).data.data
+                if (loginData != null) {
+                    val prefs = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+                    prefs.edit {
+                        putString("TOKEN", loginData.token)
+                            .putString("USER_RT", loginData.user.rt ?: "")
+                            .putString("USER_RW", loginData.user.rw ?: "")
+                    }
+                }
                 Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
                 viewmodel.resetLoginState()
                 onNavigateToDashboard()
@@ -82,7 +93,7 @@ fun LoginScreenWrapper(
             PosyanduCibiruTheme(darkTheme = targetTheme) {
                 LoginScreen(
                     isDarkTheme = targetTheme,
-                    isLoading = loginState is UiState.Loading, // Pass loading state
+                    isLoading = loginState is UiState.Loading,
                     onThemeToggle = { isDarkTheme = !isDarkTheme },
                     onNavigateToRegister = onNavigateToRegister,
                     onLoginSubmit = { email, password ->
