@@ -232,27 +232,31 @@ fun AppNavigation() {
             UpdateBalitaScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
+                userName = userName,
+                anggotaViewModel = anggotaViewModel
             )
         }
         composable(Screen.UpdateKb.route) {
             UpdateKbScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
+                userName = userName,
+                anggotaViewModel = anggotaViewModel
             )
         }
         composable(Screen.UpdateWusPus.route) {
             UpdateWusPusScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
+                userName = userName,
+                anggotaViewModel = anggotaViewModel
             )
         }
         composable(Screen.CatatKejadian.route) {
             CatatKejadianScreen(
                 onBackClick = { navController.popBackStack() },
-                onNavItemSelected = handleBottomNav
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel
             )
         }
         composable(Screen.AdministrasiRt.route) {
@@ -274,7 +278,8 @@ fun AppNavigation() {
             UpdateBumilScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
+                userName = userName,
+                anggotaViewModel = anggotaViewModel
             )
         }
         composable(Screen.PilotStunting.route) {

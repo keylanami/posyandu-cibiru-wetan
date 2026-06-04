@@ -1,10 +1,13 @@
 package com.desacibiruwetan.posyandu.data.repository
 
+import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
+
+private const val TAG = "AnggotaRepo"
 
 class AnggotaRepository(
     private val apiService: ApiService, private val anggotaDao: AnggotaDao
@@ -16,11 +19,17 @@ class AnggotaRepository(
         anggotaDao.getAnggotaByKeluargaId(keluargaId)
 
     suspend fun pullDataFromServer(token: String) {
+        Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
             val response = apiService.getAllAnggota(token)
+            Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
             if (response.isSuccessful) {
-                val dataServer = response.body()?.data ?: emptyList()
-                dataServer.forEach { anggotaServer ->
+                val dataServer = response.body()?.data
+                Log.d(TAG, "data dari server: ${dataServer?.size ?: "null"} item")
+                if (!dataServer.isNullOrEmpty()) {
+                    anggotaDao.deleteAllAnggotaLocal()
+                }
+                dataServer?.forEach { anggotaServer ->
                     val anggotaLokalBaru = AnggotaEntity(
                         serverId = anggotaServer.id,
                         keluargaId = anggotaServer.keluargaId,
@@ -43,9 +52,12 @@ class AnggotaRepository(
                     )
                     anggotaDao.insertAnggotaLocal(anggotaLokalBaru)
                 }
+                Log.d(TAG, "sync selesai, ${dataServer?.size ?: 0} anggota tersimpan")
+            } else {
+                Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
             }
         } catch (e: Exception) {
-            println("Gagal tarik data anggota dari server: ${e.localizedMessage}")
+            Log.e(TAG, "exception: ${e.localizedMessage}", e)
         }
     }
 
@@ -57,6 +69,7 @@ class AnggotaRepository(
         tanggalLahir: String,
         jenisKelamin: String,
         pendidikanTerakhir: String,
+        pekerjaan: String,
         noBpjs: String,
         keterangan: String,
         statusKeluarga: String,
@@ -72,6 +85,7 @@ class AnggotaRepository(
             tanggalLahir = tanggalLahir,
             jenisKelamin = jenisKelamin,
             pendidikanTerakhir = pendidikanTerakhir,
+            pekerjaan = pekerjaan,
             noBpjs = noBpjs,
             statusKeluarga = statusKeluarga,
             statusSipil = statusSipil,
@@ -93,7 +107,9 @@ class AnggotaRepository(
                 noBpjs = noBpjs,
                 keterangan = keterangan,
                 statusKeluarga = statusKeluarga,
-                statusSipil = statusSipil
+                statusSipil = statusSipil,
+                statusWarga = statusWarga,
+                pekerjaan = pekerjaan
             )
             val response = apiService.postAnggota(token, keluargaId, request)
 
@@ -117,6 +133,7 @@ class AnggotaRepository(
         tanggalLahirBaru: String,
         jenisKelaminBaru: String,
         pendidikanTerakhirBaru: String,
+        pekerjaanBaru: String,
         noBpjsBaru: String,
         keteranganBaru: String,
         statusKeluargaBaru: String,
@@ -131,6 +148,7 @@ class AnggotaRepository(
             tanggalLahir = tanggalLahirBaru,
             jenisKelamin = jenisKelaminBaru,
             pendidikanTerakhir = pendidikanTerakhirBaru,
+            pekerjaan = pekerjaanBaru,
             noBpjs = noBpjsBaru,
             keterangan = keteranganBaru,
             statusKeluarga = statusKeluargaBaru,
@@ -153,7 +171,9 @@ class AnggotaRepository(
                     noBpjs = noBpjsBaru,
                     keterangan = keteranganBaru,
                     statusKeluarga = statusKeluargaBaru,
-                    statusSipil = statusSipilBaru
+                    statusSipil = statusSipilBaru,
+                    statusWarga = statusWargaBaru,
+                    pekerjaan = pekerjaanBaru
                 )
                 val response = apiService.putAnggotaId(token, anggotaUpdate.serverId, request)
                 if (response.isSuccessful) {

@@ -1,10 +1,13 @@
 package com.desacibiruwetan.posyandu.data.repository
 
+import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
+
+private const val TAG = "RumahRepo"
 
 
 class RumahRepository(
@@ -20,10 +23,13 @@ class RumahRepository(
 
     // to sync
     suspend fun pullDataFromServer(token: String){
+        Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
             val response = apiService.getAllRumah(token)
+            Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
             if (response.isSuccessful) {
                 val dataServer = response.body()?.data ?: emptyList()
+                Log.d(TAG, "data dari server: ${dataServer.size} item")
 
                 dataServer.forEach { rumahServer ->
                     val rumahLokalBaru = RumahEntity(
@@ -37,12 +43,13 @@ class RumahRepository(
                     )
 
                     rumahDao.insertRumahLocal(rumahLokalBaru)
-
                 }
+                Log.d(TAG, "sync selesai, ${dataServer.size} rumah tersimpan")
+            } else {
+                Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
             }
-
         } catch(e: Exception){
-            println("Gagal tarik server, pakai data lokal: ${e.localizedMessage}")
+            Log.e(TAG, "exception: ${e.localizedMessage}", e)
         }
     }
 

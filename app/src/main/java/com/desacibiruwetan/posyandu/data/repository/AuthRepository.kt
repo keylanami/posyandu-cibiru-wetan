@@ -68,7 +68,7 @@ class AuthRepository(private val apiService: ApiService) {
         emit(UiState.Loading)
 
         try {
-            val response = apiService.logout(token)
+            val response = apiService.logout("Bearer $token")
 
             if (response.isSuccessful && response.body() != null) {
                 emit(UiState.Success(response.body()!!))

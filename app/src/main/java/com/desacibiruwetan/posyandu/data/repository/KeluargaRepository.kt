@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.data.repository
 
+import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
@@ -7,6 +8,8 @@ import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
 
+
+private const val TAG = "KeluargaRepo"
 class KeluargaRepository(
     private val apiService: ApiService,
     private val keluargaDao: KeluargaDao
@@ -21,12 +24,14 @@ class KeluargaRepository(
     }
 
     suspend fun pullDataFromServer(token: String){
-
+        Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
             val response = apiService.getAllKeluarga(token)
+            Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
 
             if (response.isSuccessful){
                 val dataServer = response.body()?.data ?: emptyList()
+                Log.d(TAG, "data dari server: ${dataServer.size} item")
 
                 dataServer.forEach { keluargaServer ->
                     val keluargaLokalBaru = KeluargaEntity(
@@ -42,6 +47,9 @@ class KeluargaRepository(
 
                     keluargaDao.insertKeluargaLocal(keluargaLokalBaru)
                 }
+                Log.d(TAG, "sync selesai, ${dataServer.size} keluarga tersimpan")
+            } else {
+                Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
             }
 
         } catch (e: Exception){
@@ -80,7 +88,7 @@ class KeluargaRepository(
                         isSynced = true
                     )
 
-                    keluargaDao.insertKeluargaLocal(keluargaSukses)
+                    keluargaDao.updateKeluargaLocal(keluargaSukses)
 
                 }
             }

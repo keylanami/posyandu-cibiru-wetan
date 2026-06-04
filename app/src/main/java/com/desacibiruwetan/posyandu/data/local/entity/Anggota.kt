@@ -18,11 +18,11 @@ data class AnggotaEntity(
     val noBpjs: String?= null,
     val statusKeluarga: String,
     val statusSipil: String,
-    val statusWarga: String,
+    val statusWarga: String? = null,
     val keterangan: String?= null,
     val createdAt: String?= null,
     val updatedAt: String?= null,
     val isSynced: Boolean = false,
-    val usia: String,
-    val kategoriUsia: String
+    val usia: String? = null,
+    val kategoriUsia: String? = null
 )

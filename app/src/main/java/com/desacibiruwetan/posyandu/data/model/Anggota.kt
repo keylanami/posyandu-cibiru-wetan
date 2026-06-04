@@ -26,6 +26,11 @@ data class AnggotaReq(
 
     @Json(name = "status_sipil")
     val statusSipil: String,
+
+    @Json(name = "status_warga")
+    val statusWarga: String,
+
+    val pekerjaan: String?= null,
     val keterangan: String? = null,
 )
 
