@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Face
@@ -21,6 +22,8 @@ import com.desacibiruwetan.posyandu.ui.components.items.WargaItemCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
+private const val PAGE_SIZE = 10
+
 @Composable
 fun CariWargaScreen(
     onBackClick: () -> Unit,
@@ -30,19 +33,48 @@ fun CariWargaScreen(
     anggotaViewModel: AnggotaViewmodel,
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var loadedCount by remember { mutableIntStateOf(PAGE_SIZE) }
 
     val context = LocalContext.current
     val sharedPreferences = remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
+    val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
     val userRt = sharedPreferences.getString("USER_RT", "00") ?: "00"
     val userRw = sharedPreferences.getString("USER_RW", "00") ?: "00"
     val displayRtRw = "RT $userRt / RW $userRw"
 
+    LaunchedEffect(Unit) {
+        if (rawToken.isNotEmpty()) {
+            anggotaViewModel.syncDataAnggotaDariServer("Bearer $rawToken")
+        }
+    }
+
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
 
     val filteredWarga = remember(searchQuery, listWargaAsli) {
-        listWargaAsli.filter { anggota ->
-            anggota.nama.contains(searchQuery, ignoreCase = true) ||
-                    anggota.nik.contains(searchQuery)
+        if (searchQuery.isBlank()) {
+            listWargaAsli
+        } else {
+            listWargaAsli.filter { anggota ->
+                anggota.nama.contains(searchQuery, ignoreCase = true) ||
+                        anggota.nik.contains(searchQuery)
+            }
+        }
+    }
+
+    // reset pagination kalau query berubah
+    LaunchedEffect(searchQuery) { loadedCount = PAGE_SIZE }
+
+    val displayedWarga = remember(filteredWarga, loadedCount) {
+        filteredWarga.take(loadedCount)
+    }
+
+    val listState = rememberLazyListState()
+
+    // load more ketika item terakhir terlihat
+    val lastVisibleIndex by remember { derivedStateOf { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: 0 } }
+    LaunchedEffect(lastVisibleIndex) {
+        if (lastVisibleIndex >= displayedWarga.size - 1 && displayedWarga.size < filteredWarga.size) {
+            loadedCount += PAGE_SIZE
         }
     }
 
@@ -84,10 +116,11 @@ fun CariWargaScreen(
                 EmptyState(icon = Icons.Default.Face, message = "Data warga tidak ditemukan")
             } else {
                 LazyColumn(
+                    state = listState,
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(filteredWarga) { warga ->
+                    items(displayedWarga) { warga ->
                         WargaItemCard(
                             name = warga.nama,
                             nik = warga.nik,

@@ -28,7 +28,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
-import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
@@ -46,7 +45,7 @@ fun UpdateWusPusScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     userName: String,
-    anggotaViewmodel: AnggotaViewmodel
+    anggotaViewModel: AnggotaViewmodel,
 ) {
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -57,18 +56,17 @@ fun UpdateWusPusScreen(
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
 
-
     if (showDialog) {
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
                 selectedWarga = warga
                 namaWarga = warga.nama
+                namaPasangan = ""
             },
-            anggotaViewModel = anggotaViewmodel
+            anggotaViewModel = anggotaViewModel
         )
     }
-
 
     Scaffold(
         topBar = {

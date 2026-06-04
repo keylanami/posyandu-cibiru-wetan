@@ -40,7 +40,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
-import com.desacibiruwetan.posyandu.data.model.DummyDetailWarga
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
@@ -51,16 +50,16 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
-import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun UpdateBalitaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     userName: String,
-    anggotaViewmodel: AnggotaViewmodel
+    anggotaViewModel: AnggotaViewmodel
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
@@ -78,7 +77,7 @@ fun UpdateBalitaScreen(
                 selectedWarga = warga
                 namaBalita = warga.nama
             },
-            anggotaViewModel = anggotaViewmodel
+            anggotaViewModel = anggotaViewModel
         )
     }
 

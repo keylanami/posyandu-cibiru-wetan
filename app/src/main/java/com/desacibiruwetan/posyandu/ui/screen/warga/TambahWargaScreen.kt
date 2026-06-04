@@ -1,7 +1,9 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.content.Context
+import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -118,6 +120,7 @@ fun TambahWargaScreen(
     val gakinOptions = listOf("Non GAKIN (Mampu)", "GAKIN (Keluarga Miskin)")
 
     // Penghitung Usia & Kategori Usia Otomatis
+    @RequiresApi(Build.VERSION_CODES.O)
     fun prosesDataLahir(rawInput: String): Triple<String, String, String> {
         if (rawInput.length != 8) return Triple("", "", "")
         return try {
@@ -371,6 +374,7 @@ fun TambahWargaScreen(
                         tanggalLahir = apiDate,
                         jenisKelamin = jenisKelamin,
                         pendidikanTerakhir = pendidikan,
+                        pekerjaan = pekerjaan,
                         noBpjs = noBpjs,
                         statusKeluarga = statusKeluarga,
                         statusSipil = statusSipil,
