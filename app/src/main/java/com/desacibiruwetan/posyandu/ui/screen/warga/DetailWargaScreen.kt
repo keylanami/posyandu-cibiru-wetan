@@ -43,6 +43,7 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 @Composable
 fun DetailWargaScreen(
     onBackClick: () -> Unit,
+    onCatatKejadianClick: (String) -> Unit,
     nikWarga: String? = null,
     anggotaViewModel: AnggotaViewmodel,
 ) {
@@ -107,27 +108,27 @@ fun DetailWargaScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
+//                        StatusChip(
+//                            text = "KB Aktif",
+//                            icon = Icons.Default.FamilyRestroom,
+//                            containerColor = Color(0xFFDF8B89),
+//                            borderColor = Color(0xFF9A3F3C),
+//                            contentColor = Color(0xFF9A3F3C)
+//                        )
                         StatusChip(
-                            text = "KB Aktif",
-                            icon = Icons.Default.FamilyRestroom,
-                            containerColor = Color(0xFFDF8B89),
-                            borderColor = Color(0xFF9A3F3C),
-                            contentColor = Color(0xFF9A3F3C)
-                        )
-                        StatusChip(
-                            text = "Balita",
+                            text = "${warga.kategoriUsia}",
                             icon = Icons.Default.ChildCare,
                             containerColor = Color(0xFFC7FFEC),
                             borderColor = PrimaryGreen,
                             contentColor = PrimaryGreen
                         )
-                        StatusChip(
-                            text = "Bumil",
-                            icon = Icons.Default.PregnantWoman,
-                            containerColor = Color(0xFFF9F9F9),
-                            borderColor = Color(0xFFACACAC),
-                            contentColor = Color(0xFFACACAC)
-                        )
+//                        StatusChip(
+//                            text = "Bumil",
+//                            icon = Icons.Default.PregnantWoman,
+//                            containerColor = Color(0xFFF9F9F9),
+//                            borderColor = Color(0xFFACACAC),
+//                            contentColor = Color(0xFFACACAC)
+//                        )
                     }
                 }
 
@@ -140,7 +141,7 @@ fun DetailWargaScreen(
                 PrimaryButton(
                     text = "Lengkapi Data Tambahan",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ })
+                    onClick = { onCatatKejadianClick(warga.nik) })
                 Spacer(modifier = Modifier.height(16.dp))
                 PrimaryButton(
                     text = "Lihat Riwayat Kunjungan",

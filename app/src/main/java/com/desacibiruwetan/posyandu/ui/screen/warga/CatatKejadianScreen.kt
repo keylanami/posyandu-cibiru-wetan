@@ -34,6 +34,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -69,10 +71,13 @@ fun CatatKejadianScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
+    initialNik: String? = null
 ) {
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
+
 
     val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
     val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
@@ -103,6 +108,21 @@ fun CatatKejadianScreen(
     var namaPasangan by remember { mutableStateOf("") }
 
 
+    LaunchedEffect(initialNik, listWarga) {
+        if (!initialNik.isNullOrEmpty() && listWarga.isNotEmpty()) {
+            val found = listWarga.find {
+                it.nik == initialNik
+            }
+
+            if (found != null) {
+                selectedWarga = found
+                if (found.jenisKelamin == "Perempuan") {
+                    namaIbu = found.nama
+                }
+            }
+        }
+    }
+
     val simpanKejadian = {
         if (selectedWarga == null && selectedCategory != "Pindah Masuk") {
             Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
@@ -111,7 +131,8 @@ fun CatatKejadianScreen(
         } else {
             when (selectedCategory) {
                 "Kelahiran" -> {
-                    val catatanKelahiran = "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
+                    val catatanKelahiran =
+                        "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
                     anggotaViewModel.tambahAnggota(
                         token = token,
                         keluargaId = selectedWarga?.keluargaId ?: 0,
@@ -130,6 +151,7 @@ fun CatatKejadianScreen(
                         kategoriUsia = "Bayi/Balita"
                     )
                 }
+
                 "Meninggal", "Pindah Keluar" -> {
                     selectedWarga?.let { warga ->
                         anggotaViewModel.updateAnggota(
@@ -151,6 +173,7 @@ fun CatatKejadianScreen(
                         )
                     }
                 }
+
                 "Nikah", "Cerai" -> {
                     selectedWarga?.let { warga ->
                         anggotaViewModel.updateAnggota(
@@ -173,7 +196,8 @@ fun CatatKejadianScreen(
                     }
                 }
             }
-            Toast.makeText(context, "Data $selectedCategory berhasil dicatat", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Data $selectedCategory berhasil dicatat", Toast.LENGTH_SHORT)
+                .show()
             onBackClick()
         }
     }

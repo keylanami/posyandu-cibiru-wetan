@@ -223,6 +223,7 @@ fun AppNavigation() {
             val nik = backStackEntry.arguments?.getString("nik")
             DetailWargaScreen(
                 onBackClick = { navController.popBackStack() },
+                onCatatKejadianClick = { nikWarga -> navController.navigate("${Screen.CatatKejadian.route}/$nikWarga") },
                 nikWarga = nik,
                 anggotaViewModel = anggotaViewModel
             )
