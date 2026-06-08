@@ -56,6 +56,8 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 import androidx.core.content.edit
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 
 @Composable
 fun AppNavigation() {
@@ -253,11 +255,31 @@ fun AppNavigation() {
                 anggotaViewModel = anggotaViewModel
             )
         }
+
+        composable(
+            route = "${Screen.CatatKejadian.route}/{nik}",
+            arguments = listOf(
+                navArgument("nik") {
+                    type = NavType.StringType
+                    nullable = true
+                }
+            )
+        ) { backStackEntry ->
+            val nik = backStackEntry.arguments?.getString("nik")
+            CatatKejadianScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel,
+                initialNik = nik
+            )
+        }
+
         composable(Screen.CatatKejadian.route) {
             CatatKejadianScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                initialNik = null
             )
         }
         composable(Screen.AdministrasiRt.route) {

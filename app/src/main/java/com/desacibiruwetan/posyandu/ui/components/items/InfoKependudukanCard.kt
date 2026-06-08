@@ -83,7 +83,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                 Column(modifier = Modifier.weight(1f)) {
                     InfoItem(label = "Status Sipil", value = warga.statusSipil)
                     Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "Status Warga", value = warga.statusWarga ?: "-")
+                    InfoItem(label = "Status Warga", value = warga.statusWarga ?: "Aktif")
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Pendidikan", value = warga.pendidikanTerakhir ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
