@@ -4,6 +4,7 @@ import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
+import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
 
@@ -77,7 +78,7 @@ class AnggotaRepository(
         statusWarga: String,
         usia: String,
         kategoriUsia: String
-    ) {
+    ): Int? {
         val entitasBaru = AnggotaEntity(
             keluargaId = keluargaId,
             nik = nik,
@@ -96,6 +97,7 @@ class AnggotaRepository(
             isSynced = false
         )
         val localIdBaru = anggotaDao.insertAnggotaLocal(entitasBaru)
+        var newServerId: Int? = null
 
         try {
             val request = AnggotaReq(
@@ -115,6 +117,7 @@ class AnggotaRepository(
 
             if (response.isSuccessful && response.body()?.data != null) {
                 val dataServer = response.body()!!.data!!
+                newServerId = dataServer.id
                 val anggotaSukses = entitasBaru.copy(
                     localId = localIdBaru.toInt(), serverId = dataServer.id, isSynced = true
                 )
@@ -123,6 +126,8 @@ class AnggotaRepository(
         } catch (e: Exception) {
             println("Sedang offline, data anggota disimpan lokal dulu")
         }
+
+        return newServerId
     }
 
     suspend fun updateAnggota(
@@ -182,6 +187,22 @@ class AnggotaRepository(
             } catch (e: Exception) {
                 println("Sedang offline, update anggota tersimpan lokal dulu")
             }
+        }
+    }
+
+    suspend fun updateDataBalita(
+        token: String,
+        anggotaServerId: Int,
+        namaAyah: String,
+        namaIbu: String,
+        tb: Double,
+        bb: Double
+    ) {
+        try {
+            val request = BalitaReq(namaAyah, namaIbu, tb, bb)
+            apiService.putBalita(token, anggotaServerId, request)
+        } catch (e: Exception) {
+            println("Gagal update data balita: ${e.message}")
         }
     }
 }

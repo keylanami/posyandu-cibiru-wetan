@@ -131,8 +131,11 @@ fun CatatKejadianScreen(
         } else {
             when (selectedCategory) {
                 "Kelahiran" -> {
-                    val catatanKelahiran =
-                        "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
+                    val catatanKelahiran = "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
+
+                    val tb = tbLahir.toDoubleOrNull() ?: 0.0
+                    val bb = bbLahir.toDoubleOrNull() ?: 0.0
+
                     anggotaViewModel.tambahAnggota(
                         token = token,
                         keluargaId = selectedWarga?.keluargaId ?: 0,
@@ -148,7 +151,12 @@ fun CatatKejadianScreen(
                         statusWarga = "aktif",
                         keterangan = catatanKelahiran,
                         usia = "0 th",
-                        kategoriUsia = "Bayi/Balita"
+                        kategoriUsia = "Balita",
+                        onSuccess = { serverId ->
+                            if (serverId != null) {
+                                anggotaViewModel.updateDataBalita(token, serverId, namaAyah, namaIbu, tb, bb)
+                            }
+                        }
                     )
                 }
 

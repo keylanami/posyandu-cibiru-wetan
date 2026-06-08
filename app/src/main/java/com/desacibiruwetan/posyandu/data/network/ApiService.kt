@@ -3,6 +3,7 @@ package com.desacibiruwetan.posyandu.data.network
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
+import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.LoginData
@@ -13,6 +14,7 @@ import com.desacibiruwetan.posyandu.data.model.RumahRequest
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
@@ -115,6 +117,33 @@ interface ApiService {
         @Body request: AnggotaReq
     ): Response<BaseResponse<AnggotaData>>
 
+
+    @GET("anggotas/{anggotaId}/balita")
+    suspend fun getBalitaById(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int
+    ): Response<BaseResponse<AnggotaData>>
+
+
+    @PUT("anggotas/{anggotaId}/balita")
+    suspend fun putBalita(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int,
+        @Body request: BalitaReq
+    ): Response<BaseResponse<Any>>
+
+
+    @DELETE("anggotas/{anggotaId}/balita")
+    suspend fun deleteBalita(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int
+    ): Response<BaseResponse<Any>>
+
+
+    @GET("balitas")
+    suspend fun getAllBalita(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<AnggotaData>>>
 
     @POST("keluargas/{keluargaId}/anggotas")
     suspend fun postAnggota(
