@@ -36,7 +36,7 @@ class RumahRepository(
                         serverId = rumahServer.id,
                         rtId = rumahServer.rtId,
                         alamat = rumahServer.alamat,
-                        noRumah = null,
+                        noRumah = rumahServer.nomorRumah,
                         createdAt = rumahServer.createdAt,
                         updatedAt = rumahServer.updateAt,
                         isSynced = true
@@ -55,7 +55,7 @@ class RumahRepository(
 
 
     // to insert or save
-    suspend fun addNewRumah(token: String, alamat: String, noRumah: String, rtId: Int): Long{
+    suspend fun addNewRumah(token: String, alamat: String, noRumah: Int, rtId: Int): Long{
 
         val entitasBaru = RumahEntity(
             rtId = rtId,
@@ -91,7 +91,7 @@ class RumahRepository(
             }
 
         } catch (e: Exception){
-            println("Sedang offline, data rumah disimpan di memori HP dulu.")
+            println("Sedang offline, data rumah disimpan di memori HP dulu. ${e.message}")
         }
         return localIdBaru
     }
@@ -103,8 +103,9 @@ class RumahRepository(
 
 
     // update
-    suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String, noRumahBaru: String){
+    suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String, noRumahBaru: Int){
         val rumahUpdate = rumahLokal.copy(
+            noRumah = noRumahBaru,
             alamat = alamatBaru,
             isSynced = false
         )

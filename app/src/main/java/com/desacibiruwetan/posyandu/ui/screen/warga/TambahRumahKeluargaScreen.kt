@@ -174,9 +174,11 @@ fun RumahKeluargaScreen(
                     }
                 }
 
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
                     Text("Status Tempat Tinggal", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
@@ -185,9 +187,11 @@ fun RumahKeluargaScreen(
                     }
                 }
 
-                Column(modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 8.dp)) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                ) {
                     Text(
                         "Kategori Gakin (Keluarga Miskin)?",
                         style = MaterialTheme.typography.bodyMedium
@@ -214,22 +218,30 @@ fun RumahKeluargaScreen(
                             return@PrimaryButton
                         }
 
-                        rumahViewModel.tambahRumah(realToken, alamat, noRumah) { newRumahId ->
-                            keluargaViewModel.tambahKeluarga(
-                                realToken,
-                                newRumahId,
-                                noKk,
-                                isNgontrak,
-                                isGakin
-                            ) { newKeluargaId ->
-                                Toast.makeText(
-                                    context,
-                                    "Data Rumah & Keluarga berhasil disimpan!",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                onBackClick()
+                        val rtInt = rt.toIntOrNull() ?: 0
+
+                        rumahViewModel.tambahRumah(
+                            realToken,
+                            alamat,
+                            noRumah,
+                            rtInt,
+                            onSuccess = { newRumahId ->
+                                keluargaViewModel.tambahKeluarga(
+                                    realToken,
+                                    newRumahId,
+                                    noKk,
+                                    isNgontrak,
+                                    isGakin
+                                ) { newKeluargaId ->
+                                    Toast.makeText(
+                                        context,
+                                        "Data Rumah & Keluarga berhasil disimpan!",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    onBackClick()
+                                }
                             }
-                        }
+                        )
                     }
                 )
             }

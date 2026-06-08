@@ -8,16 +8,20 @@ data class RumahRequest(
     val alamat: String,
 
     @Json(name = "no_rumah")
-    val nomorRumah: String
+    val nomorRumah: Int
 )
 
 
 @JsonClass(generateAdapter = true)
 data class RumahData(
     val id: Int,
+    @Json(name = "no_rumah")
+    val nomorRumah: Int,
+
 
     @Json(name = "rt_id")
     val rtId: Int,
+
 
     val alamat: String?= null,
 
