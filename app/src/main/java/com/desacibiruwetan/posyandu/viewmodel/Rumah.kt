@@ -25,14 +25,14 @@ class RumahViewmodel(private val repository: RumahRepository): ViewModel(){
     }
 
 
-    fun tambahRumah(token: String, alamat: String, noRumah: String, rtId: Int, onSuccess: (Int) -> Unit){
+    fun tambahRumah(token: String, alamat: String, noRumah: Int, rtId: Int, onSuccess: (Int) -> Unit){
         viewModelScope.launch {
             val newId = repository.addNewRumah(token, alamat, noRumah, rtId)
             onSuccess(newId.toInt())
         }
     }
 
-    fun updateRumah(token: String, rumahLocal: RumahEntity, alamatBaru: String, noRumahBaru: String){
+    fun updateRumah(token: String, rumahLocal: RumahEntity, alamatBaru: String, noRumahBaru: Int){
         viewModelScope.launch {
             repository.updateRumah(token, rumahLocal, alamatBaru, noRumahBaru)
         }

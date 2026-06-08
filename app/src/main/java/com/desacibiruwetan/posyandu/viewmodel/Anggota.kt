@@ -29,16 +29,56 @@ class AnggotaViewmodel(private val repository: AnggotaRepository): ViewModel() {
     }
 
 
-    fun tambahAnggota(token: String, keluargaId: Int, nik: String, nama: String, tanggalLahir: String, jenisKelamin: String, pendidikanTerakhir: String, pekerjaan: String, noBpjs: String, statusKeluarga: String, statusSipil: String, statusWarga: String, keterangan: String, usia: String, kategoriUsia: String, onSuccess: (Int?) -> Unit = {}){
+    fun tambahAnggota(
+        token: String, keluargaId: Int, nik: String, nama: String, tanggalLahir: String,
+        jenisKelamin: String, pendidikanTerakhir: String, pekerjaan: String, noBpjs: String,
+        statusKeluarga: String, statusSipil: String, statusWarga: String, keterangan: String,
+        usia: String, kategoriUsia: String,
+        onSuccess: (Int?) -> Unit = {}
+    ){
         viewModelScope.launch {
-            val serverId = repository.addNewAnggota(token, keluargaId, nik, nama, tanggalLahir, jenisKelamin, pendidikanTerakhir, pekerjaan, noBpjs, statusKeluarga, statusSipil, statusWarga, keterangan, usia, kategoriUsia)
+            val serverId = repository.addNewAnggota(
+                token = token,
+                keluargaId = keluargaId,
+                nik = nik,
+                nama = nama,
+                tanggalLahir = tanggalLahir,
+                jenisKelamin = jenisKelamin,
+                pendidikanTerakhir = pendidikanTerakhir,
+                pekerjaan = pekerjaan,
+                noBpjs = noBpjs,
+                keterangan = keterangan,
+                statusKeluarga = statusKeluarga,
+                statusSipil = statusSipil,
+                statusWarga = statusWarga,
+                usia = usia,
+                kategoriUsia = kategoriUsia
+            )
             onSuccess(serverId)
         }
     }
 
-    fun updateAnggota(token: String, anggotaLokal: AnggotaEntity, nikBaru: String, namaBaru: String, tanggalLahirBaru: String, jenisKelaminBaru: String, pendidikanTerakhirBaru: String, pekerjaanBaru: String, noBpjsBaru: String, keteranganBaru: String, statusKeluargaBaru: String, statusSipilBaru: String, statusWargaBaru: String, usiaBaru: String, kategoriUsiaBaru: String) {
+    fun updateAnggota(
+        token: String, anggotaLokal: AnggotaEntity, nikBaru: String, namaBaru: String, tanggalLahirBaru: String, jenisKelaminBaru: String, pendidikanTerakhirBaru: String, pekerjaanBaru: String, noBpjsBaru: String, keteranganBaru: String, statusKeluargaBaru: String, statusSipilBaru: String, statusWargaBaru: String, usiaBaru: String, kategoriUsiaBaru: String
+    ) {
         viewModelScope.launch {
-            repository.updateAnggota(token, anggotaLokal, nikBaru, namaBaru, tanggalLahirBaru, jenisKelaminBaru, pendidikanTerakhirBaru, pekerjaanBaru, noBpjsBaru, keteranganBaru, statusKeluargaBaru, statusSipilBaru, statusWargaBaru, usiaBaru, kategoriUsiaBaru)
+            repository.updateAnggota(
+                token = token,
+                anggotaLokal = anggotaLokal,
+                nikBaru = nikBaru,
+                namaBaru = namaBaru,
+                tanggalLahirBaru = tanggalLahirBaru,
+                jenisKelaminBaru = jenisKelaminBaru,
+                pendidikanTerakhirBaru = pendidikanTerakhirBaru,
+                pekerjaanBaru = pekerjaanBaru,
+                noBpjsBaru = noBpjsBaru,
+                keteranganBaru = keteranganBaru,
+                statusKeluargaBaru = statusKeluargaBaru,
+                statusSipilBaru = statusSipilBaru,
+                statusWargaBaru = statusWargaBaru,
+                usiaBaru = usiaBaru,
+                kategoriUsiaBaru = kategoriUsiaBaru
+            )
         }
     }
 

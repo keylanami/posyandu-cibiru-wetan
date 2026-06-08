@@ -27,10 +27,6 @@ data class AnggotaReq(
     @Json(name = "status_sipil")
     val statusSipil: String,
 
-    @Json(name = "status_warga")
-    val statusWarga: String,
-
-    val pekerjaan: String?= null,
     val keterangan: String? = null,
 )
 
@@ -51,7 +47,6 @@ data class AnggotaData(
 
     @Json(name = "pendidikan_terakhir")
     val pendidikanTerakhir: String? = null,
-    val pekerjaan: String? = null,
 
     @Json(name = "no_bpjs")
     val noBpjs: String? = null,
@@ -62,8 +57,6 @@ data class AnggotaData(
     @Json(name = "status_sipil")
     val statusSipil: String,
 
-    @Json(name = "status_warga")
-    val statusWarga: String,
 
     val keterangan: String? = null,
 

@@ -39,11 +39,9 @@ class AnggotaRepository(
                         tanggalLahir = anggotaServer.tanggalLahir,
                         jenisKelamin = anggotaServer.jenisKelamin,
                         pendidikanTerakhir = anggotaServer.pendidikanTerakhir,
-                        pekerjaan = anggotaServer.pekerjaan,
                         noBpjs = anggotaServer.noBpjs,
                         statusKeluarga = anggotaServer.statusKeluarga,
                         statusSipil = anggotaServer.statusSipil,
-                        statusWarga = anggotaServer.statusWarga,
                         keterangan = anggotaServer.keterangan,
                         createdAt = anggotaServer.createdAt,
                         updatedAt = anggotaServer.updatedAt,
@@ -109,10 +107,10 @@ class AnggotaRepository(
                 noBpjs = noBpjs,
                 keterangan = keterangan,
                 statusKeluarga = statusKeluarga,
-                statusSipil = statusSipil,
-                statusWarga = statusWarga,
-                pekerjaan = pekerjaan
+                statusSipil = statusSipil
             )
+
+            Log.d("DEBUG_PAYLOAD", "Data: $request")
             val response = apiService.postAnggota(token, keluargaId, request)
 
             if (response.isSuccessful && response.body()?.data != null) {
@@ -138,12 +136,10 @@ class AnggotaRepository(
         tanggalLahirBaru: String,
         jenisKelaminBaru: String,
         pendidikanTerakhirBaru: String,
-        pekerjaanBaru: String,
         noBpjsBaru: String,
         keteranganBaru: String,
         statusKeluargaBaru: String,
         statusSipilBaru: String,
-        statusWargaBaru: String,
         usiaBaru: String,
         kategoriUsiaBaru: String
     ) {
@@ -153,12 +149,10 @@ class AnggotaRepository(
             tanggalLahir = tanggalLahirBaru,
             jenisKelamin = jenisKelaminBaru,
             pendidikanTerakhir = pendidikanTerakhirBaru,
-            pekerjaan = pekerjaanBaru,
             noBpjs = noBpjsBaru,
             keterangan = keteranganBaru,
             statusKeluarga = statusKeluargaBaru,
             statusSipil = statusSipilBaru,
-            statusWarga = statusWargaBaru,
             usia = usiaBaru,
             kategoriUsia = kategoriUsiaBaru,
             isSynced = false
@@ -177,8 +171,6 @@ class AnggotaRepository(
                     keterangan = keteranganBaru,
                     statusKeluarga = statusKeluargaBaru,
                     statusSipil = statusSipilBaru,
-                    statusWarga = statusWargaBaru,
-                    pekerjaan = pekerjaanBaru
                 )
                 val response = apiService.putAnggotaId(token, anggotaUpdate.serverId, request)
                 if (response.isSuccessful) {

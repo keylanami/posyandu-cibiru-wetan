@@ -73,11 +73,9 @@ fun CatatKejadianScreen(
     anggotaViewModel: AnggotaViewmodel,
     initialNik: String? = null
 ) {
-
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
-
 
     val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
     val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
@@ -92,7 +90,6 @@ fun CatatKejadianScreen(
     var tanggalKejadian by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
 
-
     var namaBayi by remember { mutableStateOf("") }
     var jenisKelaminBayi by remember { mutableStateOf("") }
     var namaAyah by remember { mutableStateOf("") }
@@ -101,19 +98,13 @@ fun CatatKejadianScreen(
     var tbLahir by remember { mutableStateOf("") }
     var nik by remember { mutableStateOf("") }
 
-
     var asalAlamat by remember { mutableStateOf("") }
     var tujuanAlamat by remember { mutableStateOf("") }
-
     var namaPasangan by remember { mutableStateOf("") }
-
 
     LaunchedEffect(initialNik, listWarga) {
         if (!initialNik.isNullOrEmpty() && listWarga.isNotEmpty()) {
-            val found = listWarga.find {
-                it.nik == initialNik
-            }
-
+            val found = listWarga.find { it.nik == initialNik }
             if (found != null) {
                 selectedWarga = found
                 if (found.jenisKelamin == "Perempuan") {
@@ -127,34 +118,45 @@ fun CatatKejadianScreen(
         if (selectedWarga == null && selectedCategory != "Pindah Masuk") {
             Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
         } else if (tanggalKejadian.length < 8) {
-            Toast.makeText(context, "Tanggal tidak valid", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Tanggal tidak valid (Harus 8 digit)", Toast.LENGTH_SHORT).show()
         } else {
+            // FIX: FORMAT TANGGAL DDMMYYYY -> DD-MM-YYYY (Sesuai d-m-Y Laravel)
+            val apiDate = "${tanggalKejadian.substring(0, 2)}-${tanggalKejadian.substring(2, 4)}-${tanggalKejadian.substring(4, 8)}"
+
             when (selectedCategory) {
                 "Kelahiran" -> {
-                    val catatanKelahiran = "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
-
-                    val tb = tbLahir.toDoubleOrNull() ?: 0.0
-                    val bb = bbLahir.toDoubleOrNull() ?: 0.0
+                    val catatanKelahiran =
+                        "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
 
                     anggotaViewModel.tambahAnggota(
                         token = token,
                         keluargaId = selectedWarga?.keluargaId ?: 0,
                         nik = nik,
                         nama = namaBayi,
-                        tanggalLahir = tanggalKejadian,
+                        tanggalLahir = apiDate,
                         jenisKelamin = jenisKelaminBayi,
-                        pendidikanTerakhir = "Belum Sekolah",
-                        pekerjaan = "Tidak Bekerja",
+                        pendidikanTerakhir = "Tidak/Belum Sekolah", // Sesuaikan dengan enum Backend
+                        pekerjaan = "Belum Bekerja",
                         noBpjs = "",
                         statusKeluarga = "Anak",
                         statusSipil = "Belum Kawin",
-                        statusWarga = "aktif",
+                        statusWarga = "Aktif",
                         keterangan = catatanKelahiran,
-                        usia = "0 th",
+                        usia = "0",
                         kategoriUsia = "Balita",
                         onSuccess = { serverId ->
                             if (serverId != null) {
-                                anggotaViewModel.updateDataBalita(token, serverId, namaAyah, namaIbu, tb, bb)
+                                val tb = tbLahir.toDoubleOrNull() ?: 0.0
+                                val bb = bbLahir.toDoubleOrNull() ?: 0.0
+                                // Menembak API PUT Balita setelah bayi sukses tercatat!
+                                anggotaViewModel.updateDataBalita(
+                                    token,
+                                    serverId,
+                                    namaAyah,
+                                    namaIbu,
+                                    tb,
+                                    bb
+                                )
                             }
                         }
                     )
@@ -167,15 +169,15 @@ fun CatatKejadianScreen(
                             anggotaLokal = warga,
                             nikBaru = warga.nik,
                             namaBaru = warga.nama,
-                            tanggalLahirBaru = warga.tanggalLahir,
+                            tanggalLahirBaru = warga.tanggalLahir, // Tetap gunakan tanggal lahir asli
                             jenisKelaminBaru = warga.jenisKelamin,
                             pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
                             pekerjaanBaru = warga.pekerjaan ?: "",
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
-                            statusWargaBaru = if (selectedCategory == "Meninggal") "meninggal" else "pindah",
-                            keteranganBaru = "Tanggal $selectedCategory: $tanggalKejadian. Catatan: $keterangan",
+                            statusWargaBaru = if (selectedCategory == "Meninggal") "Meninggal" else "Pindah",
+                            keteranganBaru = "Tanggal $selectedCategory: $apiDate. Catatan: $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
                         )
@@ -195,8 +197,8 @@ fun CatatKejadianScreen(
                             pekerjaanBaru = warga.pekerjaan ?: "",
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
-                            statusSipilBaru = if (selectedCategory == "Nikah") "Kawin" else "Cerai",
-                            statusWargaBaru = warga.statusWarga ?: "aktif",
+                            statusSipilBaru = if (selectedCategory == "Nikah") "Kawin Tercatat" else "Cerai Hidup",
+                            statusWargaBaru = warga.statusWarga ?: "Aktif",
                             keteranganBaru = "Status baru: $selectedCategory dengan $namaPasangan. $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
@@ -215,7 +217,6 @@ fun CatatKejadianScreen(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
                 selectedWarga = warga
-
                 if (warga.jenisKelamin == "Perempuan") {
                     namaIbu = warga.nama
                     namaAyah = ""
@@ -227,7 +228,6 @@ fun CatatKejadianScreen(
             anggotaViewModel = anggotaViewModel
         )
     }
-
 
     Scaffold(
         topBar = { AppTopBar(title = "Catat Kejadian", onBackClick = onBackClick) },
@@ -323,7 +323,6 @@ fun CatatKejadianScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -332,7 +331,6 @@ fun CatatKejadianScreen(
                     .padding(24.dp)
             ) {
                 Column {
-
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Default.Info,
@@ -351,9 +349,6 @@ fun CatatKejadianScreen(
                     }
                     Spacer(modifier = Modifier.height(24.dp))
 
-
-
-
                     when (selectedCategory) {
                         "Kelahiran" -> {
                             AppTextField(
@@ -365,15 +360,13 @@ fun CatatKejadianScreen(
                                 AppTextField(
                                     label = "NIK",
                                     value = nik,
+                                    keyboardType = KeyboardType.Number,
                                     onValueChange = { nik = it })
                             }
 
-
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(bottom = 12.dp)
-                            ) {
+                            Column(modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)) {
                                 Text(
                                     text = "Jenis Kelamin",
                                     style = MaterialTheme.typography.bodyMedium
@@ -381,10 +374,12 @@ fun CatatKejadianScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
                                     AppRadioButton(
-                                        "Laki-laki", jenisKelaminBayi == "Laki-laki"
+                                        "Laki-laki",
+                                        jenisKelaminBayi == "Laki-laki"
                                     ) { jenisKelaminBayi = "Laki-laki" }
                                     AppRadioButton(
-                                        "Perempuan", jenisKelaminBayi == "Perempuan"
+                                        "Perempuan",
+                                        jenisKelaminBayi == "Perempuan"
                                     ) { jenisKelaminBayi = "Perempuan" }
                                 }
                             }
@@ -442,16 +437,7 @@ fun CatatKejadianScreen(
                                 value = namaPasangan,
                                 onValueChange = { namaPasangan = it })
                         }
-
-                        "Cerai" -> {
-                            // gada field khusus kecuali mau nambah nama pasangan theyre divorced to
-                        }
-
-                        "Meninggal" -> {
-                            // gada input khusus
-                        }
                     }
-
 
                     val labelTanggal = when (selectedCategory) {
                         "Kelahiran" -> "Tanggal Lahir"
@@ -489,7 +475,6 @@ fun CatatKejadianScreen(
                         onClick = { simpanKejadian() })
                 }
             }
-
             Spacer(modifier = Modifier.height(80.dp))
         }
     }

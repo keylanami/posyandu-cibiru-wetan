@@ -62,6 +62,12 @@ fun RumahKeluargaScreen(
     var isNgontrak by remember { mutableStateOf(false) }
     var isGakin by remember { mutableStateOf(false) }
 
+
+    LaunchedEffect(Unit) {
+        rumahViewModel.syncDataRumah(realToken)
+        keluargaViewModel.syncDataKeluarga(realToken)
+    }
+
     Scaffold(
         topBar = { AppTopBar(title = "Rumah Keluarga", onBackClick = onBackClick) },
         bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
@@ -219,11 +225,13 @@ fun RumahKeluargaScreen(
                         }
 
                         val rtInt = rt.toIntOrNull() ?: 0
+                        val noRumahInt = noRumah.toIntOrNull() ?: 0
+
 
                         rumahViewModel.tambahRumah(
                             realToken,
                             alamat,
-                            noRumah,
+                            noRumahInt,
                             rtInt,
                             onSuccess = { newRumahId ->
                                 keluargaViewModel.tambahKeluarga(
