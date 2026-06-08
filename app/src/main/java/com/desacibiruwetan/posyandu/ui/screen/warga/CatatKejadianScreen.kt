@@ -120,7 +120,6 @@ fun CatatKejadianScreen(
         } else if (tanggalKejadian.length < 8) {
             Toast.makeText(context, "Tanggal tidak valid (Harus 8 digit)", Toast.LENGTH_SHORT).show()
         } else {
-            // FIX: FORMAT TANGGAL DDMMYYYY -> DD-MM-YYYY (Sesuai d-m-Y Laravel)
             val apiDate = "${tanggalKejadian.substring(0, 2)}-${tanggalKejadian.substring(2, 4)}-${tanggalKejadian.substring(4, 8)}"
 
             when (selectedCategory) {

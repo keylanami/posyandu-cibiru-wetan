@@ -104,10 +104,12 @@ class AnggotaRepository(
                 tanggalLahir = tanggalLahir,
                 jenisKelamin = jenisKelamin,
                 pendidikanTerakhir = pendidikanTerakhir,
+                pekerjaan = pekerjaan,
                 noBpjs = noBpjs,
                 keterangan = keterangan,
                 statusKeluarga = statusKeluarga,
-                statusSipil = statusSipil
+                statusSipil = statusSipil,
+                statusWarga = statusWarga
             )
 
             Log.d("DEBUG_PAYLOAD", "Data: $request")
@@ -135,24 +137,28 @@ class AnggotaRepository(
         namaBaru: String,
         tanggalLahirBaru: String,
         jenisKelaminBaru: String,
+        pekerjaanBaru: String,
         pendidikanTerakhirBaru: String,
         noBpjsBaru: String,
         keteranganBaru: String,
         statusKeluargaBaru: String,
         statusSipilBaru: String,
+        statusWarga: String,
         usiaBaru: String,
-        kategoriUsiaBaru: String
+        kategoriUsiaBaru: String,
     ) {
         val anggotaUpdate = anggotaLokal.copy(
             nik = nikBaru,
             nama = namaBaru,
             tanggalLahir = tanggalLahirBaru,
             jenisKelamin = jenisKelaminBaru,
+            pekerjaan = pekerjaanBaru,
             pendidikanTerakhir = pendidikanTerakhirBaru,
             noBpjs = noBpjsBaru,
             keterangan = keteranganBaru,
             statusKeluarga = statusKeluargaBaru,
             statusSipil = statusSipilBaru,
+            statusWarga = statusWarga,
             usia = usiaBaru,
             kategoriUsia = kategoriUsiaBaru,
             isSynced = false
@@ -167,8 +173,10 @@ class AnggotaRepository(
                     tanggalLahir = tanggalLahirBaru,
                     jenisKelamin = jenisKelaminBaru,
                     pendidikanTerakhir = pendidikanTerakhirBaru,
+                    pekerjaan = pekerjaanBaru,
                     noBpjs = noBpjsBaru,
                     keterangan = keteranganBaru,
+                    statusWarga = statusWarga,
                     statusKeluarga = statusKeluargaBaru,
                     statusSipil = statusSipilBaru,
                 )

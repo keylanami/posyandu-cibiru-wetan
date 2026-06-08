@@ -69,15 +69,15 @@ class AnggotaViewmodel(private val repository: AnggotaRepository): ViewModel() {
                 namaBaru = namaBaru,
                 tanggalLahirBaru = tanggalLahirBaru,
                 jenisKelaminBaru = jenisKelaminBaru,
-                pendidikanTerakhirBaru = pendidikanTerakhirBaru,
                 pekerjaanBaru = pekerjaanBaru,
+                pendidikanTerakhirBaru = pendidikanTerakhirBaru,
                 noBpjsBaru = noBpjsBaru,
                 keteranganBaru = keteranganBaru,
                 statusKeluargaBaru = statusKeluargaBaru,
                 statusSipilBaru = statusSipilBaru,
-                statusWargaBaru = statusWargaBaru,
+                statusWarga = statusWargaBaru,
                 usiaBaru = usiaBaru,
-                kategoriUsiaBaru = kategoriUsiaBaru
+                kategoriUsiaBaru = kategoriUsiaBaru,
             )
         }
     }
