@@ -146,7 +146,7 @@ fun TambahWargaScreen(
                 "",
                 "",
                 ""
-            ) // Akan dipanggil kalau ada input aneh seperti 29 Feb di tahun bukan kabisat
+            )
         }
     }
 
@@ -255,7 +255,6 @@ fun TambahWargaScreen(
                             if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
                         })
 
-                    // PENERAPAN VALIDASI TANGGAL LAHIR
                     AppTextField(
                         label = "Tanggal Lahir",
                         value = tanggalLahirRaw,
@@ -302,7 +301,7 @@ fun TambahWargaScreen(
             ) {
                 Column {
                     AppDropdownField(
-                        label = "Pendidikan",
+                        label = "Pendidikan Terakhir",
                         value = pendidikan,
                         options = pendidikanOptions,
                         onValueChange = { pendidikan = it })
@@ -312,9 +311,9 @@ fun TambahWargaScreen(
                         placeholder = "Contoh: Buruh, Pedagang, PNS",
                         onValueChange = { pekerjaan = it })
                     AppTextField(
-                        label = "No BPJS",
+                        label = "No BPJS (Opsional)",
                         value = noBpjs,
-                        placeholder = "Masukkan nomor BPJS",
+                        placeholder = "Masukkan nomor BPJS jika ada",
                         keyboardType = KeyboardType.Number,
                         onValueChange = { if (it.all { char -> char.isDigit() }) noBpjs = it })
                     AppDropdownField(
@@ -337,6 +336,15 @@ fun TambahWargaScreen(
                 text = "Simpan Warga Baru",
                 icon = Icons.Default.AddCircleOutline,
                 onClick = {
+                    if (namaLengkap.isEmpty() || nik.length < 16 || noKeluarga.isEmpty() || tanggalLahirRaw.length < 8) {
+                        Toast.makeText(context, "Mohon lengkapi data identitas (NIK 16 digit)", Toast.LENGTH_SHORT).show()
+                        return@PrimaryButton
+                    }
+                    if (noKeluarga.toIntOrNull() == null) {
+                        Toast.makeText(context, "Keluarga ID harus angka!", Toast.LENGTH_SHORT).show()
+                        return@PrimaryButton
+                    }
+
                     if (nik.length < 16) {
                         Toast.makeText(context, "NIK harus 16 digit!", Toast.LENGTH_SHORT).show()
                         return@PrimaryButton
@@ -350,7 +358,6 @@ fun TambahWargaScreen(
                         return@PrimaryButton
                     }
 
-                    // Hitung Usia dan Ekstrak Tanggal
                     val (apiDate, calculatedUsia, calculatedKategori) = prosesDataLahir(
                         tanggalLahirRaw
                     )
@@ -378,7 +385,7 @@ fun TambahWargaScreen(
                         noBpjs = noBpjs,
                         statusKeluarga = statusKeluarga,
                         statusSipil = statusSipil,
-                        statusWarga = "Aktif",
+                        statusWarga = "Tetap",
                         keterangan = keterangan,
                         usia = calculatedUsia,
                         kategoriUsia = calculatedKategori
