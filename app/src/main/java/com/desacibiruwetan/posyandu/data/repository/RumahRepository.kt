@@ -35,8 +35,8 @@ class RumahRepository(
                     val rumahLokalBaru = RumahEntity(
                         serverId = rumahServer.id,
                         rtId = rumahServer.rtId,
-                        noRumah = rumahServer.nomorRumah,
                         alamat = rumahServer.alamat,
+                        noRumah = null,
                         createdAt = rumahServer.createdAt,
                         updatedAt = rumahServer.updateAt,
                         isSynced = true
@@ -55,9 +55,10 @@ class RumahRepository(
 
 
     // to insert or save
-    suspend fun addNewRumah(token: String, alamat: String, noRumah: String): Long{
+    suspend fun addNewRumah(token: String, alamat: String, noRumah: String, rtId: Int): Long{
 
         val entitasBaru = RumahEntity(
+            rtId = rtId,
             noRumah = noRumah,
             alamat = alamat,
             isSynced = false
@@ -67,7 +68,7 @@ class RumahRepository(
 
         try {
             val request = RumahRequest(
-                noRumah = noRumah,
+                nomorRumah = noRumah,
                 alamat = alamat
             )
 
@@ -80,7 +81,9 @@ class RumahRepository(
                     val rumahSukses = entitasBaru.copy(
                         localId = localIdBaru.toInt(),
                         serverId = dataServer.id,
-                        isSynced = true
+                        isSynced = true,
+                        createdAt = dataServer.createdAt,
+                        updatedAt = dataServer.updateAt
                     )
 
                     rumahDao.updateRumahLocal(rumahSukses)
@@ -103,21 +106,24 @@ class RumahRepository(
     suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String, noRumahBaru: String){
         val rumahUpdate = rumahLokal.copy(
             alamat = alamatBaru,
-            noRumah = noRumahBaru,
             isSynced = false
         )
         rumahDao.updateRumahLocal(rumahUpdate)
 
-        try {
-            val request = RumahRequest(alamat = alamatBaru, noRumah = noRumahBaru)
-            val response = apiService.putRumah(token, rumahUpdate.serverId, request)
+        if (rumahUpdate.serverId != null) {
+            try {
+                val request = RumahRequest(
+                    alamat = alamatBaru,
+                    nomorRumah = noRumahBaru
+                )
+                val response = apiService.putRumah(token, rumahUpdate.serverId, request)
 
-            if (response.isSuccessful){
-                rumahDao.updateRumahLocal(rumahUpdate.copy(isSynced = true))
+                if (response.isSuccessful) {
+                    rumahDao.updateRumahLocal(rumahUpdate.copy(isSynced = true))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Update server gagal, tersimpan lokal")
             }
-
-        } catch (e: Exception){
-            println("Sedang offline, data rumah disimpan di memori HP dulu.")
         }
     }
 }

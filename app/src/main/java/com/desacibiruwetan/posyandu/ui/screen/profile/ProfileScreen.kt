@@ -47,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.R
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
+import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
@@ -63,7 +64,8 @@ fun ProfilScreen(
     authViewModel: AuthViewmodel
 ) {
     val context = LocalContext.current
-    val sharedPreferences = remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
+    val sharedPreferences =
+        remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
     val token = remember { sharedPreferences.getString("TOKEN", "") ?: "" }
 
     val getMeState by authViewModel.getMeState.collectAsState()
@@ -112,30 +114,15 @@ fun ProfilScreen(
                     .padding(start = 12.dp, end = 12.dp, bottom = 16.dp),
                 contentAlignment = Alignment.BottomStart
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(36.dp)
-                            .clip(CircleShape)
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Person,
-                            contentDescription = "Profile Mini",
-                            tint = PrimaryGreen,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Text(
-                        text = if (usernameDisplay.isNotEmpty()) usernameDisplay else "Kader",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 15.sp,
-                        color = Color.White
-                    )
-                }
+
+                Text(
+                    text = if (usernameDisplay.isNotEmpty()) usernameDisplay else "Kader",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 15.sp,
+                    color = Color.White
+                )
+
             }
 
             Column(

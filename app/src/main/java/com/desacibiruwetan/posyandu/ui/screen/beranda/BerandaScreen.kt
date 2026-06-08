@@ -140,7 +140,7 @@ fun DashboardScreen(
                         Spacer(modifier = Modifier.width(16.dp))
 
                         Text(
-                            text = userName, // Langsung tampilkan
+                            text = userName,
                             fontFamily = Inter,
                             fontWeight = FontWeight.Bold,
                             fontSize = 15.sp,

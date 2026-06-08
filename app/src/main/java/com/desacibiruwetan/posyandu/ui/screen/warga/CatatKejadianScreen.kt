@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,11 +37,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -67,6 +71,12 @@ fun CatatKejadianScreen(
     anggotaViewModel: AnggotaViewmodel,
 ) {
 
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
+
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
@@ -84,6 +94,7 @@ fun CatatKejadianScreen(
     var namaIbu by remember { mutableStateOf("") }
     var bbLahir by remember { mutableStateOf("") }
     var tbLahir by remember { mutableStateOf("") }
+    var nik by remember { mutableStateOf("") }
 
 
     var asalAlamat by remember { mutableStateOf("") }
@@ -91,6 +102,81 @@ fun CatatKejadianScreen(
 
     var namaPasangan by remember { mutableStateOf("") }
 
+
+    val simpanKejadian = {
+        if (selectedWarga == null && selectedCategory != "Pindah Masuk") {
+            Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
+        } else if (tanggalKejadian.length < 8) {
+            Toast.makeText(context, "Tanggal tidak valid", Toast.LENGTH_SHORT).show()
+        } else {
+            when (selectedCategory) {
+                "Kelahiran" -> {
+                    val catatanKelahiran = "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
+                    anggotaViewModel.tambahAnggota(
+                        token = token,
+                        keluargaId = selectedWarga?.keluargaId ?: 0,
+                        nik = nik,
+                        nama = namaBayi,
+                        tanggalLahir = tanggalKejadian,
+                        jenisKelamin = jenisKelaminBayi,
+                        pendidikanTerakhir = "Belum Sekolah",
+                        pekerjaan = "Tidak Bekerja",
+                        noBpjs = "",
+                        statusKeluarga = "Anak",
+                        statusSipil = "Belum Kawin",
+                        statusWarga = "aktif",
+                        keterangan = catatanKelahiran,
+                        usia = "0 th",
+                        kategoriUsia = "Bayi/Balita"
+                    )
+                }
+                "Meninggal", "Pindah Keluar" -> {
+                    selectedWarga?.let { warga ->
+                        anggotaViewModel.updateAnggota(
+                            token = token,
+                            anggotaLokal = warga,
+                            nikBaru = warga.nik,
+                            namaBaru = warga.nama,
+                            tanggalLahirBaru = warga.tanggalLahir,
+                            jenisKelaminBaru = warga.jenisKelamin,
+                            pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
+                            pekerjaanBaru = warga.pekerjaan ?: "",
+                            noBpjsBaru = warga.noBpjs ?: "",
+                            statusKeluargaBaru = warga.statusKeluarga,
+                            statusSipilBaru = warga.statusSipil,
+                            statusWargaBaru = if (selectedCategory == "Meninggal") "meninggal" else "pindah",
+                            keteranganBaru = "Tanggal $selectedCategory: $tanggalKejadian. Catatan: $keterangan",
+                            usiaBaru = warga.usia ?: "",
+                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                        )
+                    }
+                }
+                "Nikah", "Cerai" -> {
+                    selectedWarga?.let { warga ->
+                        anggotaViewModel.updateAnggota(
+                            token = token,
+                            anggotaLokal = warga,
+                            nikBaru = warga.nik,
+                            namaBaru = warga.nama,
+                            tanggalLahirBaru = warga.tanggalLahir,
+                            jenisKelaminBaru = warga.jenisKelamin,
+                            pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
+                            pekerjaanBaru = warga.pekerjaan ?: "",
+                            noBpjsBaru = warga.noBpjs ?: "",
+                            statusKeluargaBaru = warga.statusKeluarga,
+                            statusSipilBaru = if (selectedCategory == "Nikah") "Kawin" else "Cerai",
+                            statusWargaBaru = warga.statusWarga ?: "aktif",
+                            keteranganBaru = "Status baru: $selectedCategory dengan $namaPasangan. $keterangan",
+                            usiaBaru = warga.usia ?: "",
+                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                        )
+                    }
+                }
+            }
+            Toast.makeText(context, "Data $selectedCategory berhasil dicatat", Toast.LENGTH_SHORT).show()
+            onBackClick()
+        }
+    }
 
     if (showDialog) {
         SearchWargaDialog(
@@ -243,6 +329,13 @@ fun CatatKejadianScreen(
                                 value = namaBayi,
                                 onValueChange = { namaBayi = it })
 
+                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                                AppTextField(
+                                    label = "NIK",
+                                    value = nik,
+                                    onValueChange = { nik = it })
+                            }
+
 
                             Column(
                                 modifier = Modifier
@@ -361,7 +454,7 @@ fun CatatKejadianScreen(
                     PrimaryButton(
                         text = "Simpan Data Kejadian",
                         icon = Icons.Default.AddCircleOutline,
-                        onClick = { /* TODO: Simpan data */ })
+                        onClick = { simpanKejadian() })
                 }
             }
 

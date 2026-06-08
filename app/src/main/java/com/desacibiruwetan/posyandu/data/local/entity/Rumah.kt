@@ -12,7 +12,7 @@ data class RumahEntity(
     val serverId: Int?= null,
 
     val rtId: Int?= null,
-    val noRumah: String,
+    val noRumah: String?= null,
     val alamat: String?= null,
     val createdAt: String?= null,
     val updatedAt: String?= null,

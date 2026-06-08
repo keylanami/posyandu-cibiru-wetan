@@ -8,7 +8,7 @@ data class RumahRequest(
     val alamat: String,
 
     @Json(name = "no_rumah")
-    val noRumah: String,
+    val nomorRumah: String
 )
 
 
@@ -18,9 +18,6 @@ data class RumahData(
 
     @Json(name = "rt_id")
     val rtId: Int,
-
-    @Json(name = "no_rumah")
-    val nomorRumah: String,
 
     val alamat: String?= null,
 
