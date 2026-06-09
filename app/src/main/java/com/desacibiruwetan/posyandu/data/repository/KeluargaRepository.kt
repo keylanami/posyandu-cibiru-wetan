@@ -4,6 +4,7 @@ import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
+import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
@@ -130,5 +131,16 @@ class KeluargaRepository(
 
     }
 
+    suspend fun getKeluargaOptionsFromServer(token: String): List<KeluargaOpt> {
+        try {
+            val response = apiService.getKeluargaOption(token)
+            if (response.isSuccessful) {
+                return response.body()?.data ?: emptyList()
+            }
+        } catch (e: Exception) {
+            println("Gagal mengambil opsi keluarga: ${e.localizedMessage}")
+        }
+        return emptyList()
+    }
 
 }

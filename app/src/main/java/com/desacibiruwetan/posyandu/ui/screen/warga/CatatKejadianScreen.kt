@@ -118,9 +118,15 @@ fun CatatKejadianScreen(
         if (selectedWarga == null && selectedCategory != "Pindah Masuk") {
             Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
         } else if (tanggalKejadian.length < 8) {
-            Toast.makeText(context, "Tanggal tidak valid (Harus 8 digit)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Tanggal tidak valid (Harus 8 digit)", Toast.LENGTH_SHORT)
+                .show()
         } else {
-            val apiDate = "${tanggalKejadian.substring(0, 2)}-${tanggalKejadian.substring(2, 4)}-${tanggalKejadian.substring(4, 8)}"
+            val apiDate = "${tanggalKejadian.substring(0, 2)}-${
+                tanggalKejadian.substring(
+                    2,
+                    4
+                )
+            }-${tanggalKejadian.substring(4, 8)}"
 
             when (selectedCategory) {
                 "Kelahiran" -> {
@@ -134,12 +140,12 @@ fun CatatKejadianScreen(
                         nama = namaBayi,
                         tanggalLahir = apiDate,
                         jenisKelamin = jenisKelaminBayi,
-                        pendidikanTerakhir = "Tidak/Belum Sekolah", // Sesuaikan dengan enum Backend
+                        pendidikanTerakhir = "Tidak/Belum Sekolah",
                         pekerjaan = "Belum Bekerja",
                         noBpjs = "",
                         statusKeluarga = "Anak",
                         statusSipil = "Belum Kawin",
-                        statusWarga = "Aktif",
+                        statusWarga = "aktif", // FIX: Harus huruf kecil "aktif"
                         keterangan = catatanKelahiran,
                         usia = "0",
                         kategoriUsia = "Balita",
@@ -147,7 +153,6 @@ fun CatatKejadianScreen(
                             if (serverId != null) {
                                 val tb = tbLahir.toDoubleOrNull() ?: 0.0
                                 val bb = bbLahir.toDoubleOrNull() ?: 0.0
-                                // Menembak API PUT Balita setelah bayi sukses tercatat!
                                 anggotaViewModel.updateDataBalita(
                                     token,
                                     serverId,
@@ -163,19 +168,23 @@ fun CatatKejadianScreen(
 
                 "Meninggal", "Pindah Keluar" -> {
                     selectedWarga?.let { warga ->
+                        // FIX: Menggunakan enum yang valid untuk Meninggal & Pindah (huruf kecil semua)
+                        val fixStatusWarga =
+                            if (selectedCategory == "Meninggal") "meninggal_dunia" else "pindah"
+
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
                             nikBaru = warga.nik,
                             namaBaru = warga.nama,
-                            tanggalLahirBaru = warga.tanggalLahir, // Tetap gunakan tanggal lahir asli
+                            tanggalLahirBaru = warga.tanggalLahir,
                             jenisKelaminBaru = warga.jenisKelamin,
                             pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
                             pekerjaanBaru = warga.pekerjaan ?: "",
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
-                            statusWargaBaru = if (selectedCategory == "Meninggal") "Meninggal" else "Pindah",
+                            statusWargaBaru = fixStatusWarga,
                             keteranganBaru = "Tanggal $selectedCategory: $apiDate. Catatan: $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
@@ -197,7 +206,8 @@ fun CatatKejadianScreen(
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = if (selectedCategory == "Nikah") "Kawin Tercatat" else "Cerai Hidup",
-                            statusWargaBaru = warga.statusWarga ?: "Aktif",
+                            statusWargaBaru = warga.statusWarga
+                                ?: "aktif", // FIX: Fallback ke "aktif"
                             keteranganBaru = "Status baru: $selectedCategory dengan $namaPasangan. $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
@@ -363,9 +373,11 @@ fun CatatKejadianScreen(
                                     onValueChange = { nik = it })
                             }
 
-                            Column(modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(bottom = 12.dp)) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(bottom = 12.dp)
+                            ) {
                                 Text(
                                     text = "Jenis Kelamin",
                                     style = MaterialTheme.typography.bodyMedium

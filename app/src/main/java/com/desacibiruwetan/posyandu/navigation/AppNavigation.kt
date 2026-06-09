@@ -217,7 +217,8 @@ fun AppNavigation() {
             TambahWargaScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                keluargaViewModel = keluargaViewModel
             )
         }
 

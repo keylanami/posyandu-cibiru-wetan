@@ -5,6 +5,7 @@ import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
+import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
@@ -151,5 +152,11 @@ interface ApiService {
         @Path("keluargaId") keluargaId: Int,
         @Body request: AnggotaReq
     ): Response<BaseResponse<AnggotaData>>
+
+
+    @GET("keluargas/options")
+    suspend fun getKeluargaOption(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<KeluargaOpt>>>
 
 }

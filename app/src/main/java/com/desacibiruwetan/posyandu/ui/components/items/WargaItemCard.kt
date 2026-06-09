@@ -46,7 +46,7 @@ fun WargaItemCard(
             )
             .background(color = SurfaceWhite, shape = RoundedCornerShape(5.dp))
             .clickable { onClick() }
-            .padding(16.dp), // Padding internal card
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {

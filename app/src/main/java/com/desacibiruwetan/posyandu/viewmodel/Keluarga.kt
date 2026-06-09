@@ -11,6 +11,9 @@ import kotlinx.coroutines.launch
 
 class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel() {
 
+    private val _keluargaOptions = kotlinx.coroutines.flow.MutableStateFlow<List<com.desacibiruwetan.posyandu.data.model.KeluargaOpt>>(emptyList())
+    val keluargaOptions: StateFlow<List<com.desacibiruwetan.posyandu.data.model.KeluargaOpt>> = _keluargaOptions
+
     val listKeluargaLocal: StateFlow<List<KeluargaEntity>> = repository.getAllKeluargaLocal().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -34,6 +37,13 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
     fun updateKeluarga(token: String, keluargaLocal: KeluargaEntity, noKKBaru: String, isNgontrakBaru: Boolean, isGakinBaru: Boolean){
         viewModelScope.launch {
             repository.updateKeluarga(token, keluargaLocal, noKKBaru, isNgontrakBaru, isGakinBaru)
+        }
+    }
+
+
+    fun fetchKeluargaOptions(token: String) {
+        viewModelScope.launch {
+            _keluargaOptions.value = repository.getKeluargaOptionsFromServer(token)
         }
     }
 }

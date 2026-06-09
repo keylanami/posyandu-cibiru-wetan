@@ -1,9 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.content.Context
-import android.os.Build
 import android.widget.Toast
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -39,36 +37,29 @@ import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
-import java.time.LocalDate
-import java.time.Period
-import java.time.format.DateTimeFormatter
+import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import java.util.Calendar
 
-// FUNGSI VALIDASI INPUT TANGGAL (Pencegah Bug Hari & Bulan)
 fun isValidDateInput(input: String): Boolean {
     if (input.isEmpty()) return true
     if (!input.all { it.isDigit() }) return false
     if (input.length > 8) return false
 
-    // Validasi Hari (Digit ke 1-2)
-    if (input.length >= 1 && input[0] > '3') return false // Gak bisa ketik 4X untuk hari
+    if (input.length >= 1 && input[0] > '3') return false
     if (input.length >= 2) {
         val day = input.substring(0, 2).toIntOrNull() ?: 0
-        if (day !in 1..31) return false // Cegah 00 atau 32
+        if (day !in 1..31) return false
     }
 
-    // Validasi Bulan (Digit ke 3-4)
-    if (input.length >= 3 && input[2] > '1') return false // Bulan gak bisa ketik 2X
+    if (input.length >= 3 && input[2] > '1') return false
     if (input.length >= 4) {
         val month = input.substring(2, 4).toIntOrNull() ?: 0
-        if (month !in 1..12) return false // Cegah 00 atau 13
+        if (month !in 1..12) return false
 
-        // Validasi Hari berdasarkan Bulan (Misal: Februari maks 29, April maks 30)
         val day = input.substring(0, 2).toIntOrNull() ?: 0
         if (month == 2 && day > 29) return false
         if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false
     }
-
     return true
 }
 
@@ -77,6 +68,7 @@ fun TambahWargaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
+    keluargaViewModel: KeluargaViewmodel
 ) {
     val context = LocalContext.current
     val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
@@ -85,9 +77,12 @@ fun TambahWargaScreen(
     val userRt = sharedPreferences.getString("USER_RT", "04") ?: "04"
     val userRw = sharedPreferences.getString("USER_RW", "02") ?: "02"
 
-    // --- State Data ---
     var noRumah by remember { mutableStateOf("") }
-    var noKeluarga by remember { mutableStateOf("") }
+
+    val listKeluargaOptions by keluargaViewModel.keluargaOptions.collectAsState()
+    var selectedKeluargaDisplay by remember { mutableStateOf("") }
+    var selectedKeluargaId by remember { mutableStateOf<Int?>(null) }
+
     var noKk by remember { mutableStateOf("") }
     var namaLengkap by remember { mutableStateOf("") }
     var jenisKelamin by remember { mutableStateOf("Laki-laki") }
@@ -103,26 +98,26 @@ fun TambahWargaScreen(
     var keterangan by remember { mutableStateOf("") }
 
     val statusKeluargaOptions = listOf(
-        "Kepala Keluarga",
-        "Suami",
-        "Istri",
-        "Anak",
-        "Menantu",
-        "Cucu",
-        "Orang Tua",
-        "Mertua",
-        "Famili Lain",
-        "Pembantu",
-        "Lainnya"
+        "Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu",
+        "Cucu", "Orang Tua", "Mertua", "Famili Lain", "Pembantu", "Lainnya"
     )
     val statusSipilOptions =
         listOf("Belum Kawin", "Kawin Tercatat", "Kawin Belum Tercatat", "Cerai Hidup", "Cerai Mati")
-    val pendidikanOptions = listOf("Tidak Sekolah", "SD", "SMP", "SMA", "Diploma", "S1", "S2", "S3")
+    val pendidikanOptions =
+        listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
     val gakinOptions = listOf("Non GAKIN (Mampu)", "GAKIN (Keluarga Miskin)")
 
-    // Penghitung Usia & Kategori Usia Otomatis
-    @RequiresApi(Build.VERSION_CODES.O)
-    // Penghitung Usia & Kategori Usia Otomatis (Tanpa RequiresApi agar aman di semua HP)
+
+    LaunchedEffect(Unit) {
+        if (token.isNotEmpty()) {
+            keluargaViewModel.fetchKeluargaOptions(token)
+        }
+    }
+
+    val dropdownKeluargaStrings = listKeluargaOptions.map {
+        "${it.noKk} - ${it.kepalaKeluarga ?: "Tanpa Kepala"}"
+    }
+
     fun prosesDataLahir(raw: String): Triple<String, String, String> {
         if (raw.length != 8) return Triple("", "", "")
 
@@ -130,7 +125,6 @@ fun TambahWargaScreen(
         val month = raw.substring(2, 4)
         val year = raw.substring(4, 8)
 
-        // FIX: Kembalikan ke format d-m-Y (DD-MM-YYYY) sesuai validasi Laravel
         val apiDate = "$day-$month-$year"
 
         val birthDate = Calendar.getInstance().apply {
@@ -199,29 +193,24 @@ fun TambahWargaScreen(
                         )
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                        AppTextField(
-                            label = "No Rumah",
-                            value = noRumah,
-                            placeholder = "00",
-                            keyboardType = KeyboardType.Number,
-                            modifier = Modifier.weight(1f),
-                            onValueChange = { if (it.all { char -> char.isDigit() }) noRumah = it })
-                        AppTextField(
-                            label = "Keluarga ID",
-                            value = noKeluarga,
-                            placeholder = "00",
-                            keyboardType = KeyboardType.Number,
-                            modifier = Modifier.weight(1f),
-                            onValueChange = {
-                                if (it.all { char -> char.isDigit() }) noKeluarga = it
-                            })
-                    }
+                    AppDropdownField(
+                        label = "Pilih Keluarga",
+                        value = selectedKeluargaDisplay,
+                        options = dropdownKeluargaStrings,
+                        onValueChange = { selectedStr ->
+                            selectedKeluargaDisplay = selectedStr
+                            val matched =
+                                listKeluargaOptions.find { "${it.noKk} - ${it.kepalaKeluarga ?: "Tanpa Kepala"}" == selectedStr }
+                            selectedKeluargaId = matched?.id
+                            noKk = matched?.noKk
+                                ?: ""
+                        }
+                    )
 
                     AppTextField(
                         label = "No Kartu Keluarga",
                         value = noKk,
-                        placeholder = "Masukkan Nomor Kartu Keluarga",
+                        placeholder = "Pilih dari Dropdown Keluarga di atas",
                         keyboardType = KeyboardType.Number,
                         onValueChange = { if (it.all { char -> char.isDigit() }) noKk = it })
                     AppTextField(
@@ -256,7 +245,6 @@ fun TambahWargaScreen(
                             if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
                         })
 
-                    // PENERAPAN VALIDASI TANGGAL LAHIR
                     AppTextField(
                         label = "Tanggal Lahir",
                         value = tanggalLahirRaw,
@@ -264,9 +252,7 @@ fun TambahWargaScreen(
                         keyboardType = KeyboardType.Number,
                         visualTransformation = DateVisualTransformation(),
                         onValueChange = { newValue ->
-                            if (isValidDateInput(newValue)) {
-                                tanggalLahirRaw = newValue
-                            }
+                            if (isValidDateInput(newValue)) tanggalLahirRaw = newValue
                         }
                     )
 
@@ -303,7 +289,7 @@ fun TambahWargaScreen(
             ) {
                 Column {
                     AppDropdownField(
-                        label = "Pendidikan",
+                        label = "Pendidikan Terakhir",
                         value = pendidikan,
                         options = pendidikanOptions,
                         onValueChange = { pendidikan = it })
@@ -338,6 +324,15 @@ fun TambahWargaScreen(
                 text = "Simpan Warga Baru",
                 icon = Icons.Default.AddCircleOutline,
                 onClick = {
+                    val finalKeluargaId = selectedKeluargaId ?: run {
+                        Toast.makeText(
+                            context,
+                            "Harap Pilih Keluarga dari Dropdown!",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@PrimaryButton
+                    }
+
                     if (nik.length < 16) {
                         Toast.makeText(context, "NIK harus 16 digit!", Toast.LENGTH_SHORT).show()
                         return@PrimaryButton
@@ -364,11 +359,9 @@ fun TambahWargaScreen(
                         return@PrimaryButton
                     }
 
-                    val keluargaId = noKeluarga.toIntOrNull() ?: 1
-
                     anggotaViewModel.tambahAnggota(
                         token = token,
-                        keluargaId = keluargaId,
+                        keluargaId = finalKeluargaId,
                         nik = nik,
                         nama = namaLengkap,
                         tanggalLahir = apiDate,
@@ -378,7 +371,7 @@ fun TambahWargaScreen(
                         noBpjs = noBpjs,
                         statusKeluarga = statusKeluarga,
                         statusSipil = statusSipil,
-                        statusWarga = "Aktif",
+                        statusWarga = "aktif",
                         keterangan = keterangan,
                         usia = calculatedUsia,
                         kategoriUsia = calculatedKategori
