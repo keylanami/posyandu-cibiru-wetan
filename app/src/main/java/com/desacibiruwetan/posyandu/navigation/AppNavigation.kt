@@ -58,6 +58,7 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 import androidx.core.content.edit
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.desacibiruwetan.posyandu.ui.screen.warga.EditWargaScreen
 
 @Composable
 fun AppNavigation() {
@@ -228,7 +229,18 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onCatatKejadianClick = { nikWarga -> navController.navigate("${Screen.CatatKejadian.route}/$nikWarga") },
                 nikWarga = nik,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                onEditClick = { nikWarga -> navController.navigate("edit_warga/$nikWarga") }
+            )
+        }
+
+        composable("edit_warga/{nik}") { backStackEntry ->
+            val nik = backStackEntry.arguments?.getString("nik")
+            EditWargaScreen(
+                onBackClick = { navController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel,
+                nikWarga = nik
             )
         }
 

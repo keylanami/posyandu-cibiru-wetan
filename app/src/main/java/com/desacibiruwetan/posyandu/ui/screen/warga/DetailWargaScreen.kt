@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.PregnantWoman
@@ -44,6 +45,7 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 fun DetailWargaScreen(
     onBackClick: () -> Unit,
     onCatatKejadianClick: (String) -> Unit,
+    onEditClick: (String) -> Unit,
     nikWarga: String? = null,
     anggotaViewModel: AnggotaViewmodel,
 ) {
@@ -142,7 +144,17 @@ fun DetailWargaScreen(
                     text = "Lengkapi Data Tambahan",
                     icon = Icons.Default.AddCircleOutline,
                     onClick = { onCatatKejadianClick(warga.nik) })
+
                 Spacer(modifier = Modifier.height(16.dp))
+
+                PrimaryButton(
+                    text = "Edit data",
+                    icon = Icons.Default.Edit,
+                    onClick = { onEditClick(warga.nik) }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 PrimaryButton(
                     text = "Lihat Riwayat Kunjungan",
                     icon = Icons.Default.History,
