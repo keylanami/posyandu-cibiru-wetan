@@ -70,6 +70,9 @@ fun ProfilScreen(
 
     val getMeState by authViewModel.getMeState.collectAsState()
 
+    var rt by remember { mutableStateOf("-") }
+    var rw by remember { mutableStateOf("-") }
+
     var usernameDisplay by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var noTelepon by remember { mutableStateOf("") }
@@ -78,7 +81,7 @@ fun ProfilScreen(
 
     LaunchedEffect(Unit) {
         if (token.isNotEmpty()) {
-            authViewModel.getMe("Bearer $token")
+            authViewModel.getMe(token)
         }
     }
 
@@ -86,9 +89,11 @@ fun ProfilScreen(
         if (getMeState is UiState.Success) {
             val user = (getMeState as UiState.Success).data.data
             if (user != null) {
-                email = user.email
+                email = user.email ?: ""
                 usernameDisplay = if (email.contains("@")) email.substringBefore("@") else email
-                noTelepon = user.phoneNumber
+                noTelepon = user.phoneNumber ?: ""
+                rt = user.rt ?: "-"
+                rw = user.rw ?: "-"
             }
         }
     }
@@ -131,20 +136,20 @@ fun ProfilScreen(
             ) {
                 Spacer(modifier = Modifier.height(32.dp))
 
-                Box(
-                    modifier = Modifier
-                        .size(145.dp)
-                        .clip(CircleShape)
-                        .background(Color(0xFFE0E0E0)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.img),
-                        contentDescription = "Foto Profil",
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+//                Box(
+//                    modifier = Modifier
+//                        .size(145.dp)
+//                        .clip(CircleShape)
+//                        .background(Color(0xFFE0E0E0)),
+//                    contentAlignment = Alignment.Center
+//                ) {
+//                    Image(
+//                        painter = painterResource(id = R.drawable.img),
+//                        contentDescription = "Foto Profil",
+//                        contentScale = ContentScale.Crop,
+//                        modifier = Modifier.fillMaxSize()
+//                    )
+//                }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -160,7 +165,7 @@ fun ProfilScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                FormSectionCard(title = "Identitas Utama") {
+                FormSectionCard(title = "Identitas Kader") {
                     AppTextField(
                         label = "Username (Email)",
                         value = email,
@@ -176,6 +181,24 @@ fun ProfilScreen(
                         keyboardType = KeyboardType.Phone,
                         onValueChange = { noTelepon = it }
                     )
+
+                    Row(Modifier.fillMaxWidth()) {
+                        Box(Modifier.weight(1f)) {
+                            AppTextField(
+                                label = "RT",
+                                value = rt,
+                                readOnly = true,
+                                onValueChange = {})
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Box(Modifier.weight(1f)) {
+                            AppTextField(
+                                label = "RW",
+                                value = rw,
+                                readOnly = true,
+                                onValueChange = {})
+                        }
+                    }
 
                     AppTextField(
                         label = "Ganti Password",

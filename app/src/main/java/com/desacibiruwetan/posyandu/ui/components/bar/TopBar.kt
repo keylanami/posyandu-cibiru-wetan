@@ -66,13 +66,13 @@ fun AppTopBar(
         )
 
         if (userName != null) {
-            val cleanName = remember(userName){
-                if(!userName.isNullOrBlank() && userName.contains("@")) {
-                    userName.substringBefore("@")
-                } else {
-                    userName?: "Kader"
-                }
+            val cleanName = if (userName.contains("@")) {
+                userName.substringBefore("@")
+            } else userName.ifBlank {
+                "Kader"
             }
+
+
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
