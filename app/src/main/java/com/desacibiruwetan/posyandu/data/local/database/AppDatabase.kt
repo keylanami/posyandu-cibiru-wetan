@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
+import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
@@ -17,6 +18,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun rumahDao(): RumahDao
     abstract fun keluargaDao(): KeluargaDao
     abstract fun anggotaDao(): AnggotaDao
+    abstract fun balitaDao(): BalitaDao
 
     companion object {
         @Volatile

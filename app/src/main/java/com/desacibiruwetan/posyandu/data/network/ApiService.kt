@@ -146,6 +146,15 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<BaseResponse<List<AnggotaData>>>
 
+
+    @POST("anggotas/{anggotaId}/balita")
+    suspend fun postBalita(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int,
+        @Body request: BalitaReq
+    ): Response<BaseResponse<Any>>
+
+
     @POST("keluargas/{keluargaId}/anggotas")
     suspend fun postAnggota(
         @Header("Authorization") token: String,

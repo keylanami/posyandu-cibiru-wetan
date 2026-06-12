@@ -97,7 +97,7 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao())) as T
+                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao(), database.balitaDao())) as T
         }
     )
 

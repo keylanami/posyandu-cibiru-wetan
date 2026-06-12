@@ -145,16 +145,17 @@ fun CatatKejadianScreen(
                         noBpjs = "",
                         statusKeluarga = "Anak",
                         statusSipil = "Belum Kawin",
-                        statusWarga = "aktif", // FIX: Harus huruf kecil "aktif"
+                        statusWarga = "aktif",
                         keterangan = catatanKelahiran,
                         usia = "0",
                         kategoriUsia = "Balita",
-                        onSuccess = { serverId ->
+                        onSuccess = { localId, serverId ->
                             if (serverId != null) {
                                 val tb = tbLahir.toDoubleOrNull() ?: 0.0
                                 val bb = bbLahir.toDoubleOrNull() ?: 0.0
-                                anggotaViewModel.updateDataBalita(
+                                anggotaViewModel.createDataBalita(
                                     token,
+                                    localId,
                                     serverId,
                                     namaAyah,
                                     namaIbu,
@@ -168,7 +169,6 @@ fun CatatKejadianScreen(
 
                 "Meninggal", "Pindah Keluar" -> {
                     selectedWarga?.let { warga ->
-                        // FIX: Menggunakan enum yang valid untuk Meninggal & Pindah (huruf kecil semua)
                         val fixStatusWarga =
                             if (selectedCategory == "Meninggal") "meninggal_dunia" else "pindah"
 
