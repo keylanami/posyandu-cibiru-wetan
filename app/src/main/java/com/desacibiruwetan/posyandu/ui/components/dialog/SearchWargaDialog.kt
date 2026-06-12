@@ -37,7 +37,8 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 fun SearchWargaDialog(
     onDismiss: () -> Unit,
     onWargaSelected: (AnggotaEntity) -> Unit,
-    anggotaViewModel: AnggotaViewmodel
+    anggotaViewModel: AnggotaViewmodel,
+    filterByKategori: String?= null
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
@@ -49,9 +50,12 @@ fun SearchWargaDialog(
 
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
 
-    val filteredWarga = remember(searchQuery, listWargaAsli) {
-        listWargaAsli.filter {
-            it.nama.contains(searchQuery, ignoreCase = true) || it.nik.contains(searchQuery)
+    val filteredWarga = remember(searchQuery, listWargaAsli, filterByKategori) {
+        listWargaAsli.filter { warga ->
+            val matchSearch = warga.nama.contains(searchQuery, ignoreCase = true) || warga.nik.contains(searchQuery)
+            val matchKategori = filterByKategori == null || warga.kategoriUsia.equals(filterByKategori, ignoreCase = true)
+
+            matchSearch && matchKategori
         }
     }
 

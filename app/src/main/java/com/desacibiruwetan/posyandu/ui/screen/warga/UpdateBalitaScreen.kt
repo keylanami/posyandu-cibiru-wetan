@@ -1,8 +1,9 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,12 +20,13 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
-import androidx.compose.material.icons.filled.Face
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -34,25 +36,23 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontStyle
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
-import com.desacibiruwetan.posyandu.ui.components.input.AnimatedPillToggle
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
-import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun UpdateBalitaScreen(
@@ -61,14 +61,20 @@ fun UpdateBalitaScreen(
     userName: String,
     anggotaViewModel: AnggotaViewmodel
 ) {
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
     var namaBalita by remember { mutableStateOf("") }
-    var isAsiEksklusif by remember { mutableStateOf(true) }
-    var tanggalMulaiAsi by remember { mutableStateOf("") }
-    var tanggalSelesaiAsi by remember { mutableStateOf("") }
+    var namaAyah by remember { mutableStateOf("") }
+    var namaIbu by remember { mutableStateOf("") }
+    var tinggiBadan by remember { mutableStateOf("") }
+    var beratBadan by remember { mutableStateOf("") }
+
+    val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
     if (showDialog) {
         SearchWargaDialog(
@@ -76,9 +82,32 @@ fun UpdateBalitaScreen(
             onWargaSelected = { warga ->
                 selectedWarga = warga
                 namaBalita = warga.nama
+
+                val ket = warga.keterangan ?: ""
+                if (ket.contains("Ayah:") && ket.contains("Ibu:")) {
+                    try {
+                        namaAyah = ket.substringAfter("Ayah: ").substringBefore(", Ibu:").trim()
+                        namaIbu = ket.substringAfter("Ibu: ").substringBefore(", BB:").trim()
+                        beratBadan = ket.substringAfter("BB: ").substringBefore(" kg").trim()
+                        tinggiBadan = ket.substringAfter("TB: ").substringBefore(" cm").trim()
+                    } catch (e: Exception) {
+                       println("Update Balita Error: " + "${e.localizedMessage}")
+                    }
+                }
+
+                if (warga.serverId != null) {
+                    anggotaViewModel.getDetailBalitaFromServer(token, warga.serverId)
+                }
             },
-            anggotaViewModel = anggotaViewModel
+            anggotaViewModel = anggotaViewModel,
+            filterByKategori = "Balita"
         )
+    }
+
+    LaunchedEffect(detailBalita) {
+        if (detailBalita is UiState.Success) {
+            val dataServer = (detailBalita as UiState.Success).data.data
+        }
     }
 
     Scaffold(
@@ -116,14 +145,15 @@ fun UpdateBalitaScreen(
                         AppTextField(
                             label = "Nama Balita",
                             value = namaBalita,
-                            onValueChange = { namaBalita = it },
-                            placeholder = "Masukkan nama balita"
+                            onValueChange = {},
+                            readOnly = true,
+                            placeholder = "Pilih dari pencarian"
                         )
                     }
                 } else {
                     UpdateHeaderCard(
                         title = "Pilih Balita",
-                        name = "Ketuk untuk mencari data",
+                        name = "Ketuk untuk mencari data balita",
                         icon = Icons.Default.Search
                     )
                 }
@@ -131,73 +161,72 @@ fun UpdateBalitaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            FormSectionCard(title = "Pertumbuhan & Identitas Ortu") {
+                Spacer(modifier = Modifier.height(8.dp))
 
-            FormSectionCard(title = null) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CircularIconBox(icon = Icons.Default.Face)
-                        Spacer(modifier = Modifier.width(16.dp))
-                        Text(
-                            text = "ASI Eksklusif",
-                            fontFamily = Inter,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            color = Color(0xFF272727)
+                AppTextField(
+                    label = "Nama Ayah",
+                    value = namaAyah,
+                    placeholder = "Masukkan nama ayah",
+                    onValueChange = { namaAyah = it }
+                )
+
+                AppTextField(
+                    label = "Nama Ibu",
+                    value = namaIbu,
+                    placeholder = "Masukkan nama ibu",
+                    onValueChange = { namaIbu = it }
+                )
+
+                Row(Modifier.fillMaxWidth()) {
+                    Box(Modifier.weight(1f)) {
+                        AppTextField(
+                            label = "Tinggi Badan (cm)",
+                            value = tinggiBadan,
+                            keyboardType = KeyboardType.Number,
+                            placeholder = "0.0",
+                            onValueChange = { tinggiBadan = it }
                         )
                     }
-
-                    AnimatedPillToggle(
-                        isYes = isAsiEksklusif,
-                        onToggle = { isAsiEksklusif = it }
-                    )
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Box(Modifier.weight(1f)) {
+                        AppTextField(
+                            label = "Berat Badan (kg)",
+                            value = beratBadan,
+                            keyboardType = KeyboardType.Number,
+                            placeholder = "0.0",
+                            onValueChange = { beratBadan = it }
+                        )
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                AppTextField(
-                    label = "Tanggal Mulai ASI",
-                    value = tanggalMulaiAsi,
-                    placeholder = "dd/mm/yyyy",
-                    keyboardType = KeyboardType.Number,
-                    visualTransformation = DateVisualTransformation(),
-                    onValueChange = {
-                        if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiAsi =
-                            it
-                    }
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                AppTextField(
-                    label = "Tanggal Selesai ASI",
-                    value = tanggalSelesaiAsi,
-                    placeholder = "dd/mm/yyyy",
-                    keyboardType = KeyboardType.Number,
-                    visualTransformation = DateVisualTransformation(),
-                    onValueChange = {
-                        if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalSelesaiAsi =
-                            it
-                    }
-                )
-
-                Text(
-                    text = "*Kosongkan jika masih dalam masa ASI",
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Normal,
-                    fontStyle = FontStyle.Italic,
-                    fontSize = 12.sp,
-                    color = Color(0xFFC9C9C9),
-                    modifier = Modifier.padding(top = 4.dp, bottom = 24.dp)
-                )
-
                 PrimaryButton(
-                    text = "Update Data Balita",
+                    text = "Simpan Update Balita",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        val serverId = selectedWarga?.serverId
+                        if (selectedWarga == null || serverId == null) {
+                            Toast.makeText(context, "Pilih Balita yang sudah tersinkron", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+
+                        val tb = tinggiBadan.toDoubleOrNull() ?: 0.0
+                        val bb = beratBadan.toDoubleOrNull() ?: 0.0
+
+                        anggotaViewModel.updateDataBalita(
+                            token = token,
+                            anggotaServerId = serverId,
+                            namaAyah = namaAyah,
+                            namaIbu = namaIbu,
+                            tb = tb,
+                            bb = bb
+                        )
+
+                        Toast.makeText(context, "Data balita berhasil diupdate!", Toast.LENGTH_SHORT).show()
+                        onBackClick()
+                    }
                 )
             }
 
