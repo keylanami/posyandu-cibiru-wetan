@@ -12,7 +12,7 @@ import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 
-@Database(entities = [RumahEntity::class, KeluargaEntity::class, AnggotaEntity::class], version = 4, exportSchema = false)
+@Database(entities = [RumahEntity::class, KeluargaEntity::class, AnggotaEntity::class], version = 5, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun rumahDao(): RumahDao
