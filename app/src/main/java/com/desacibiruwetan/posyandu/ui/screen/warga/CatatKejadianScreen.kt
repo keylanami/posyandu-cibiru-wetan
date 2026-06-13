@@ -60,11 +60,11 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
-import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
 fun CatatKejadianScreen(
@@ -115,7 +115,7 @@ fun CatatKejadianScreen(
     }
 
     val simpanKejadian = {
-        if (selectedWarga == null && selectedCategory != "Pindah Masuk") {
+        if (selectedWarga == null) {
             Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
         } else if (tanggalKejadian.length < 8) {
             Toast.makeText(context, "Tanggal tidak valid (Harus 8 digit)", Toast.LENGTH_SHORT)
@@ -167,11 +167,8 @@ fun CatatKejadianScreen(
                     )
                 }
 
-                "Meninggal", "Pindah Keluar" -> {
+                "Pindah Masuk" -> {
                     selectedWarga?.let { warga ->
-                        val fixStatusWarga =
-                            if (selectedCategory == "Meninggal") "meninggal_dunia" else "pindah"
-
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -184,8 +181,52 @@ fun CatatKejadianScreen(
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
-                            statusWargaBaru = fixStatusWarga,
-                            keteranganBaru = "Tanggal $selectedCategory: $apiDate. Catatan: $keterangan",
+                            statusWargaBaru = "aktif",
+                            keteranganBaru = "Tgl Masuk: $apiDate. Asal: $asalAlamat. $keterangan",
+                            usiaBaru = warga.usia ?: "",
+                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                        )
+                    }
+                }
+
+                "Pindah Keluar" -> {
+                    selectedWarga?.let { warga ->
+                        anggotaViewModel.updateAnggota(
+                            token = token,
+                            anggotaLokal = warga,
+                            nikBaru = warga.nik,
+                            namaBaru = warga.nama,
+                            tanggalLahirBaru = warga.tanggalLahir,
+                            jenisKelaminBaru = warga.jenisKelamin,
+                            pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
+                            pekerjaanBaru = warga.pekerjaan ?: "",
+                            noBpjsBaru = warga.noBpjs ?: "",
+                            statusKeluargaBaru = warga.statusKeluarga,
+                            statusSipilBaru = warga.statusSipil,
+                            statusWargaBaru = "diusir",
+                            keteranganBaru = "Tgl Keluar: $apiDate. Tujuan: $tujuanAlamat. $keterangan",
+                            usiaBaru = warga.usia ?: "",
+                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                        )
+                    }
+                }
+
+                "Meninggal" -> {
+                    selectedWarga?.let { warga ->
+                        anggotaViewModel.updateAnggota(
+                            token = token,
+                            anggotaLokal = warga,
+                            nikBaru = warga.nik,
+                            namaBaru = warga.nama,
+                            tanggalLahirBaru = warga.tanggalLahir,
+                            jenisKelaminBaru = warga.jenisKelamin,
+                            pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
+                            pekerjaanBaru = warga.pekerjaan ?: "",
+                            noBpjsBaru = warga.noBpjs ?: "",
+                            statusKeluargaBaru = warga.statusKeluarga,
+                            statusSipilBaru = warga.statusSipil,
+                            statusWargaBaru = "meninggal_dunia",
+                            keteranganBaru = "Wafat: $apiDate. Penyebab: $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
                         )
@@ -207,7 +248,7 @@ fun CatatKejadianScreen(
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = if (selectedCategory == "Nikah") "Kawin Tercatat" else "Cerai Hidup",
                             statusWargaBaru = warga.statusWarga
-                                ?: "aktif", // FIX: Fallback ke "aktif"
+                                ?: "aktif",
                             keteranganBaru = "Status baru: $selectedCategory dengan $namaPasangan. $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
