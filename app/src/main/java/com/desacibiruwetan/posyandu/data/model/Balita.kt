@@ -14,3 +14,15 @@ data class BalitaReq(
     @Json(name = "berat_badan")
     val beratBadan: Double
 )
+
+@JsonClass(generateAdapter = true)
+data class BalitaData(
+    @Json(name = "nama_ayah")
+    val namaAyah: String?,
+    @Json(name = "nama_ibu")
+    val namaIbu: String?,
+    @Json(name = "tinggi_badan")
+    val tinggiBadan: Double?,
+    @Json(name = "berat_badan")
+    val beratBadan: Double?
+)

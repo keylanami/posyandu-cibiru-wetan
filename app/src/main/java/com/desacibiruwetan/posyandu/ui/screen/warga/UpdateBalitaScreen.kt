@@ -23,7 +23,6 @@ import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -39,7 +38,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -50,7 +48,6 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
-import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
@@ -74,6 +71,11 @@ fun UpdateBalitaScreen(
     var tinggiBadan by remember { mutableStateOf("") }
     var beratBadan by remember { mutableStateOf("") }
 
+
+    var isAsiEksklusif by remember { mutableStateOf(true) }
+    var tanggalMulaiAsi by remember { mutableStateOf("") }
+    var tanggalSelesaiAsi by remember { mutableStateOf("") }
+
     val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
     if (showDialog) {
@@ -91,7 +93,6 @@ fun UpdateBalitaScreen(
                         beratBadan = ket.substringAfter("BB: ").substringBefore(" kg").trim()
                         tinggiBadan = ket.substringAfter("TB: ").substringBefore(" cm").trim()
                     } catch (e: Exception) {
-                       println("Update Balita Error: " + "${e.localizedMessage}")
                     }
                 }
 
@@ -107,22 +108,18 @@ fun UpdateBalitaScreen(
     LaunchedEffect(detailBalita) {
         if (detailBalita is UiState.Success) {
             val dataServer = (detailBalita as UiState.Success).data.data
+            if (dataServer != null) {
+                if (!dataServer.namaAyah.isNullOrBlank()) namaAyah = dataServer.namaAyah
+                if (!dataServer.namaIbu.isNullOrBlank()) namaIbu = dataServer.namaIbu
+                if (dataServer.tinggiBadan != null) tinggiBadan = dataServer.tinggiBadan.toString()
+                if (dataServer.beratBadan != null) beratBadan = dataServer.beratBadan.toString()
+            }
         }
     }
 
     Scaffold(
-        topBar = {
-            AppTopBar(
-                title = "Update Data Balita",
-                onBackClick = onBackClick
-            )
-        },
-        bottomBar = {
-            AppNavBar(
-                selectedIndex = 1,
-                onItemSelected = onNavItemSelected
-            )
-        },
+        topBar = { AppTopBar(title = "Update Data Balita", onBackClick = onBackClick) },
+        bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
         containerColor = BgMint
     ) { paddingValues ->
         Column(
@@ -153,7 +150,7 @@ fun UpdateBalitaScreen(
                 } else {
                     UpdateHeaderCard(
                         title = "Pilih Balita",
-                        name = "Ketuk untuk mencari data balita",
+                        name = "Ketuk untuk mencari data",
                         icon = Icons.Default.Search
                     )
                 }
@@ -168,15 +165,12 @@ fun UpdateBalitaScreen(
                     label = "Nama Ayah",
                     value = namaAyah,
                     placeholder = "Masukkan nama ayah",
-                    onValueChange = { namaAyah = it }
-                )
-
+                    onValueChange = { namaAyah = it })
                 AppTextField(
                     label = "Nama Ibu",
                     value = namaIbu,
                     placeholder = "Masukkan nama ibu",
-                    onValueChange = { namaIbu = it }
-                )
+                    onValueChange = { namaIbu = it })
 
                 Row(Modifier.fillMaxWidth()) {
                     Box(Modifier.weight(1f)) {
@@ -185,8 +179,7 @@ fun UpdateBalitaScreen(
                             value = tinggiBadan,
                             keyboardType = KeyboardType.Number,
                             placeholder = "0.0",
-                            onValueChange = { tinggiBadan = it }
-                        )
+                            onValueChange = { tinggiBadan = it })
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Box(Modifier.weight(1f)) {
@@ -195,8 +188,7 @@ fun UpdateBalitaScreen(
                             value = beratBadan,
                             keyboardType = KeyboardType.Number,
                             placeholder = "0.0",
-                            onValueChange = { beratBadan = it }
-                        )
+                            onValueChange = { beratBadan = it })
                     }
                 }
 
@@ -206,9 +198,13 @@ fun UpdateBalitaScreen(
                     text = "Simpan Update Balita",
                     icon = Icons.Default.AddCircleOutline,
                     onClick = {
-                        val serverId = selectedWarga?.serverId
-                        if (selectedWarga == null || serverId == null) {
-                            Toast.makeText(context, "Pilih Balita yang sudah tersinkron", Toast.LENGTH_SHORT).show()
+                        val warga = selectedWarga
+                        if (warga == null) {
+                            Toast.makeText(
+                                context,
+                                "Pilih Balita terlebih dahulu",
+                                Toast.LENGTH_SHORT
+                            ).show()
                             return@PrimaryButton
                         }
 
@@ -217,14 +213,19 @@ fun UpdateBalitaScreen(
 
                         anggotaViewModel.updateDataBalita(
                             token = token,
-                            anggotaServerId = serverId,
+                            anggotaLocalId = warga.localId,
+                            anggotaServerId = warga.serverId,
                             namaAyah = namaAyah,
                             namaIbu = namaIbu,
                             tb = tb,
                             bb = bb
                         )
 
-                        Toast.makeText(context, "Data balita berhasil diupdate!", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "Data balita berhasil disimpan!",
+                            Toast.LENGTH_SHORT
+                        ).show()
                         onBackClick()
                     }
                 )

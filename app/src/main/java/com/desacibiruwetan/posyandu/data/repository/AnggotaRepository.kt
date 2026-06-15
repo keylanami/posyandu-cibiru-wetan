@@ -7,6 +7,7 @@ import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
+import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
@@ -186,18 +187,40 @@ class AnggotaRepository(
         }
     }
 
-    suspend fun updateDataBalita(token: String, anggotaServerId: Int, namaAyah: String, namaIbu: String, tb: Double, bb: Double) {
-        try {
-            val request = BalitaReq(namaAyah, namaIbu, tb, bb)
-            apiService.putBalita(token, anggotaServerId, request)
-        } catch (e: Exception) {
-            Log.e(TAG, "Gagal update data balita: ${e.message}")
+    suspend fun updateDataBalita(
+        token: String, anggotaLocalId: Int, anggotaServerId: Int?,
+        namaAyah: String, namaIbu: String, tb: Double, bb: Double
+    ) {
+        val balitaLokal = balitaDao.getBalitaByAnggotaId(anggotaLocalId, anggotaServerId)
+        val balitaUpdate = balitaLokal?.copy(
+            namaAyah = namaAyah, namaIbu = namaIbu, tinggiBadan = tb, beratBadan = bb, isSynced = false
+        ) ?: BalitaEntity(
+            anggotaLocalId = anggotaLocalId, anggotaServerId = anggotaServerId,
+            namaAyah = namaAyah, namaIbu = namaIbu, tinggiBadan = tb, beratBadan = bb, isSynced = false
+        )
+
+        if (balitaLokal != null) {
+            balitaDao.updateBalitaLocal(balitaUpdate)
+        } else {
+            balitaDao.insertBalitaLocal(balitaUpdate)
+        }
+
+        if (anggotaServerId != null) {
+            try {
+                val request = BalitaReq(namaAyah, namaIbu, tb, bb)
+                val response = apiService.putBalita(token, anggotaServerId, request)
+                if (response.isSuccessful) {
+                    balitaDao.updateBalitaLocal(balitaUpdate.copy(isSynced = true))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal update balita ke server, tersimpan lokal: ${e.message}")
+            }
         }
     }
 
 
-    suspend fun getBalitaById(token: String, anggotaId: Int): Response<BaseResponse<AnggotaData>> {
-        return apiService.getBalitaById(token, anggotaId)
+    suspend fun getBalitaById(token: String, balitaId: Int): Response<BaseResponse<BalitaData>> {
+        return apiService.getBalitaById(token, balitaId)
     }
 
 

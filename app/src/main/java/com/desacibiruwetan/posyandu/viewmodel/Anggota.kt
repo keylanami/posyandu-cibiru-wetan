@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
+import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
@@ -26,7 +27,7 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     )
 
     private val _detailBalitaState =
-        MutableStateFlow<UiState<BaseResponse<AnggotaData>>>(UiState.Idle)
+        MutableStateFlow<UiState<BaseResponse<BalitaData>>>(UiState.Idle)
     val detailBalitaState = _detailBalitaState.asStateFlow()
 
     fun syncDataAnggotaDariServer(token: String) {
@@ -108,14 +109,15 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
 
     fun updateDataBalita(
         token: String,
-        anggotaServerId: Int,
+        anggotaLocalId: Int,
+        anggotaServerId: Int?,
         namaAyah: String,
         namaIbu: String,
         tb: Double,
         bb: Double
     ) {
         viewModelScope.launch {
-            repository.updateDataBalita(token, anggotaServerId, namaAyah, namaIbu, tb, bb)
+            repository.updateDataBalita(token, anggotaLocalId, anggotaServerId, namaAyah, namaIbu, tb, bb)
         }
     }
 

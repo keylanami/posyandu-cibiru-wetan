@@ -20,4 +20,7 @@ interface BalitaDao {
 
     @Query("DELETE FROM tabel_balita")
     suspend fun deleteAllBalita()
+
+    @Query("select * from tabel_balita where isSynced= 0")
+    suspend fun getBalitaBelumSync(): List<BalitaEntity>
 }

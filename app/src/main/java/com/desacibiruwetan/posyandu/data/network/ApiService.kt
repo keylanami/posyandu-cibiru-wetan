@@ -3,7 +3,9 @@ package com.desacibiruwetan.posyandu.data.network
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
+import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
+import com.desacibiruwetan.posyandu.data.model.Bumil
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
@@ -123,7 +125,7 @@ interface ApiService {
     suspend fun getBalitaById(
         @Header("Authorization") token: String,
         @Path("anggotaId") anggotaId: Int
-    ): Response<BaseResponse<AnggotaData>>
+    ): Response<BaseResponse<BalitaData>>
 
 
     @PUT("anggotas/{anggotaId}/balita")
@@ -167,5 +169,11 @@ interface ApiService {
     suspend fun getKeluargaOption(
         @Header("Authorization") token: String
     ): Response<BaseResponse<List<KeluargaOpt>>>
+
+
+    @GET("bumils")
+    suspend fun getAllBumil(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<Bumil>>>
 
 }
