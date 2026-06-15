@@ -6,19 +6,21 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
+import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 
-@Database(entities = [RumahEntity::class, KeluargaEntity::class, AnggotaEntity::class], version = 5, exportSchema = false)
+@Database(entities = [RumahEntity::class, KeluargaEntity::class, AnggotaEntity::class], version = 6, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun rumahDao(): RumahDao
     abstract fun keluargaDao(): KeluargaDao
     abstract fun anggotaDao(): AnggotaDao
     abstract fun balitaDao(): BalitaDao
+    abstract fun bumilDao(): BumilDao
 
     companion object {
         @Volatile

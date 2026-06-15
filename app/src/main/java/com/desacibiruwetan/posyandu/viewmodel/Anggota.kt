@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.BalitaData
+import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
@@ -29,6 +30,11 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     private val _detailBalitaState =
         MutableStateFlow<UiState<BaseResponse<BalitaData>>>(UiState.Idle)
     val detailBalitaState = _detailBalitaState.asStateFlow()
+
+
+    private val _detailBumilState = MutableStateFlow<UiState<BaseResponse<BumilData>>>(UiState.Idle)
+    val detailBumilState = _detailBumilState.asStateFlow()
+
 
     fun syncDataAnggotaDariServer(token: String) {
         viewModelScope.launch { repository.pullDataFromServer(token) }
@@ -117,7 +123,15 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         bb: Double
     ) {
         viewModelScope.launch {
-            repository.updateDataBalita(token, anggotaLocalId, anggotaServerId, namaAyah, namaIbu, tb, bb)
+            repository.updateDataBalita(
+                token,
+                anggotaLocalId,
+                anggotaServerId,
+                namaAyah,
+                namaIbu,
+                tb,
+                bb
+            )
         }
     }
 
@@ -131,7 +145,15 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         bb: Double
     ) {
         viewModelScope.launch {
-            repository.addDataBalita(token, anggotaLocalId, anggotaServerId, namaAyah, namaIbu, tb, bb)
+            repository.addDataBalita(
+                token,
+                anggotaLocalId,
+                anggotaServerId,
+                namaAyah,
+                namaIbu,
+                tb,
+                bb
+            )
         }
     }
 
@@ -143,7 +165,8 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 if (response.isSuccessful && response.body() != null) {
                     _detailBalitaState.value = UiState.Success(response.body()!!)
                 } else {
-                    _detailBalitaState.value = UiState.Error("Gagal memuat detail balita: ${response.message()}")
+                    _detailBalitaState.value =
+                        UiState.Error("Gagal memuat detail balita: ${response.message()}")
                 }
             } catch (e: Exception) {
                 _detailBalitaState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
@@ -151,4 +174,73 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         }
     }
 
+
+    fun addDataBumil(
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int?,
+        hamilKe: Int,
+        asiEksklusif: Boolean,
+        tglMulaiAsi: String?,
+        tglSelesaiAsi: String?,
+        createdAt: String,
+        updatedAt: String
+    ) {
+        viewModelScope.launch {
+            repository.addDataBumil(
+                token,
+                anggotaLocalId,
+                anggotaServerId,
+                hamilKe,
+                asiEksklusif,
+                tglMulaiAsi,
+                tglSelesaiAsi,
+                createdAt,
+                updatedAt
+            )
+        }
+    }
+
+    fun updateDataBumil(
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int,
+        hamilKe: Int,
+        asiEksklusif: Boolean,
+        tglMulaiAsi: String?,
+        tglSelesaiAsi: String?,
+        createdAt: String,
+        updatedAt: String
+    ) {
+        viewModelScope.launch {
+            repository.updateDataBumil(
+                token,
+                anggotaLocalId,
+                anggotaServerId,
+                hamilKe,
+                asiEksklusif,
+                tglMulaiAsi,
+                tglSelesaiAsi,
+                createdAt,
+                updatedAt
+            )
+        }
+    }
+
+    fun getDetailBumilFromServer(token: String, bumilId: Int) {
+        viewModelScope.launch {
+            _detailBumilState.value = UiState.Loading
+            try {
+                val response = repository.getBumilById(token, bumilId)
+                if (response.isSuccessful && response.body() != null) {
+                    _detailBumilState.value = UiState.Success(response.body()!!)
+                } else {
+                    _detailBumilState.value =
+                        UiState.Error("Gagal memuat detail Bumil: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _detailBumilState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
+            }
+        }
+    }
 }

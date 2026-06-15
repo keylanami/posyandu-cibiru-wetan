@@ -1,11 +1,11 @@
 package com.desacibiruwetan.posyandu.data.network
 
-import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
-import com.desacibiruwetan.posyandu.data.model.Bumil
+import com.desacibiruwetan.posyandu.data.model.BumilData
+import com.desacibiruwetan.posyandu.data.model.BumilReq
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
@@ -174,6 +174,37 @@ interface ApiService {
     @GET("bumils")
     suspend fun getAllBumil(
         @Header("Authorization") token: String
-    ): Response<BaseResponse<List<Bumil>>>
+    ): Response<BaseResponse<List<BumilData>>>
+
+
+    @POST("anggotas/{anggotaId}/bumils")
+    suspend fun postbumil(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int,
+        @Body request: BumilReq
+    ): Response<BaseResponse<BumilData>>
+
+
+    @GET("bumils/{id}")
+    suspend fun getDetailBumilById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<BumilData>>
+
+
+    @PUT("bumils/{id}")
+    suspend fun putBumil(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: BumilReq
+    ): Response<BaseResponse<BumilData>>
+
+
+    @DELETE("bumils/{id}")
+    suspend fun deleteBumil(
+        @Header("Authorization") token: String,
+        @Path("bumilId") bumilId: Int
+    ): Response<BaseResponse<Any>>
+
 
 }

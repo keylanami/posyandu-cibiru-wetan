@@ -3,12 +3,16 @@ package com.desacibiruwetan.posyandu.data.repository
 import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
+import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
+import com.desacibiruwetan.posyandu.data.model.BumilData
+import com.desacibiruwetan.posyandu.data.model.BumilReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import kotlinx.coroutines.flow.Flow
@@ -17,7 +21,10 @@ import retrofit2.Response
 private const val TAG = "AnggotaRepo"
 
 class AnggotaRepository(
-    private val apiService: ApiService, private val anggotaDao: AnggotaDao, private val balitaDao: BalitaDao
+    private val apiService: ApiService,
+    private val anggotaDao: AnggotaDao,
+    private val balitaDao: BalitaDao,
+    private val bumilDao: BumilDao
 ) {
 
     fun getAllAnggotaLocal(): Flow<List<AnggotaEntity>> = anggotaDao.getAllAnggotaDao()
@@ -73,24 +80,49 @@ class AnggotaRepository(
         usia: String, kategoriUsia: String
     ): Pair<Int, Int?> {
         val entitasBaru = AnggotaEntity(
-            keluargaId = keluargaId, nik = nik, nama = nama, tanggalLahir = tanggalLahir,
-            jenisKelamin = jenisKelamin, pendidikanTerakhir = pendidikanTerakhir, pekerjaan = pekerjaan,
-            noBpjs = noBpjs, statusKeluarga = statusKeluarga, statusSipil = statusSipil,
-            statusWarga = statusWarga, keterangan = keterangan, usia = usia, kategoriUsia = kategoriUsia, isSynced = false
+            keluargaId = keluargaId,
+            nik = nik,
+            nama = nama,
+            tanggalLahir = tanggalLahir,
+            jenisKelamin = jenisKelamin,
+            pendidikanTerakhir = pendidikanTerakhir,
+            pekerjaan = pekerjaan,
+            noBpjs = noBpjs,
+            statusKeluarga = statusKeluarga,
+            statusSipil = statusSipil,
+            statusWarga = statusWarga,
+            keterangan = keterangan,
+            usia = usia,
+            kategoriUsia = kategoriUsia,
+            isSynced = false
         )
         val localIdBaru = anggotaDao.insertAnggotaLocal(entitasBaru).toInt()
         var newServerId: Int? = null
 
         try {
             val request = AnggotaReq(
-                nik = nik, nama = nama, tanggalLahir = tanggalLahir, jenisKelamin = jenisKelamin,
-                pendidikanTerakhir = pendidikanTerakhir, pekerjaan = pekerjaan, noBpjs = noBpjs,
-                keterangan = keterangan, statusWarga = statusWarga, statusKeluarga = statusKeluarga, statusSipil = statusSipil
+                nik = nik,
+                nama = nama,
+                tanggalLahir = tanggalLahir,
+                jenisKelamin = jenisKelamin,
+                pendidikanTerakhir = pendidikanTerakhir,
+                pekerjaan = pekerjaan,
+                noBpjs = noBpjs,
+                keterangan = keterangan,
+                statusWarga = statusWarga,
+                statusKeluarga = statusKeluarga,
+                statusSipil = statusSipil
             )
             val response = apiService.postAnggota(token, keluargaId, request)
             if (response.isSuccessful && response.body()?.data != null) {
                 newServerId = response.body()!!.data!!.id
-                anggotaDao.updateAnggotaLocal(entitasBaru.copy(localId = localIdBaru, serverId = newServerId, isSynced = true))
+                anggotaDao.updateAnggotaLocal(
+                    entitasBaru.copy(
+                        localId = localIdBaru,
+                        serverId = newServerId,
+                        isSynced = true
+                    )
+                )
             }
         } catch (e: Exception) {
             Log.e(TAG, "Sedang offline, anggota disimpan lokal.")
@@ -188,15 +220,29 @@ class AnggotaRepository(
     }
 
     suspend fun updateDataBalita(
-        token: String, anggotaLocalId: Int, anggotaServerId: Int?,
-        namaAyah: String, namaIbu: String, tb: Double, bb: Double
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int?,
+        namaAyah: String,
+        namaIbu: String,
+        tb: Double,
+        bb: Double
     ) {
         val balitaLokal = balitaDao.getBalitaByAnggotaId(anggotaLocalId, anggotaServerId)
         val balitaUpdate = balitaLokal?.copy(
-            namaAyah = namaAyah, namaIbu = namaIbu, tinggiBadan = tb, beratBadan = bb, isSynced = false
+            namaAyah = namaAyah,
+            namaIbu = namaIbu,
+            tinggiBadan = tb,
+            beratBadan = bb,
+            isSynced = false
         ) ?: BalitaEntity(
-            anggotaLocalId = anggotaLocalId, anggotaServerId = anggotaServerId,
-            namaAyah = namaAyah, namaIbu = namaIbu, tinggiBadan = tb, beratBadan = bb, isSynced = false
+            anggotaLocalId = anggotaLocalId,
+            anggotaServerId = anggotaServerId,
+            namaAyah = namaAyah,
+            namaIbu = namaIbu,
+            tinggiBadan = tb,
+            beratBadan = bb,
+            isSynced = false
         )
 
         if (balitaLokal != null) {
@@ -223,5 +269,128 @@ class AnggotaRepository(
         return apiService.getBalitaById(token, balitaId)
     }
 
+
+    suspend fun addDataBumil(
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int?,
+        hamilKe: Int,
+        asiEksklusif: Boolean,
+        tglMulaiAsi: String?,
+        tglSelesaiAsi: String?,
+        createdAt: String,
+        updatedAt: String
+    ) {
+        val entitasBumil = BumilEntity(
+            anggotaLocalId = anggotaLocalId,
+            anggotaServerId = anggotaServerId,
+            hamilKe = hamilKe,
+            asiEksklusif = asiEksklusif,
+            tanggalMulaiAsi = tglMulaiAsi,
+            tanggalSelesaiAsi = tglSelesaiAsi,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            isSynced = false
+        )
+        bumilDao.insertBumilLocal(entitasBumil)
+
+        if (anggotaServerId != null) {
+            try {
+                val request = BumilReq(hamilKe, asiEksklusif, tglMulaiAsi, tglSelesaiAsi)
+                val response = apiService.postbumil(token, anggotaServerId, request)
+
+                if (response.isSuccessful && response.body()?.data != null) {
+                    val dataServer = response.body()!!.data!!
+                    bumilDao.updateBumilLocal(
+                        entitasBumil.copy(
+                            bumilServerId = dataServer.id,
+                            isSynced = true,
+                            createdAt = dataServer.createdAt,
+                            updatedAt = dataServer.updatedAt
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal post bumil ke server, tersimpan lokal: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun updateDataBumil(
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int,
+        hamilKe: Int,
+        asiEksklusif: Boolean,
+        tglMulaiAsi: String?,
+        tglSelesaiAsi: String?,
+        createdAt: String,
+        updatedAt: String
+    ) {
+        val bumilLokal = bumilDao.getBumilByAnggotaId(anggotaLocalId, anggotaServerId)
+
+        val bumilUpdate = bumilLokal?.copy(
+            hamilKe = hamilKe,
+            asiEksklusif = asiEksklusif,
+            tanggalMulaiAsi = tglMulaiAsi,
+            tanggalSelesaiAsi = tglSelesaiAsi,
+            isSynced = false,
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        ) ?: BumilEntity(
+            anggotaLocalId = anggotaLocalId,
+            anggotaServerId = anggotaServerId,
+            hamilKe = hamilKe,
+            asiEksklusif = asiEksklusif,
+            tanggalMulaiAsi = tglMulaiAsi,
+            tanggalSelesaiAsi = tglSelesaiAsi,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            isSynced = false
+        )
+
+        if (bumilLokal != null) bumilDao.updateBumilLocal(bumilUpdate)
+        else bumilDao.insertBumilLocal(bumilUpdate)
+
+
+        if (bumilUpdate.bumilServerId != null) {
+            try {
+                val request = BumilReq(hamilKe, asiEksklusif, tglMulaiAsi, tglSelesaiAsi)
+                val response = apiService.putBumil(token, bumilUpdate.bumilServerId, request)
+                if (response.isSuccessful) {
+                    bumilDao.updateBumilLocal(bumilUpdate.copy(isSynced = true))
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal update bumil ke server, tersimpan lokal: ${e.message}")
+            }
+        } else if (anggotaServerId != null) {
+            try {
+                val request = BumilReq(hamilKe, asiEksklusif, tglMulaiAsi, tglSelesaiAsi)
+                val response = apiService.postbumil(token, anggotaServerId, request)
+                if (response.isSuccessful && response.body()?.data != null) {
+                    bumilDao.updateBumilLocal(
+                        bumilUpdate.copy(
+                            bumilServerId = response.body()!!.data!!.id,
+                            isSynced = true
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal post fallback bumil: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun getBumilById(token: String, bumilId: Int): Response<BaseResponse<BumilData>> {
+        return apiService.getDetailBumilById(token, bumilId)
+    }
+
+    suspend fun deleteBumil(token: String, bumilId: Int) {
+        try {
+            apiService.deleteBumil(token, bumilId)
+        } catch (e: Exception) {
+            Log.e(TAG, "Gagal delete bumil: ${e.message}")
+        }
+    }
 
 }
