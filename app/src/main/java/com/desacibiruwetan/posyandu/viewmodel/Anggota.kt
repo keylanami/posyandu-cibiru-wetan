@@ -1,10 +1,12 @@
 package com.desacibiruwetan.posyandu.viewmodel
 
+import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BumilData
+import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.data.repository.AnggotaRepository
@@ -32,6 +34,10 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
 
     private val _detailBumilState = MutableStateFlow<UiState<BaseResponse<BumilData>>>(UiState.Idle)
     val detailBumilState = _detailBumilState.asStateFlow()
+
+
+    private val _detailWusPusState = MutableStateFlow<UiState<BaseResponse<WusPusData>>>(UiState.Idle)
+    val detailWusPusState = _detailWusPusState.asStateFlow()
 
 
     fun syncDataAnggotaDariServer(token: String) {
@@ -241,4 +247,55 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
             }
         }
     }
+
+
+
+    fun updateDataWusPus(
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int?,
+        namaSuami: String?,
+        statusKategori: String,
+        tanggalMulaiStatus: String?,
+        keterangan: String?,
+        createdAt: String,
+        updatedAt: String
+    ) {
+        viewModelScope.launch {
+            repository.updateDataWusPus(
+                token, anggotaLocalId, anggotaServerId,
+                namaSuami, statusKategori, tanggalMulaiStatus, keterangan,
+                createdAt, updatedAt
+            )
+        }
+    }
+
+    fun deleteWuspusById(token: String, wuspusId: Int){
+        viewModelScope.launch {
+            repository.deleteDataWusPusById(token, wuspusId)
+        }
+    }
+
+
+
+
+    fun getDetailWusPusFromServer(token: String, wuspusId: Int){
+        viewModelScope.launch {
+            _detailWusPusState.value = UiState.Loading
+
+            try {
+                val response = repository.getDataWusPusById(token, wuspusId)
+                if (response.isSuccessful && response.body() != null){
+                    _detailWusPusState.value = UiState.Success(response.body()!!)
+                } else {
+                    _detailWusPusState.value = UiState.Error("Gagal memuat detail WUS/PUS: ${response.message()}")
+                }
+
+            } catch (e: Exception){
+                _detailWusPusState.value = UiState.Error("Terjadi kesalahan ${e.localizedMessage}")
+            }
+        }
+    }
+
+
 }

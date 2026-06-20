@@ -5,15 +5,15 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "tabel_wuspus", indices = [Index(value = ["server_id"], unique = true)])
+@Entity(tableName = "tabel_wuspus")
 data class WusPusEntity(
     @PrimaryKey(autoGenerate = true)
-    val localId: Int = 0,
+    val idLocalWusPus: Int = 0,
 
-    @ColumnInfo(name = "server_id")
-    val serverId: Int?= null,
+    val wusPusServerId: Int?= null,
+    val anggotaLocalId: Int,
+    val anggotaServerId: Int?= null,
 
-    val anggotaId: Int,
     val namaSuami: String?= null,
     val statusKategori: String,
     val tanggalMulaiStatus: String?= null,

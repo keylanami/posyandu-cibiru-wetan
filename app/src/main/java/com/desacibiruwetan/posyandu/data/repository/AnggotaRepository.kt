@@ -4,15 +4,18 @@ import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
+import com.desacibiruwetan.posyandu.data.local.dao.WusPusDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
-import com.desacibiruwetan.posyandu.data.model.AnggotaData
+import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.BumilReq
+import com.desacibiruwetan.posyandu.data.model.WusPusData
+import com.desacibiruwetan.posyandu.data.model.WusPusReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import kotlinx.coroutines.flow.Flow
@@ -24,7 +27,8 @@ class AnggotaRepository(
     private val apiService: ApiService,
     private val anggotaDao: AnggotaDao,
     private val balitaDao: BalitaDao,
-    private val bumilDao: BumilDao
+    private val bumilDao: BumilDao,
+    private val wusPusDao: WusPusDao
 ) {
 
     fun getAllAnggotaLocal(): Flow<List<AnggotaEntity>> = anggotaDao.getAllAnggotaDao()
@@ -392,5 +396,75 @@ class AnggotaRepository(
             Log.e(TAG, "Gagal delete bumil: ${e.message}")
         }
     }
+
+
+    suspend fun updateDataWusPus(
+        token: String,
+        anggotaLocalId: Int,
+        anggotaServerId: Int?,
+        namaSuami: String?,
+        statusKategori: String,
+        tanggalMulaiStatus: String?,
+        keterangan: String?,
+        createdAt: String,
+        updatedAt: String
+    ){
+        val wusPusLokal = wusPusDao.getWuspusByAnggotaId(anggotaLocalId, anggotaServerId)
+        val wusPusUpdate = wusPusLokal?.copy(
+            namaSuami = namaSuami,
+            statusKategori = statusKategori,
+            tanggalMulaiStatus = tanggalMulaiStatus,
+            keterangan = keterangan,
+            isSynced = false,
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        ) ?: WusPusEntity(
+            anggotaLocalId = anggotaLocalId,
+            anggotaServerId = anggotaServerId,
+            namaSuami = namaSuami,
+            statusKategori = statusKategori,
+            tanggalMulaiStatus = tanggalMulaiStatus,
+            keterangan = keterangan,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+            isSynced = false
+        )
+
+        if (wusPusLokal != null) wusPusDao.updateWusPusLocal(wusPusUpdate)
+        else wusPusDao.insertWusPusLocal(wusPusUpdate)
+
+        if (anggotaServerId != null) {
+            try {
+                val request = WusPusReq(namaSuami, statusKategori, tanggalMulaiStatus, keterangan)
+                val response = apiService.putWusPus(token, anggotaServerId, request)
+
+                if (response.isSuccessful && response.body()?.data != null) {
+                    wusPusDao.updateWusPusLocal(
+                        wusPusUpdate.copy(
+                            wusPusServerId = response.body()!!.data!!.id,
+                            isSynced = true
+                        )
+                    )
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Gagal update WusPus ke server, tersimpan lokal: ${e.message}")
+            }
+        }
+    }
+
+    suspend fun deleteDataWusPusById(token: String, wusPusId: Int){
+        try {
+            apiService.deleteWusPus(token, wusPusId)
+        } catch (e: Exception){
+            Log.e(TAG, "Gagal delete wus pus: ${e.message}")
+        }
+    }
+
+    suspend fun getDataWusPusById(token: String, wusPusId: Int): Response<BaseResponse<WusPusData>>{
+        return apiService.getWusPusById(token, wusPusId)
+    }
+
+
+
 
 }
