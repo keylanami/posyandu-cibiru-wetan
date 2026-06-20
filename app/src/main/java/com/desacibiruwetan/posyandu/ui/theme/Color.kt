@@ -24,6 +24,7 @@ val TextDark = Color(0xFF152522)
 val TextMuted = Color(0xFF60716D)
 val TextPlaceholder = Color(0xFF8EA09C)
 val BorderGray = Color(0xFFD8E5E1)
+val BorderLight = Color(0xFFE4EEEA)
 
 
 // Error / Alert

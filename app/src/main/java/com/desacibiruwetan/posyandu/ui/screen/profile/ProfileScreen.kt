@@ -1,8 +1,9 @@
 package com.desacibiruwetan.posyandu.ui.screen.profile
 
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,17 +13,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircleOutline
+import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,26 +36,23 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import com.desacibiruwetan.posyandu.R
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
-import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
-import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
-import com.desacibiruwetan.posyandu.ui.theme.Inter
+import com.desacibiruwetan.posyandu.ui.theme.BorderLight
+import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
+import com.desacibiruwetan.posyandu.ui.theme.ErrorDark
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
@@ -66,12 +65,10 @@ fun ProfilScreen(
 ) {
     val context = LocalContext.current
     val token = remember { SessionManager.getRawToken(context) }
-
     val getMeState by authViewModel.getMeState.collectAsState()
 
     var rt by remember { mutableStateOf("-") }
     var rw by remember { mutableStateOf("-") }
-
     var usernameDisplay by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var noTelepon by remember { mutableStateOf("") }
@@ -79,9 +76,7 @@ fun ProfilScreen(
     var passwordLama by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
-        if (token.isNotEmpty()) {
-            authViewModel.getMe(token)
-        }
+        if (token.isNotEmpty()) authViewModel.getMe(token)
     }
 
     LaunchedEffect(getMeState) {
@@ -99,154 +94,150 @@ fun ProfilScreen(
 
     Scaffold(
         containerColor = BgMint,
-        bottomBar = {
-            AppNavBar(selectedIndex = 3, onItemSelected = onNavItemSelected)
-        }
+        bottomBar = { AppNavBar(selectedIndex = 3, onItemSelected = onNavItemSelected) }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+            ProfileHero(
+                name = if (usernameDisplay.isNotEmpty()) usernameDisplay else "Kader",
+                email = email.ifEmpty { "Memuat akun..." },
+                rt = rt,
+                rw = rw
+            )
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(80.dp)
-                    .background(PrimaryGreen)
-                    .padding(start = 12.dp, end = 12.dp, bottom = 16.dp),
-                contentAlignment = Alignment.BottomStart
-            ) {
-
-                Text(
-                    text = if (usernameDisplay.isNotEmpty()) usernameDisplay else "Kader",
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
-                    color = Color.White
+            ProfileSection(title = "Kontak kader") {
+                AppTextField(
+                    label = "Email",
+                    value = email,
+                    readOnly = true,
+                    onValueChange = {}
                 )
-
-            }
-
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Spacer(modifier = Modifier.height(32.dp))
-
-//                Box(
-//                    modifier = Modifier
-//                        .size(145.dp)
-//                        .clip(CircleShape)
-//                        .background(Color(0xFFE0E0E0)),
-//                    contentAlignment = Alignment.Center
-//                ) {
-//                    Image(
-//                        painter = painterResource(id = R.drawable.img),
-//                        contentDescription = "Foto Profil",
-//                        contentScale = ContentScale.Crop,
-//                        modifier = Modifier.fillMaxSize()
-//                    )
-//                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = if (usernameDisplay.isNotEmpty()) usernameDisplay else "Memuat...",
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color(0xFF272727)
+                AppTextField(
+                    label = "Nomor Telepon",
+                    value = noTelepon,
+                    placeholder = "Masukkan nomor telepon",
+                    keyboardType = KeyboardType.Phone,
+                    onValueChange = { noTelepon = it }
                 )
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                FormSectionCard(title = "Identitas Kader") {
-                    AppTextField(
-                        label = "Username (Email)",
-                        value = email,
-                        readOnly = true,
-                        placeholder = "Masukkan email",
-                        onValueChange = { }
-                    )
-
-                    AppTextField(
-                        label = "Nomor Telepon",
-                        value = noTelepon,
-                        placeholder = "Masukkan nomor telepon",
-                        keyboardType = KeyboardType.Phone,
-                        onValueChange = { noTelepon = it }
-                    )
-
-                    Row(Modifier.fillMaxWidth()) {
-                        Box(Modifier.weight(1f)) {
-                            AppTextField(
-                                label = "RT",
-                                value = rt,
-                                readOnly = true,
-                                onValueChange = {})
-                        }
-                        Spacer(Modifier.width(8.dp))
-                        Box(Modifier.weight(1f)) {
-                            AppTextField(
-                                label = "RW",
-                                value = rw,
-                                readOnly = true,
-                                onValueChange = {})
-                        }
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    Box(modifier = Modifier.weight(1f)) {
+                        AppTextField(label = "RT", value = rt, readOnly = true, onValueChange = {})
                     }
-
-                    AppTextField(
-                        label = "Ganti Password",
-                        value = passwordBaru,
-                        placeholder = "Masukkan password baru",
-                        visualTransformation = PasswordVisualTransformation(),
-                        onValueChange = { passwordBaru = it }
-                    )
-
-                    AppTextField(
-                        label = "Password Lama",
-                        value = passwordLama,
-                        placeholder = "Masukkan password lama",
-                        visualTransformation = PasswordVisualTransformation(),
-                        onValueChange = { passwordLama = it }
-                    )
+                    Box(modifier = Modifier.weight(1f)) {
+                        AppTextField(label = "RW", value = rw, readOnly = true, onValueChange = {})
+                    }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                PrimaryButton(
-                    text = "Update Data",
-                    icon = Icons.Default.AddCircleOutline,
-                    onClick = {
-                        Toast.makeText(context, "Perubahan profil siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
-                    }
+            ProfileSection(title = "Keamanan akun") {
+                AppTextField(
+                    label = "Password Baru",
+                    value = passwordBaru,
+                    placeholder = "Masukkan password baru",
+                    visualTransformation = PasswordVisualTransformation(),
+                    onValueChange = { passwordBaru = it }
                 )
+                AppTextField(
+                    label = "Password Lama",
+                    value = passwordLama,
+                    placeholder = "Konfirmasi password lama",
+                    visualTransformation = PasswordVisualTransformation(),
+                    onValueChange = { passwordLama = it }
+                )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
+            PrimaryButton(
+                text = "Simpan Perubahan",
+                icon = Icons.Default.Save,
+                onClick = {
+                    Toast.makeText(context, "Perubahan profil siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
+                }
+            )
 
-                Button(
-                    onClick = onLogoutClick,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9F413D)),
-                    shape = RoundedCornerShape(10.dp)
+            Button(
+                onClick = onLogoutClick,
+                modifier = Modifier.fillMaxWidth().height(52.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = ErrorDark),
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(19.dp))
+                Spacer(modifier = Modifier.size(8.dp))
+                Text("Keluar", fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(modifier = Modifier.height(64.dp))
+        }
+    }
+}
+
+@Composable
+private fun ProfileHero(name: String, email: String, rt: String, rw: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(DeepGreen, RoundedCornerShape(28.dp))
+            .padding(20.dp)
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Box(
+                    modifier = Modifier.size(54.dp).background(SurfaceWhite.copy(alpha = 0.12f), RoundedCornerShape(18.dp)),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "Keluar",
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 14.sp,
-                        color = Color.White
-                    )
+                    Icon(Icons.Default.Person, contentDescription = null, tint = SurfaceWhite, modifier = Modifier.size(30.dp))
                 }
-
-                Spacer(modifier = Modifier.height(80.dp))
+                Column(modifier = Modifier.weight(1f).padding(start = 14.dp)) {
+                    Text(name, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = SurfaceWhite)
+                    Text(email, style = MaterialTheme.typography.bodyMedium, color = SurfaceWhite.copy(alpha = 0.76f))
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                AreaPill("RT", rt, Modifier.weight(1f))
+                AreaPill("RW", rw, Modifier.weight(1f))
+                AreaPill("Role", "Kader", Modifier.weight(1f))
             }
         }
+    }
+}
+
+@Composable
+private fun AreaPill(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.background(SurfaceWhite.copy(alpha = 0.1f), RoundedCornerShape(16.dp)).padding(12.dp)
+    ) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = SurfaceWhite.copy(alpha = 0.68f))
+        Text(value, style = MaterialTheme.typography.labelLarge, color = SurfaceWhite, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun ProfileSection(title: String, content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceWhite, RoundedCornerShape(22.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(22.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier.size(38.dp).background(FreshTeal, RoundedCornerShape(13.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.VerifiedUser, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(21.dp))
+            }
+            Column(modifier = Modifier.padding(start = 10.dp)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Text("Data akun dan wilayah kerja", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            }
+        }
+        content()
     }
 }

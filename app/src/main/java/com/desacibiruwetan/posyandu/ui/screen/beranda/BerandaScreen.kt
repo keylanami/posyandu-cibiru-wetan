@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.beranda
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -18,28 +19,29 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChildCare
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PregnantWoman
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -48,9 +50,16 @@ import com.desacibiruwetan.posyandu.navigation.Screen
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.dialog.PilotSelectionDialog
 import com.desacibiruwetan.posyandu.ui.components.items.SyncStatusBadge
+import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.ui.theme.BorderLight
+import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
+import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
@@ -101,177 +110,226 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp, vertical = 18.dp),
+                .padding(horizontal = 18.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            DashboardHeader(userName = userName)
+            WorkHeader(userName = userName)
 
-            SectionTitle("Aksi utama")
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
-                DashboardAction(
-                    title = "Cari Warga",
-                    subtitle = "Lihat dan buka data",
-                    icon = Icons.Default.People,
-                    onClick = onNavigateToCariWarga,
-                    modifier = Modifier.weight(1f)
-                )
-                DashboardAction(
-                    title = "Catat Kejadian",
-                    subtitle = "Kelahiran, pindah, wafat",
-                    icon = Icons.Default.Edit,
-                    onClick = onNavigateToCatatKejadian,
-                    modifier = Modifier.weight(1f)
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                MetricTile("Warga", "Cari cepat", Icons.Default.People, PrimaryGreen, Modifier.weight(1f))
+                MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, Modifier.weight(1f))
+                MetricTile("Sync", "Aktif", Icons.Default.HealthAndSafety, ActionAmber, Modifier.weight(1f))
             }
 
-            SectionTitle("Kelola data")
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                DashboardRowAction("Rumah & Keluarga", "Kelola rumah, KK, dan anggota", Icons.Default.Home, onNavigateToRumahKeluarga)
-                DashboardRowAction("Balita", "Perbarui berat, tinggi, dan orang tua", Icons.Default.ChildCare, onNavigateToUpdateBalita)
-                DashboardRowAction("Bumil", "Perbarui data ibu hamil dan ASI", Icons.Default.PregnantWoman, onNavigateToBumil)
-                DashboardRowAction("WUS/PUS", "Status pasangan usia subur", Icons.Default.Favorite, onNavigateToUpdateWusPus)
-                DashboardRowAction("KB", "Data penggunaan kontrasepsi", Icons.Default.FamilyRestroom, onNavigateToUpdateKb)
-                DashboardRowAction("Administrasi RT", "Ringkasan administrasi wilayah", Icons.Default.Groups, onNavigateToAdministrasiRt)
-            }
-
-            SectionTitle("Program")
-            DashboardRowAction(
-                title = "Pilot / indikator program",
-                subtitle = "PHBS, stunting, KIA, kebakaran, dan lainnya",
-                icon = Icons.Default.HealthAndSafety,
-                onClick = { showPilotDialog = true }
+            PrimaryWorkflow(
+                onSearch = onNavigateToCariWarga,
+                onAdd = onNavigateToRumahKeluarga,
+                onEvent = onNavigateToCatatKejadian
             )
 
-            SectionTitle("Riwayat terbaru")
+            SectionHeader("Update data kesehatan", "Pilih program yang paling sering dicatat")
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                HistoryLine("Catat kejadian", "Kelahiran - Sumarsih", "10 Mei 2026")
-                HistoryLine("Catat kejadian", "Wafat - Mulyodawg", "11 Mei 2026")
+                WorkRow("Balita", "BB/TB, orang tua, dan pertumbuhan", Icons.Default.ChildCare, onNavigateToUpdateBalita)
+                WorkRow("Bumil", "Kehamilan, menyusui, dan catatan risiko", Icons.Default.PregnantWoman, onNavigateToBumil)
+                WorkRow("WUS/PUS", "Status sasaran perempuan dan pasangan usia subur", Icons.Default.Favorite, onNavigateToUpdateWusPus)
+                WorkRow("KB", "Metode kontrasepsi dan status penggunaan", Icons.Default.FamilyRestroom, onNavigateToUpdateKb)
             }
 
-            Spacer(modifier = Modifier.height(56.dp))
+            SectionHeader("Wilayah & program", "Data rumah, keluarga, administrasi, dan indikator")
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                CompactWorkCard("Rumah & KK", Icons.Default.Home, onNavigateToRumahKeluarga, Modifier.weight(1f))
+                CompactWorkCard("Administrasi", Icons.Default.Groups, onNavigateToAdministrasiRt, Modifier.weight(1f))
+                CompactWorkCard("Program", Icons.Default.HealthAndSafety, { showPilotDialog = true }, Modifier.weight(1f))
+            }
+
+            SectionHeader("Aktivitas terakhir", "Ringkas untuk membantu kader melanjutkan pekerjaan")
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                ActivityRow("Kejadian warga", "Kelahiran - Sumarsih", "10 Mei")
+                ActivityRow("Data warga", "Pembaruan status keluarga", "Kemarin")
+            }
+
+            Spacer(modifier = Modifier.height(54.dp))
         }
     }
 }
 
 @Composable
-private fun DashboardHeader(userName: String) {
+private fun WorkHeader(userName: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(10.dp))
-            .background(PrimaryGreen)
-            .padding(18.dp)
+            .background(DeepGreen, RoundedCornerShape(28.dp))
+            .padding(20.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(SurfaceWhite),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(Icons.Default.Person, contentDescription = null, tint = PrimaryGreen)
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = "Posyandu Cibiru Wetan",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = SurfaceWhite.copy(alpha = 0.78f)
+                    )
+                    Text(
+                        text = "Selamat bertugas, $userName",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = SurfaceWhite
+                    )
+                }
+                SyncStatusBadge(text = "Online", isOnline = true)
             }
-            Spacer(modifier = Modifier.width(14.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = userName,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = SurfaceWhite,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = "Kader Posyandu Cibiru Wetan",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = SurfaceWhite.copy(alpha = 0.82f)
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                HeaderPill("RT/RW aktif", "Sesuai akun", Modifier.weight(1f))
+                HeaderPill("Mode kerja", "Input cepat", Modifier.weight(1f))
             }
-            SyncStatusBadge(text = "Tersinkron", isOnline = true)
         }
     }
 }
 
 @Composable
-private fun SectionTitle(text: String) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleSmall,
-        fontWeight = FontWeight.Bold,
-        color = Color(0xFF272727)
-    )
+private fun HeaderPill(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .background(Color.White.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp)
+    ) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = SurfaceWhite.copy(alpha = 0.68f))
+        Text(value, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold, color = SurfaceWhite)
+    }
 }
 
 @Composable
-private fun DashboardAction(
+private fun MetricTile(title: String, value: String, icon: ImageVector, color: Color, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .background(SurfaceWhite, RoundedCornerShape(20.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
+            .padding(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(
+            modifier = Modifier.size(34.dp).background(color.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(19.dp))
+        }
+        Text(title, style = MaterialTheme.typography.labelMedium, color = TextMuted)
+        Text(value, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun PrimaryWorkflow(onSearch: () -> Unit, onAdd: () -> Unit, onEvent: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceWhite, RoundedCornerShape(24.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(24.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text("Alur cepat kader", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            WorkflowButton("Cari", "warga", Icons.Default.Search, PrimaryGreen, onSearch, Modifier.weight(1f))
+            WorkflowButton("Tambah", "rumah/KK", Icons.Default.Add, HealthBlue, onAdd, Modifier.weight(1f))
+            WorkflowButton("Catat", "kejadian", Icons.Default.EditNote, ActionAmber, onEvent, Modifier.weight(1f))
+        }
+    }
+}
+
+@Composable
+private fun WorkflowButton(
     title: String,
     subtitle: String,
     icon: ImageVector,
+    color: Color,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(10.dp))
-            .background(SurfaceWhite)
+            .background(color.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(26.dp))
-        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6D6D))
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(24.dp))
+        Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+        Text(subtitle, style = MaterialTheme.typography.labelSmall, color = TextMuted)
     }
 }
 
 @Composable
-private fun DashboardRowAction(
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
+private fun SectionHeader(title: String, subtitle: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+    }
+}
+
+@Composable
+private fun WorkRow(title: String, subtitle: String, icon: ImageVector, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(SurfaceWhite)
+            .background(SurfaceWhite, RoundedCornerShape(18.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier
-                .size(38.dp)
-                .clip(RoundedCornerShape(8.dp))
-                .background(PrimaryGreen.copy(alpha = 0.12f)),
+            modifier = Modifier.size(44.dp).background(FreshTeal, RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(22.dp))
+            Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(23.dp))
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6D6D))
+            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextMuted)
     }
 }
 
 @Composable
-private fun HistoryLine(type: String, description: String, date: String) {
+private fun CompactWorkCard(title: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .background(SurfaceMuted, RoundedCornerShape(18.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = PrimaryGreen)
+        Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun ActivityRow(type: String, description: String, date: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(SurfaceWhite)
+            .background(SurfaceWhite, RoundedCornerShape(18.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = PrimaryGreen)
+        Box(
+            modifier = Modifier.size(38.dp).background(FreshTeal, RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = PrimaryGreen)
+        }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(type, style = MaterialTheme.typography.labelMedium, color = Color(0xFF6D6D6D))
+            Text(type, style = MaterialTheme.typography.labelMedium, color = TextMuted)
             Text(description, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
         }
-        Text(date, style = MaterialTheme.typography.labelSmall, color = Color(0xFF6D6D6D))
+        Text(date, style = MaterialTheme.typography.labelSmall, color = TextMuted)
     }
 }
