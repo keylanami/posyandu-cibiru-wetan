@@ -11,6 +11,8 @@ import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
+import com.desacibiruwetan.posyandu.data.model.PhbsData
+import com.desacibiruwetan.posyandu.data.model.PhbsReq
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.model.RumahData
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
@@ -252,6 +254,34 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("anggotaId") anggotaId: Int
     ): Response<BaseResponse<Any>>
+
+
+    @GET("phbs/{id}")
+    suspend fun getPhbsById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<PhbsData>>
+
+
+    @GET("phbs")
+    suspend fun getPhbs(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<PhbsData>>>
+
+
+    @POST("phbs")
+    suspend fun postPhbs(
+        @Header("Authorization") token: String,
+        @Body request: PhbsReq
+    ): Response<BaseResponse<PhbsData>>
+
+
+    @PUT("phbs/{id}")
+    suspend fun putPhbs(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: PhbsReq
+    ): Response<BaseResponse<PhbsData>>
 
 
 }
