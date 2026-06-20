@@ -28,6 +28,7 @@ import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranRequest
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -37,6 +38,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Url
 
 interface ApiService {
 
@@ -419,5 +421,11 @@ interface ApiService {
     suspend fun getActivityLogs(
         @Header("Authorization") token: String
     ): Response<BaseResponse<List<ActivityLogData>>>
+
+    @GET
+    suspend fun getRawReadCollection(
+        @Url path: String,
+        @Header("Authorization") token: String
+    ): Response<ResponseBody>
 
 }

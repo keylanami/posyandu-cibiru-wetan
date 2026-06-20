@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.UiState
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import org.json.JSONArray
+import org.json.JSONObject
 
 data class ReadRecord(
     val id: String,
@@ -28,6 +28,15 @@ data class ReadCollection(
     val canCreate: Boolean = true
 )
 
+private data class ReadEndpoint(
+    val key: String,
+    val title: String,
+    val path: String,
+    val description: String,
+    val canCreate: Boolean = true,
+    val mapper: (JSONObject) -> ReadRecord
+)
+
 class DataReadViewModel(private val apiService: ApiService) : ViewModel() {
     private val _readState = MutableStateFlow<UiState<List<ReadCollection>>>(UiState.Idle)
     val readState: StateFlow<UiState<List<ReadCollection>>> = _readState.asStateFlow()
@@ -36,131 +45,210 @@ class DataReadViewModel(private val apiService: ApiService) : ViewModel() {
         if (token.isBlank()) return
         viewModelScope.launch {
             _readState.value = UiState.Loading
-            try {
-                val collections = listOf(
-                    async {
-                        val data = apiService.getAllBalita(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "balita",
-                            title = "Balita",
-                            endpoint = "GET /balitas",
-                            description = "Anak balita yang sudah punya data pertumbuhan",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), it.nama, it.kategoriUsia, "Keluarga ${it.keluargaId}")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllBumil(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "bumil",
-                            title = "Bumil",
-                            endpoint = "GET /bumils",
-                            description = "Ibu hamil dan data ASI/kehamilan",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), "Anggota ${it.anggotaId}", "Hamil ke-${it.hamilKe}", if (it.asiEksklusif) "ASI eksklusif" else "Belum ASI eksklusif")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllWusPus(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "wuspus",
-                            title = "WUS/PUS",
-                            endpoint = "GET /wus-pus",
-                            description = "Wanita/pasangan usia subur dan statusnya",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), "Anggota ${it.anggotaId}", it.statusKategori, it.namaSuami ?: "Tanpa nama suami")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllKb(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "kb",
-                            title = "KB",
-                            endpoint = "GET /kbs",
-                            description = "Riwayat dan status penggunaan kontrasepsi",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), it.jenisKb, if (it.statusAktif) "Aktif" else "Tidak aktif", it.tanggalMulaiKb ?: "Tanggal belum diisi")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllKia(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "kia",
-                            title = "KIA",
-                            endpoint = "GET /kias",
-                            description = "Indikator kesehatan ibu dan anak",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), "KIA #${it.id}", "Ibu periksa: ${it.ibuHamilRutinPeriksa ?: 0}", "Imunisasi: ${it.imunisasiBayiBalita ?: 0}")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllPhbs(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "phbs",
-                            title = "PHBS",
-                            endpoint = "GET /phbs",
-                            description = "Perilaku hidup bersih dan sehat",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), "PHBS #${it.id}", "Air bersih: ${it.rumahAirBersih ?: 0}", "Jamban sehat: ${it.rumahJambanSehat ?: 0}")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllPeduliStunting(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "stunting",
-                            title = "Peduli Stunting",
-                            endpoint = "GET /peduli-stuntings",
-                            description = "Risiko dan pemantauan stunting",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), "Stunting #${it.id}", "Balita stunting: ${it.balitaStunting ?: 0}", "Kurang gizi: ${it.balitaKurangGizi ?: 0}")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getAllSiagaKebakaran(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "kebakaran",
-                            title = "Siaga Kebakaran",
-                            endpoint = "GET /siaga-kebakarans",
-                            description = "Indikator kesiapsiagaan rumah",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), "Kebakaran #${it.id}", "APAR/air: ${it.rumahPunyaAparAtauAir ?: 0}", "P3K: ${it.rumahPunyaP3k ?: 0}")
-                            }
-                        )
-                    },
-                    async {
-                        val data = apiService.getActivityLogs(token).body()?.data.orEmpty()
-                        ReadCollection(
-                            key = "logs",
-                            title = "Log Aktivitas",
-                            endpoint = "GET /log-aktivitas",
-                            description = "Jejak aktivitas sistem dan kader",
-                            count = data.size,
-                            records = data.take(5).map {
-                                ReadRecord(it.id.toString(), it.description, it.event ?: it.logName, it.createdAt ?: "Waktu tidak tersedia")
-                            },
-                            canCreate = false
-                        )
-                    }
-                ).awaitAll()
-                _readState.value = UiState.Success(collections)
-            } catch (e: Exception) {
-                _readState.value = UiState.Error(e.localizedMessage ?: "Gagal memuat data baca")
+            val collections = readEndpoints.map { endpoint ->
+                fetchCollection(token, endpoint)
             }
+            _readState.value = UiState.Success(collections)
         }
     }
+
+    private suspend fun fetchCollection(token: String, endpoint: ReadEndpoint): ReadCollection {
+        return try {
+            val response = apiService.getRawReadCollection(endpoint.path, token)
+            if (!response.isSuccessful) {
+                return endpoint.errorCollection("HTTP ${response.code()} ${response.message()}")
+            }
+
+            val raw = response.body()?.string().orEmpty()
+            if (raw.isBlank()) return endpoint.errorCollection("Respons kosong")
+
+            val root = JSONObject(raw)
+            val payload = root.opt("data")
+            val items = payload.extractArray()
+            val count = when (payload) {
+                is JSONObject -> payload.optInt("total", items.length())
+                is JSONArray -> items.length()
+                else -> items.length()
+            }
+
+            val records = (0 until minOf(items.length(), 5)).mapNotNull { index ->
+                items.optJSONObject(index)?.let(endpoint.mapper)
+            }
+
+            ReadCollection(
+                key = endpoint.key,
+                title = endpoint.title,
+                endpoint = "GET /${endpoint.path}",
+                description = endpoint.description,
+                count = count,
+                records = records,
+                canCreate = endpoint.canCreate
+            )
+        } catch (e: Exception) {
+            endpoint.errorCollection(e.localizedMessage ?: "Gagal membaca endpoint")
+        }
+    }
+
+    private fun Any?.extractArray(): JSONArray {
+        return when (this) {
+            is JSONArray -> this
+            is JSONObject -> {
+                when {
+                    opt("data") is JSONArray -> getJSONArray("data")
+                    opt("items") is JSONArray -> getJSONArray("items")
+                    opt("records") is JSONArray -> getJSONArray("records")
+                    else -> JSONArray().put(this)
+                }
+            }
+            else -> JSONArray()
+        }
+    }
+
+    private fun ReadEndpoint.errorCollection(message: String): ReadCollection {
+        return ReadCollection(
+            key = key,
+            title = title,
+            endpoint = "GET /$path",
+            description = description,
+            count = 0,
+            records = listOf(
+                ReadRecord(
+                    id = "error",
+                    title = "Gagal memuat",
+                    subtitle = message,
+                    meta = "Endpoint tetap tersedia untuk dicoba ulang"
+                )
+            ),
+            canCreate = canCreate
+        )
+    }
+
+    private fun JSONObject.text(vararg keys: String, fallback: String = "-"): String {
+        keys.forEach { key ->
+            val value = optString(key, "")
+            if (value.isNotBlank() && value != "null") return value
+        }
+        return fallback
+    }
+
+    private val readEndpoints = listOf(
+        ReadEndpoint(
+            key = "balita",
+            title = "Balita",
+            path = "balitas",
+            description = "Anak balita yang sudah punya data pertumbuhan"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = it.text("nama", fallback = "Balita #${it.text("id")}"),
+                subtitle = it.text("kategori_usia", fallback = "Data balita"),
+                meta = "Keluarga ${it.text("keluarga_id")}"
+            )
+        },
+        ReadEndpoint(
+            key = "bumil",
+            title = "Bumil",
+            path = "bumils",
+            description = "Ibu hamil dan data ASI/kehamilan"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = "Anggota ${it.text("anggota_id")}",
+                subtitle = "Hamil ke-${it.text("hamil_ke")}",
+                meta = if (it.optBoolean("asi_eksklusif", false)) "ASI eksklusif" else "Belum ASI eksklusif"
+            )
+        },
+        ReadEndpoint(
+            key = "wuspus",
+            title = "WUS/PUS",
+            path = "wus-pus",
+            description = "Wanita/pasangan usia subur dan statusnya"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = "Anggota ${it.text("anggota_id")}",
+                subtitle = it.text("status_kategori", fallback = "Status belum diisi"),
+                meta = it.text("nama_suami", fallback = "Tanpa nama suami")
+            )
+        },
+        ReadEndpoint(
+            key = "kb",
+            title = "KB",
+            path = "kbs",
+            description = "Riwayat dan status penggunaan kontrasepsi"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = it.text("jenis_kb", fallback = "KB #${it.text("id")}"),
+                subtitle = if (it.optBoolean("status_aktif", false)) "Aktif" else "Tidak aktif",
+                meta = it.text("tanggal_mulai_kb", fallback = "Tanggal belum diisi")
+            )
+        },
+        ReadEndpoint(
+            key = "kia",
+            title = "KIA",
+            path = "kias",
+            description = "Indikator kesehatan ibu dan anak"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = "KIA #${it.text("id")}",
+                subtitle = "Ibu periksa: ${it.optInt("ibu_hamil_rutin_periksa", 0)}",
+                meta = "Imunisasi: ${it.optInt("imunisasi_bayi_balita", 0)}"
+            )
+        },
+        ReadEndpoint(
+            key = "phbs",
+            title = "PHBS",
+            path = "phbs",
+            description = "Perilaku hidup bersih dan sehat"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = "PHBS #${it.text("id")}",
+                subtitle = "Air bersih: ${it.optInt("rumah_air_bersih", 0)}",
+                meta = "Jamban sehat: ${it.optInt("rumah_jamban_sehat", 0)}"
+            )
+        },
+        ReadEndpoint(
+            key = "stunting",
+            title = "Peduli Stunting",
+            path = "peduli-stuntings",
+            description = "Risiko dan pemantauan stunting"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = "Stunting #${it.text("id")}",
+                subtitle = "Balita stunting: ${it.optInt("balita_stunting", 0)}",
+                meta = "Kurang gizi: ${it.optInt("balita_kurang_gizi", 0)}"
+            )
+        },
+        ReadEndpoint(
+            key = "kebakaran",
+            title = "Siaga Kebakaran",
+            path = "siaga-kebakarans",
+            description = "Indikator kesiapsiagaan rumah"
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = "Kebakaran #${it.text("id")}",
+                subtitle = "APAR/air: ${it.optInt("rumah_punya_apar_atau_air", 0)}",
+                meta = "P3K: ${it.optInt("rumah_punya_p3k", 0)}"
+            )
+        },
+        ReadEndpoint(
+            key = "logs",
+            title = "Log Aktivitas",
+            path = "log-aktivitas",
+            description = "Jejak aktivitas sistem dan kader",
+            canCreate = false
+        ) {
+            ReadRecord(
+                id = it.text("id"),
+                title = it.text("description", fallback = "Aktivitas #${it.text("id")}"),
+                subtitle = it.text("event", "log_name", fallback = "Log"),
+                meta = it.text("created_at", fallback = "Waktu tidak tersedia")
+            )
+        }
+    )
 }
