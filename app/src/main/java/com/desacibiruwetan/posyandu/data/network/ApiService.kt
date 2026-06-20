@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.data.network
 
+import androidx.room.Update
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
@@ -11,6 +12,8 @@ import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
+import com.desacibiruwetan.posyandu.data.model.PeduliStuntingData
+import com.desacibiruwetan.posyandu.data.model.PeduliStuntingReq
 import com.desacibiruwetan.posyandu.data.model.PhbsData
 import com.desacibiruwetan.posyandu.data.model.PhbsReq
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
@@ -282,6 +285,39 @@ interface ApiService {
         @Path("id") id: Int?,
         @Body request: PhbsReq
     ): Response<BaseResponse<PhbsData>>
+
+
+    @GET("peduli-stuntings")
+    suspend fun getAllPeduliStunting(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<PeduliStuntingData>>>
+
+
+    @POST("peduli-stuntings")
+    suspend fun getPeduliStunting(
+        @Header("Authorization") token: String,
+        @Body request: PeduliStuntingReq
+    ): Response<BaseResponse<PeduliStuntingData>>
+
+    @GET("peduli-stuntings/{id}")
+    suspend fun getPeduliStuntingById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<PeduliStuntingData>>
+
+    @PUT("peduli-stuntings/{id}")
+    suspend fun putPeduliStunting(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: PeduliStuntingReq
+    ): Response<BaseResponse<PeduliStuntingData>>
+
+
+    @DELETE("peduli-stuntings/{id}")
+    suspend fun deletePeduliStunting(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<Any>>
 
 
 }
