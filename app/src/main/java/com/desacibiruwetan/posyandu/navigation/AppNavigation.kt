@@ -23,6 +23,7 @@ import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
 import com.desacibiruwetan.posyandu.data.repository.RumahRepository
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 import com.desacibiruwetan.posyandu.utils.SessionManager
@@ -101,6 +102,14 @@ fun AppNavigation() {
                         database.wusPusDao()
                     )
                 ) as T
+        }
+    )
+
+    val dataReadViewModel: DataReadViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                DataReadViewModel(apiService) as T
         }
     )
 
@@ -189,7 +198,16 @@ fun AppNavigation() {
                 onAddWargaClick = { navController.navigate(Screen.TambahWarga.route) },
                 onNavigateToDetailWarga = { nikWarga -> navController.navigate("${Screen.DetailWarga.route}/$nikWarga") },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                rumahViewModel = rumahViewModel,
+                keluargaViewModel = keluargaViewModel,
+                dataReadViewModel = dataReadViewModel,
+                onNavigateToRumahKeluarga = { navController.navigate(Screen.RumahKeluarga.route) },
+                onNavigateToUpdateBalita = { navController.navigate(Screen.UpdateBalita.route) },
+                onNavigateToUpdateBumil = { navController.navigate(Screen.UpdateBumil.route) },
+                onNavigateToUpdateWusPus = { navController.navigate(Screen.UpdateWusPus.route) },
+                onNavigateToUpdateKb = { navController.navigate(Screen.UpdateKb.route) },
+                onNavigateToProgram = { route -> navController.navigate(route) }
             )
         }
 

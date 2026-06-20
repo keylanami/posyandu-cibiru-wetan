@@ -34,7 +34,7 @@ fun AppNavBar(
     selectedIndex: Int,
     onItemSelected: (Int) -> Unit
 ) {
-    val items = listOf("Beranda", "Warga", "Riwayat", "Profil")
+    val items = listOf("Beranda", "Data", "Riwayat", "Profil")
     val icons = listOf(
         Icons.Default.Home,
         Icons.Default.People,

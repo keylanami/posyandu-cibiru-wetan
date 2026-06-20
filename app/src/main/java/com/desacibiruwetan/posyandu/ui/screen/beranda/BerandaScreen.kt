@@ -230,7 +230,7 @@ private fun PrimaryWorkflow(onSearch: () -> Unit, onAdd: () -> Unit, onEvent: ()
     ) {
         Text("Alur cepat kader", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            WorkflowButton("Cari", "warga", Icons.Default.Search, PrimaryGreen, onSearch, Modifier.weight(1f))
+            WorkflowButton("Baca", "data", Icons.Default.Search, PrimaryGreen, onSearch, Modifier.weight(1f))
             WorkflowButton("Tambah", "rumah/KK", Icons.Default.Add, HealthBlue, onAdd, Modifier.weight(1f))
             WorkflowButton("Catat", "kejadian", Icons.Default.EditNote, ActionAmber, onEvent, Modifier.weight(1f))
         }
