@@ -4,7 +4,7 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "tabel_phbs")
-data class Phbs(
+data class PhbsEntity(
     @PrimaryKey(true)
     val idPhbsLocal: Int = 0,
 
