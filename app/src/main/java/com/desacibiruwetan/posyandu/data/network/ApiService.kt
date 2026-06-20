@@ -14,12 +14,15 @@ import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.model.RumahData
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
+import com.desacibiruwetan.posyandu.data.model.WusPusData
+import com.desacibiruwetan.posyandu.data.model.WusPusReq
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
@@ -204,6 +207,50 @@ interface ApiService {
     suspend fun deleteBumil(
         @Header("Authorization") token: String,
         @Path("bumilId") bumilId: Int
+    ): Response<BaseResponse<Any>>
+
+
+    @GET("wus-pus")
+    suspend fun getAllWusPus(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<WusPusData>>
+
+
+    @GET("anggotas/{anggotaId}/wus-pus")
+    suspend fun getWusPusById(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int
+    ): Response<BaseResponse<WusPusData>>
+
+
+    @POST("anggotas/{anggotaId}/wus-pus")
+    suspend fun postWusPus(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int,
+        @Body request: WusPusReq
+    ): Response<BaseResponse<WusPusData>>
+
+
+    @PUT("anggotas/{anggotaId}/wus-pus")
+    suspend fun putWusPus(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int,
+        @Body request: WusPusReq
+    ): Response<BaseResponse<WusPusData>>
+
+
+    @PATCH("anggotas/{anggotaId}/wus-pus")
+    suspend fun patchWusPus(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int,
+        @Body request: WusPusReq
+    ): Response<BaseResponse<WusPusData>>
+
+
+    @DELETE("anggotas/{anggotaId}/wus-pus")
+    suspend fun deleteWusPus(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int
     ): Response<BaseResponse<Any>>
 
 

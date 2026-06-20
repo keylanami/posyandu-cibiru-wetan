@@ -9,6 +9,7 @@ import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
+import com.desacibiruwetan.posyandu.data.local.dao.WusPusDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
@@ -21,6 +22,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun anggotaDao(): AnggotaDao
     abstract fun balitaDao(): BalitaDao
     abstract fun bumilDao(): BumilDao
+    abstract fun wusPusDao(): WusPusDao
 
     companion object {
         @Volatile
