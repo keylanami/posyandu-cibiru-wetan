@@ -3,10 +3,8 @@ package com.desacibiruwetan.posyandu.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
-import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BumilData
-import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.data.repository.AnggotaRepository
@@ -204,7 +202,7 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     fun updateDataBumil(
         token: String,
         anggotaLocalId: Int,
-        anggotaServerId: Int,
+        anggotaServerId: Int?,
         hamilKe: Int,
         asiEksklusif: Boolean,
         tglMulaiAsi: String?,

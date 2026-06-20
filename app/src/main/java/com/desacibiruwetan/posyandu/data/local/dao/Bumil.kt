@@ -17,12 +17,12 @@ interface BumilDao {
     suspend fun updateBumilLocal(entitas: BumilEntity)
 
 
-    @Query("select * from tabel_bumil where anggotaLocalId = :localId or anggotaServerId = :serverId")
-    suspend fun getBumilByAnggotaId(localId: Int, serverId: Int): BumilEntity?
+    @Query("select * from tabel_bumil where anggotaLocalId = :localId or anggotaServerId = :serverId limit 1")
+    suspend fun getBumilByAnggotaId(localId: Int, serverId: Int?): BumilEntity?
 
 
     @Query("DELETE FROM tabel_bumil where idLocalBumil = :localId or bumilServerId = :serverId")
-    suspend fun deleteAllBumil(localId: Int, serverId: Int): BumilEntity?
+    suspend fun deleteAllBumil(localId: Int, serverId: Int?)
 
     @Query("SELECT * FROM tabel_bumil WHERE isSynced = 0")
     suspend fun getBumilBelumSync(): List<BumilEntity>

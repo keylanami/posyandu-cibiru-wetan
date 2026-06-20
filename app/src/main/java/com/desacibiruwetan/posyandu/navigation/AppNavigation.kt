@@ -314,7 +314,6 @@ fun AppNavigation() {
             UpdateBumilScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName,
                 anggotaViewModel = anggotaViewModel
             )
         }

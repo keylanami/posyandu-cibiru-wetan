@@ -319,7 +319,7 @@ class AnggotaRepository(
     suspend fun updateDataBumil(
         token: String,
         anggotaLocalId: Int,
-        anggotaServerId: Int,
+        anggotaServerId: Int?,
         hamilKe: Int,
         asiEksklusif: Boolean,
         tglMulaiAsi: String?,
