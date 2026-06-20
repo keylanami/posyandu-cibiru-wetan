@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.components.items
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,13 +19,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.theme.Inter
+import com.desacibiruwetan.posyandu.ui.theme.BorderGray
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
@@ -33,14 +33,9 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 16.dp,
-                spotColor = Color(0x40CBCBCB),
-                ambientColor = Color(0x40CBCBCB),
-                shape = RoundedCornerShape(15.dp)
-            )
-            .background(color = SurfaceWhite, shape = RoundedCornerShape(15.dp))
-            .padding(24.dp)
+            .background(color = SurfaceWhite, shape = RoundedCornerShape(18.dp))
+            .border(1.dp, BorderGray.copy(alpha = 0.65f), RoundedCornerShape(18.dp))
+            .padding(20.dp)
     ) {
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -55,7 +50,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     text = "Informasi Kependudukan",
                     fontFamily = Inter,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
                     color = PrimaryGreen
                 )
             }
@@ -64,7 +59,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
             Box(modifier = Modifier
                 .fillMaxWidth()
                 .height(1.dp)
-                .background(Color(0xFFDCDCDC)))
+                .background(BorderGray))
             Spacer(modifier = Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth()) {

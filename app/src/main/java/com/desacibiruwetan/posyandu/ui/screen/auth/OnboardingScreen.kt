@@ -1,17 +1,22 @@
 package com.desacibiruwetan.posyandu.ui.screen.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.ui.theme.BorderLight
+import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -33,19 +38,55 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
         Column(
             modifier = Modifier
                 .align(Alignment.Center)
-                .width(368.dp)
-                .background(Color.White, RoundedCornerShape(15.dp))
-                .padding(32.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .padding(24.dp)
         ) {
-            Text("Personalisasi Wilayah", style = MaterialTheme.typography.titleLarge)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(DeepGreen, RoundedCornerShape(28.dp))
+                    .padding(24.dp)
+            ) {
+                Column {
+                    Text(
+                        "Personalisasi Wilayah",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.Bold,
+                        color = SurfaceWhite
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Pilih RT/RW tugas untuk menyesuaikan data dashboard dan pencarian warga.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = SurfaceWhite.copy(alpha = 0.78f)
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(SurfaceWhite, RoundedCornerShape(22.dp))
+                    .border(1.dp, BorderLight, RoundedCornerShape(22.dp))
+                    .padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
             Text(
-                "Pilih wilayah tugas Anda sebagai kader", style = MaterialTheme.typography.bodyLarge
+                "Wilayah Kerja",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                "Data yang tampil akan diprioritaskan sesuai wilayah ini.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextMuted
             )
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // RW Dropdown
             ExposedDropdownMenuBox(
                 expanded = rwExpanded, onExpandedChange = { rwExpanded = !rwExpanded }) {
                 OutlinedTextField(
@@ -57,7 +98,13 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryGreen)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryGreen,
+                        unfocusedBorderColor = BorderLight,
+                        focusedContainerColor = SurfaceWhite,
+                        unfocusedContainerColor = SurfaceWhite
+                    )
                 )
                 ExposedDropdownMenu(
                     expanded = rwExpanded, onDismissRequest = { rwExpanded = false }) {
@@ -71,7 +118,6 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // RT Dropdown
             ExposedDropdownMenuBox(
                 expanded = rtExpanded,
                 onExpandedChange = { if (selectedRW.isNotEmpty()) rtExpanded = !rtExpanded }) {
@@ -90,7 +136,15 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                         .menuAnchor()
                         .fillMaxWidth(),
                     enabled = selectedRW.isNotEmpty(),
-                    colors = OutlinedTextFieldDefaults.colors(focusedBorderColor = PrimaryGreen)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = PrimaryGreen,
+                        unfocusedBorderColor = BorderLight,
+                        focusedContainerColor = SurfaceWhite,
+                        unfocusedContainerColor = SurfaceWhite,
+                        disabledBorderColor = BorderLight,
+                        disabledContainerColor = BgMint
+                    )
                 )
                 ExposedDropdownMenu(
                     expanded = rtExpanded, onDismissRequest = { rtExpanded = false }) {
@@ -109,6 +163,7 @@ fun PersonalizationScreen(onComplete: () -> Unit) {
                 onClick = onComplete,
                 enabled = selectedRW.isNotEmpty() && selectedRT.isNotEmpty()
             )
+            }
         }
     }
 }

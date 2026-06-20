@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.BorderGray
 
 @Composable
 fun AppSearchBar(
@@ -49,12 +50,12 @@ fun AppSearchBar(
             Row(
                 modifier = modifier
                     .fillMaxWidth()
-                    .height(45.dp)
-                    .background(color = SurfaceWhite, shape = RoundedCornerShape(5.dp))
+                    .height(54.dp)
+                    .background(color = SurfaceWhite, shape = RoundedCornerShape(16.dp))
                     .border(
                         width = 1.dp,
-                        color = Color(0xFFCFCFCF),
-                        shape = RoundedCornerShape(5.dp)
+                        color = BorderGray,
+                        shape = RoundedCornerShape(16.dp)
                     )
                     .padding(horizontal = 16.dp),
                 verticalAlignment = Alignment.CenterVertically
@@ -62,7 +63,7 @@ fun AppSearchBar(
                 Icon(
                     imageVector = Icons.Default.Search,
                     contentDescription = "Search Icon",
-                    tint = Color(0xFFC9C9C9),
+                    tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp)
                 )
                 Spacer(modifier = Modifier.width(12.dp))
@@ -72,8 +73,8 @@ fun AppSearchBar(
                             text = placeholder,
                             fontFamily = Inter,
                             fontWeight = FontWeight.Medium,
-                            fontSize = 12.sp,
-                            color = Color(0xFFC9C9C9)
+                            fontSize = 14.sp,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
                         )
                     }
                     innerTextField()

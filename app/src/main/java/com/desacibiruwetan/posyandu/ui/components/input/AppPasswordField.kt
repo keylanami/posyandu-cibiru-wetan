@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
 import com.desacibiruwetan.posyandu.ui.theme.TextPlaceholder
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 
 @Composable
 fun AppPasswordField(
@@ -53,14 +54,14 @@ fun AppPasswordField(
 
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
-    val bgColor = if (isDarkTheme) Color(0xFF303030) else SurfaceLightGray
+    val bgColor = if (isDarkTheme) Color(0xFF20302C) else SurfaceLightGray
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp)
+            .padding(bottom = 12.dp)
     ) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        Text(text = label, style = MaterialTheme.typography.labelLarge, color = TextMuted)
         Spacer(modifier = Modifier.height(8.dp))
 
         BasicTextField(
@@ -74,20 +75,25 @@ fun AppPasswordField(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(38.dp)
-                        .background(color = bgColor, shape = RoundedCornerShape(5.dp))
+                        .height(52.dp)
+                        .background(color = bgColor, shape = RoundedCornerShape(14.dp))
                         .border(
-                            width = if (isFocused) 1.5.dp else 1.dp,
+                            width = if (isFocused) 2.dp else 1.dp,
                             color = borderColor,
-                            shape = RoundedCornerShape(5.dp)
+                            shape = RoundedCornerShape(14.dp)
                         )
-                        .padding(horizontal = 12.dp),
+                        .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Box(modifier = Modifier.weight(1f)) {
                         if (value.isEmpty()) {
-                            Text(text = placeholder, style = MaterialTheme.typography.labelMedium)
+                            Text(
+                                text = placeholder,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.36f)
+                                )
+                            )
                         }
                         innerTextField()
                     }
@@ -107,7 +113,7 @@ fun AppPasswordField(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 11.sp,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = 6.dp)
             )
         }
     }

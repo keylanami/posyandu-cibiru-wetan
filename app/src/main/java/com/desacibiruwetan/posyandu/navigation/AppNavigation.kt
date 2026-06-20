@@ -263,7 +263,6 @@ fun AppNavigation() {
             UpdateWusPusScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName,
                 anggotaViewModel = anggotaViewModel
             )
         }

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.ui.theme.TextPlaceholder
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,8 +42,8 @@ fun AppDropdownField(
 
     Column(modifier = modifier
         .fillMaxWidth()
-        .padding(bottom = 8.dp)) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        .padding(bottom = 12.dp)) {
+        Text(text = label, style = MaterialTheme.typography.labelLarge, color = TextMuted)
         Spacer(modifier = Modifier.height(8.dp))
 
         ExposedDropdownMenuBox(
@@ -53,10 +54,10 @@ fun AppDropdownField(
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
-                    .height(38.dp)
-                    .background(color = SurfaceLightGray, shape = RoundedCornerShape(5.dp))
-                    .border(width = 1.dp, color = BorderGray, shape = RoundedCornerShape(5.dp))
-                    .padding(horizontal = 12.dp),
+                    .height(52.dp)
+                    .background(color = SurfaceLightGray, shape = RoundedCornerShape(14.dp))
+                    .border(width = 1.dp, color = BorderGray, shape = RoundedCornerShape(14.dp))
+                    .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
                 if (value.isEmpty()) {

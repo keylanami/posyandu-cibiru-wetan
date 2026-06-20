@@ -37,9 +37,9 @@ fun PrimaryButton(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(51.dp)
-            .clip(RoundedCornerShape(10.dp))
-            .background(if (enabled) containerColor else Color.Gray)
+            .height(54.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(if (enabled) containerColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.18f))
             .clickable(enabled = enabled) { onClick() },
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
@@ -57,8 +57,8 @@ fun PrimaryButton(
             text = text,
             fontFamily = Inter,
             fontWeight = FontWeight.SemiBold,
-            fontSize = 12.sp,
-            color = contentColor
+            fontSize = 14.sp,
+            color = if (enabled) contentColor else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.45f)
         )
     }
 }

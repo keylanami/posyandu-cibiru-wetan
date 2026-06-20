@@ -1,10 +1,13 @@
 package com.desacibiruwetan.posyandu.ui.components.input
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.RadioButtonChecked
 import androidx.compose.material.icons.filled.RadioButtonUnchecked
@@ -19,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 
 @Composable
 fun AppRadioButton(
@@ -28,7 +32,10 @@ fun AppRadioButton(
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { onClick() }
+        modifier = Modifier
+            .background(if (isSelected) FreshTeal else Color.Transparent, RoundedCornerShape(100.dp))
+            .clickable { onClick() }
+            .padding(horizontal = 10.dp, vertical = 8.dp)
     ) {
         Icon(
             imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
@@ -40,8 +47,8 @@ fun AppRadioButton(
         Text(
             text = text,
             fontFamily = Inter,
-            fontWeight = FontWeight.Normal,
-            fontSize = 12.sp,
+            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium,
+            fontSize = 13.sp,
             color = Color(0xFF272727)
         )
     }

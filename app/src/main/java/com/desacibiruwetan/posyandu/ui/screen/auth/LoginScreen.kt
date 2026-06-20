@@ -1,21 +1,40 @@
 package com.desacibiruwetan.posyandu.ui.screen.auth
 
-import android.content.Context
 import android.widget.Toast
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
@@ -25,17 +44,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.network.UiState
-import com.desacibiruwetan.posyandu.ui.components.bar.AuthHeader
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppPasswordField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PosyanduCibiruTheme
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
+import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
 fun LoginScreenWrapper(
@@ -46,7 +67,6 @@ fun LoginScreenWrapper(
     val context = LocalContext.current
     val loginState by viewmodel.loginState.collectAsState()
     var isDarkTheme by remember { mutableStateOf(false) }
-
 
     LaunchedEffect(loginState) {
         when (loginState) {
@@ -61,12 +81,11 @@ fun LoginScreenWrapper(
             }
 
             is UiState.Error -> {
-                val errorMessage = (loginState as UiState.Error).message
-                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, (loginState as UiState.Error).message, Toast.LENGTH_LONG).show()
                 viewmodel.resetLoginState()
             }
 
-            else -> {}
+            else -> Unit
         }
     }
 
@@ -74,14 +93,8 @@ fun LoginScreenWrapper(
         AnimatedContent(
             targetState = isDarkTheme,
             transitionSpec = {
-                (fadeIn(tween(600)) + scaleIn(
-                    tween(600),
-                    transformOrigin = TransformOrigin(1f, 0f)
-                )) togetherWith
-                        (fadeOut(tween(600)) + scaleOut(
-                            tween(600),
-                            transformOrigin = TransformOrigin(1f, 0f)
-                        ))
+                (fadeIn(tween(450)) + scaleIn(tween(450), transformOrigin = TransformOrigin(1f, 0f))) togetherWith
+                    (fadeOut(tween(450)) + scaleOut(tween(450), transformOrigin = TransformOrigin(1f, 0f)))
             },
             label = "ThemeWaveTransition"
         ) { targetTheme ->
@@ -98,15 +111,14 @@ fun LoginScreenWrapper(
             }
         }
 
-        // Overlay Loading
         if (loginState is UiState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f)),
+                    .background(Color.Black.copy(alpha = 0.30f)),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Color.White)
+                CircularProgressIndicator(color = SurfaceWhite)
             }
         }
     }
@@ -128,20 +140,26 @@ fun LoginScreen(
     fun validateLogin() {
         var isValid = true
         if (emailText.isBlank()) {
-            emailError = "Email tidak boleh kosong"; isValid = false
+            emailError = "Email tidak boleh kosong"
+            isValid = false
         } else if (!android.util.Patterns.EMAIL_ADDRESS.matcher(emailText).matches()) {
-            emailError = "Format email tidak valid"; isValid = false
-        } else emailError = null
+            emailError = "Format email tidak valid"
+            isValid = false
+        } else {
+            emailError = null
+        }
 
         if (passwordText.isBlank()) {
-            passwordError = "Password tidak boleh kosong"; isValid = false
+            passwordError = "Password tidak boleh kosong"
+            isValid = false
         } else if (passwordText.length < 6) {
-            passwordError = "Password minimal 6 karakter"; isValid = false
-        } else passwordError = null
-
-        if (isValid && !isLoading) {
-            onLoginSubmit(emailText, passwordText)
+            passwordError = "Password minimal 6 karakter"
+            isValid = false
+        } else {
+            passwordError = null
         }
+
+        if (isValid && !isLoading) onLoginSubmit(emailText, passwordText)
     }
 
     Box(
@@ -149,30 +167,79 @@ fun LoginScreen(
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(278.dp)
+                .background(DeepGreen)
+        )
+
         IconButton(
             onClick = onThemeToggle,
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(16.dp)
+                .padding(18.dp)
         ) {
             Icon(
                 imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
                 contentDescription = "Toggle Theme",
-                tint = MaterialTheme.colorScheme.primary
+                tint = SurfaceWhite
             )
         }
 
-        Box(
+        Column(
             modifier = Modifier
-                .align(Alignment.Center)
-                .width(368.dp)
-                .shadow(16.6.dp, shape = RoundedCornerShape(15.dp))
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(15.dp))
-                .padding(top = 40.dp, bottom = 32.dp, start = 23.dp, end = 23.dp)
+                .fillMaxSize()
+                .padding(horizontal = 20.dp)
         ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                AuthHeader()
-                Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(64.dp))
+
+            Text(
+                text = "Posyandu Cibiru Wetan",
+                style = MaterialTheme.typography.headlineMedium,
+                color = SurfaceWhite
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Kelola data warga, kesehatan keluarga, dan pelaporan kader dalam satu alur kerja yang rapi.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SurfaceWhite.copy(alpha = 0.82f)
+            )
+
+            Spacer(modifier = Modifier.height(34.dp))
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+                    .padding(22.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .background(FreshTeal, RoundedCornerShape(18.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = "Masuk sebagai kader",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = PrimaryGreen
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Text(
+                    text = "Selamat datang kembali",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "Gunakan akun kader yang sudah terdaftar.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextMuted
+                )
+
+                Spacer(modifier = Modifier.height(22.dp))
 
                 AppTextField(
                     label = "Email",
@@ -191,22 +258,20 @@ fun LoginScreen(
                     isDarkTheme = isDarkTheme
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Ubah text berdasarkan status loading
                 PrimaryButton(
                     text = if (isLoading) "Memeriksa..." else "Masuk",
                     onClick = { validateLogin() }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
                     text = buildAnnotatedString {
                         withStyle(
                             SpanStyle(
                                 color = MaterialTheme.colorScheme.onSurface,
-                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Medium,
                                 fontFamily = Inter
                             )
@@ -214,7 +279,6 @@ fun LoginScreen(
                         withStyle(
                             SpanStyle(
                                 color = PrimaryGreen,
-                                fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 fontFamily = Inter
                             )
@@ -223,14 +287,18 @@ fun LoginScreen(
                     modifier = Modifier.clickable(enabled = !isLoading) { onNavigateToRegister() }
                 )
             }
-        }
 
-        Text(
-            text = "© 2026 Pemerintah Desa Cibiru Wetan",
-            style = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 40.dp)
-        )
+            Spacer(modifier = Modifier.weight(1f))
+
+            Text(
+                text = "(c) 2026 Pemerintah Desa Cibiru Wetan",
+                style = MaterialTheme.typography.labelMedium.copy(
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f)
+                ),
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .padding(bottom = 24.dp)
+            )
+        }
     }
 }

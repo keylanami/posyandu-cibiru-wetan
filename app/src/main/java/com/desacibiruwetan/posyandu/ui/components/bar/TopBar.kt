@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Person
@@ -27,6 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.Inter
+import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
@@ -39,28 +40,35 @@ fun AppTopBar(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = PrimaryGreen)
+            .background(color = DeepGreen)
             .statusBarsPadding()
-            .height(64.dp)
-            .padding(horizontal = 24.dp),
+            .height(72.dp)
+            .padding(horizontal = 20.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-            contentDescription = "Kembali",
-            tint = SurfaceWhite,
+        Box(
             modifier = Modifier
-                .size(28.dp)
-                .clickable { onBackClick() }
-        )
+                .size(42.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(SurfaceWhite.copy(alpha = 0.12f))
+                .clickable { onBackClick() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Kembali",
+                tint = SurfaceWhite,
+                modifier = Modifier.size(24.dp)
+            )
+        }
 
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(14.dp))
 
         Text(
             text = title,
             fontFamily = Inter,
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
+            fontSize = 17.sp,
             color = SurfaceWhite,
             modifier = Modifier.weight(1f)
         )
@@ -76,13 +84,20 @@ fun AppTopBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = cleanName,
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 12.sp,
-                    color = SurfaceWhite
-                )
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(100.dp))
+                        .background(PrimaryGreen.copy(alpha = 0.22f))
+                        .padding(horizontal = 12.dp, vertical = 7.dp)
+                ) {
+                    Text(
+                        text = cleanName,
+                        fontFamily = Inter,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 12.sp,
+                        color = SurfaceWhite
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
             }
         }

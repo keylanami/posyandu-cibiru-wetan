@@ -2,6 +2,7 @@ package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -18,7 +19,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -31,6 +31,7 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
@@ -170,8 +171,8 @@ fun TambahWargaScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
-                    .background(SurfaceWhite, RoundedCornerShape(15.dp))
+                    .background(SurfaceWhite, RoundedCornerShape(18.dp))
+                    .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
                     .padding(24.dp)
             ) {
                 Column {
@@ -282,8 +283,8 @@ fun TambahWargaScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
-                    .background(SurfaceWhite, RoundedCornerShape(15.dp))
+                    .background(SurfaceWhite, RoundedCornerShape(18.dp))
+                    .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
                     .padding(24.dp)
             ) {
                 Column {
