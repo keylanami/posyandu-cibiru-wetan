@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -52,6 +51,7 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import java.util.Calendar
 
@@ -115,8 +115,7 @@ fun EditWargaScreen(
     nikWarga: String?
 ) {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
+    val token = SessionManager.getAuthorizationHeader(context)
 
     val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
     val anggotaLokal = listWarga.find { it.nik == nikWarga }

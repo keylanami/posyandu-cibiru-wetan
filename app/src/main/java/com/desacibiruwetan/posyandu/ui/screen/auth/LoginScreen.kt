@@ -35,7 +35,7 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PosyanduCibiruTheme
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
-import androidx.core.content.edit
+import com.desacibiruwetan.posyandu.utils.SessionManager
 
 @Composable
 fun LoginScreenWrapper(
@@ -53,12 +53,7 @@ fun LoginScreenWrapper(
             is UiState.Success -> {
                 val loginData = (loginState as UiState.Success).data.data
                 if (loginData != null) {
-                    val prefs = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-                    prefs.edit {
-                        putString("TOKEN", loginData.token)
-                            .putString("USER_RT", loginData.user.rt ?: "")
-                            .putString("USER_RW", loginData.user.rw ?: "")
-                    }
+                    SessionManager.saveSession(context, loginData.token, loginData.user.rt, loginData.user.rw)
                 }
                 Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
                 viewmodel.resetLoginState()

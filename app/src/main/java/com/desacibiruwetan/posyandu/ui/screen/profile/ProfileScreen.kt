@@ -1,6 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.profile
 
-import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -54,6 +54,7 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
@@ -64,9 +65,7 @@ fun ProfilScreen(
     authViewModel: AuthViewmodel
 ) {
     val context = LocalContext.current
-    val sharedPreferences =
-        remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
-    val token = remember { sharedPreferences.getString("TOKEN", "") ?: "" }
+    val token = remember { SessionManager.getRawToken(context) }
 
     val getMeState by authViewModel.getMeState.collectAsState()
 
@@ -222,7 +221,9 @@ fun ProfilScreen(
                 PrimaryButton(
                     text = "Update Data",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO: update data */ }
+                    onClick = {
+                        Toast.makeText(context, "Perubahan profil siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))

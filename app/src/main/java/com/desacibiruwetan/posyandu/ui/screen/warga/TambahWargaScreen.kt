@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -36,6 +35,7 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import java.util.Calendar
@@ -71,9 +71,8 @@ fun TambahWargaScreen(
     keluargaViewModel: KeluargaViewmodel
 ) {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
-    val token = if (rawToken.isNotEmpty()) "Bearer $rawToken" else ""
+    val sharedPreferences = remember { SessionManager.getPreferences(context) }
+    val token = SessionManager.getAuthorizationHeader(context)
     val userRt = sharedPreferences.getString("USER_RT", "04") ?: "04"
     val userRw = sharedPreferences.getString("USER_RW", "02") ?: "02"
 

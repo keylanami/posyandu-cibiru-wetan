@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -30,6 +29,7 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 private fun convertServerDateToRaw(serverDate: String?): String {
@@ -65,8 +65,7 @@ fun UpdateWusPusScreen(
     anggotaViewModel: AnggotaViewmodel,
 ) {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
+    val token = SessionManager.getAuthorizationHeader(context)
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }

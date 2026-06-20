@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -30,6 +29,7 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 
@@ -43,9 +43,8 @@ fun RumahKeluargaScreen(
 ) {
     val context = LocalContext.current
 
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
-    val realToken = if (rawToken.isNotEmpty()) "Bearer $rawToken" else ""
+    val sharedPreferences = remember { SessionManager.getPreferences(context) }
+    val realToken = SessionManager.getAuthorizationHeader(context)
 
     var namaWarga by remember { mutableStateOf("") }
     var noRumah by remember { mutableStateOf("") }

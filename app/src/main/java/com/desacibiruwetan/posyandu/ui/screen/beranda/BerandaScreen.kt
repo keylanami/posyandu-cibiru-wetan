@@ -1,7 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.beranda
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,44 +14,43 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Groups
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.PregnantWoman
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.navigation.Screen
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
-import com.desacibiruwetan.posyandu.ui.components.button.LargeActionCard
-import com.desacibiruwetan.posyandu.ui.components.button.SmallActionCard
 import com.desacibiruwetan.posyandu.ui.components.dialog.PilotSelectionDialog
-import com.desacibiruwetan.posyandu.ui.components.items.RecentHistoryItem
+import com.desacibiruwetan.posyandu.ui.components.items.SyncStatusBadge
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
-import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
@@ -88,9 +87,7 @@ fun DashboardScreen(
                     "Kesehatan PUS" -> Screen.PilotKesehatanPus.route
                     else -> ""
                 }
-                if (route.isNotEmpty()) {
-                    onNavigateToPilot(route)
-                }
+                if (route.isNotEmpty()) onNavigateToPilot(route)
             }
         )
     }
@@ -102,246 +99,179 @@ fun DashboardScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(bottom = paddingValues.calculateBottomPadding())
+                .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            Box(modifier = Modifier.fillMaxWidth()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(179.dp)
-                        .background(
-                            color = PrimaryGreen,
-                            shape = RoundedCornerShape(bottomStart = 64.5.dp, bottomEnd = 64.5.dp)
-                        )
+            DashboardHeader(userName = userName)
+
+            SectionTitle("Aksi utama")
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+                DashboardAction(
+                    title = "Cari Warga",
+                    subtitle = "Lihat dan buka data",
+                    icon = Icons.Default.People,
+                    onClick = onNavigateToCariWarga,
+                    modifier = Modifier.weight(1f)
                 )
-
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(start = 24.dp, end = 24.dp, top = 40.dp, bottom = 24.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(CircleShape)
-                                .background(Color.White),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Person,
-                                contentDescription = "Profile",
-                                tint = PrimaryGreen,
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
-                        Spacer(modifier = Modifier.width(16.dp))
-
-                        Text(
-                            text = userName,
-                            fontFamily = Inter,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 15.sp,
-                            color = Color.White
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 24.dp)
-                            .shadow(
-                                16.dp,
-                                spotColor = Color(0x40DFDFDF),
-                                shape = RoundedCornerShape(15.dp)
-                            )
-                            .background(Color.White, RoundedCornerShape(15.dp))
-                            .border(1.dp, Color(0xFFE9E9E9), RoundedCornerShape(15.dp))
-                            .padding(24.dp)
-                    ) {
-                        Column {
-                            Text(
-                                text = "Cari & Lihat Data",
-                                fontFamily = Inter,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 13.sp,
-                                color = Color(0xFF272727)
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                LargeActionCard(
-                                    "Cari Warga",
-                                    Icons.Default.People,
-                                    Color(0xFFC7FFEC),
-                                    onClick = onNavigateToCariWarga,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                LargeActionCard(
-                                    "Rumah & Keluarga",
-                                    Icons.Default.Home,
-                                    Color(0xFFC7FFEC),
-                                    onClick = onNavigateToRumahKeluarga,
-                                    modifier = Modifier.weight(1f)
-                                )
-                            }
-                        }
-                    }
-                }
+                DashboardAction(
+                    title = "Catat Kejadian",
+                    subtitle = "Kelahiran, pindah, wafat",
+                    icon = Icons.Default.Edit,
+                    onClick = onNavigateToCatatKejadian,
+                    modifier = Modifier.weight(1f)
+                )
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Column(modifier = Modifier.padding(horizontal = 24.dp)) {
-                Text(
-                    "Perbarui Data",
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp,
-                    color = Color(0xFF272727)
-                )
-                Spacer(modifier = Modifier.height(12.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SmallActionCard(
-                        "Catat Kejadian",
-                        Icons.Default.Edit,
-                        Color(0xFFFFFFC7),
-                        onClick = onNavigateToCatatKejadian,
-                        modifier = Modifier.weight(1f)
-                    )
-                    SmallActionCard(
-                        "Wus/Pus",
-                        Icons.Default.Favorite,
-                        Color(0xFFD6E4FF),
-                        onClick = onNavigateToUpdateWusPus,
-                        modifier = Modifier.weight(1f)
-                    )
-                    SmallActionCard(
-                        "Bumil",
-                        Icons.Default.Face,
-                        Color(0xFFFFD6E4),
-                        onClick = onNavigateToBumil,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SmallActionCard(
-                        "Balita",
-                        Icons.Default.ChildCare,
-                        Color(0xFFC7FFEC),
-                        onClick = onNavigateToUpdateBalita,
-                        modifier = Modifier.weight(1f)
-                    )
-                    SmallActionCard(
-                        "KB",
-                        Icons.Default.People,
-                        Color(0xFFFFFFC7),
-                        onClick = onNavigateToUpdateKb,
-                        modifier = Modifier.weight(1f)
-                    )
-                    SmallActionCard(
-                        "Administrasi RT",
-                        Icons.Default.Settings,
-                        Color(0xFFD6E4FF),
-                        onClick = onNavigateToAdministrasiRt,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    SmallActionCard(
-                        "Pilot",
-                        Icons.Default.Face,
-                        Color(0xFFC7FFEC),
-                        onClick = { showPilotDialog = true },
-                        modifier = Modifier.weight(1f)
-                    )
-                    Spacer(modifier = Modifier.weight(2f))
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(123.dp)
-                        .background(Color(0xFF1B9E75), RoundedCornerShape(15.dp))
-                        .padding(24.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Column {
-                        Text(
-                            "Data akurat, warga sejahtera",
-                            fontFamily = Inter,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 20.sp,
-                            color = Color.White
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            "Ayo jaga dan tingkatkan kesejahteraan warga bersama-sama",
-                            fontFamily = Inter,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 12.sp,
-                            color = Color.White
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(Color(0xFFF4FAF8), RoundedCornerShape(15.dp))
-                        .border(1.dp, Color(0xFFE9E9E9), RoundedCornerShape(15.dp))
-                        .padding(24.dp)
-                ) {
-                    Column {
-                        Text(
-                            "Riwayat Terbaru",
-                            fontFamily = Inter,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 13.sp,
-                            color = Color(0xFF272727)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        RecentHistoryItem(
-                            "Catat kejadian",
-                            "Kelahiran - Sumarsih",
-                            "10 Mei 2026",
-                            Icons.AutoMirrored.Filled.Assignment,
-                            Color(0xFFFFFFC7)
-                        )
-                        RecentHistoryItem(
-                            "Catat kejadian",
-                            "Wafat - Mulyodawg",
-                            "11 Mei 2026",
-                            Icons.AutoMirrored.Filled.Assignment,
-                            Color(0xFFFFFFC7)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(80.dp))
+            SectionTitle("Kelola data")
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                DashboardRowAction("Rumah & Keluarga", "Kelola rumah, KK, dan anggota", Icons.Default.Home, onNavigateToRumahKeluarga)
+                DashboardRowAction("Balita", "Perbarui berat, tinggi, dan orang tua", Icons.Default.ChildCare, onNavigateToUpdateBalita)
+                DashboardRowAction("Bumil", "Perbarui data ibu hamil dan ASI", Icons.Default.PregnantWoman, onNavigateToBumil)
+                DashboardRowAction("WUS/PUS", "Status pasangan usia subur", Icons.Default.Favorite, onNavigateToUpdateWusPus)
+                DashboardRowAction("KB", "Data penggunaan kontrasepsi", Icons.Default.FamilyRestroom, onNavigateToUpdateKb)
+                DashboardRowAction("Administrasi RT", "Ringkasan administrasi wilayah", Icons.Default.Groups, onNavigateToAdministrasiRt)
             }
+
+            SectionTitle("Program")
+            DashboardRowAction(
+                title = "Pilot / indikator program",
+                subtitle = "PHBS, stunting, KIA, kebakaran, dan lainnya",
+                icon = Icons.Default.HealthAndSafety,
+                onClick = { showPilotDialog = true }
+            )
+
+            SectionTitle("Riwayat terbaru")
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                HistoryLine("Catat kejadian", "Kelahiran - Sumarsih", "10 Mei 2026")
+                HistoryLine("Catat kejadian", "Wafat - Mulyodawg", "11 Mei 2026")
+            }
+
+            Spacer(modifier = Modifier.height(56.dp))
         }
+    }
+}
+
+@Composable
+private fun DashboardHeader(userName: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(10.dp))
+            .background(PrimaryGreen)
+            .padding(18.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(SurfaceWhite),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(Icons.Default.Person, contentDescription = null, tint = PrimaryGreen)
+            }
+            Spacer(modifier = Modifier.width(14.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = userName,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = SurfaceWhite,
+                    fontWeight = FontWeight.Bold
+                )
+                Text(
+                    text = "Kader Posyandu Cibiru Wetan",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = SurfaceWhite.copy(alpha = 0.82f)
+                )
+            }
+            SyncStatusBadge(text = "Tersinkron", isOnline = true)
+        }
+    }
+}
+
+@Composable
+private fun SectionTitle(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.Bold,
+        color = Color(0xFF272727)
+    )
+}
+
+@Composable
+private fun DashboardAction(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier
+            .clip(RoundedCornerShape(10.dp))
+            .background(SurfaceWhite)
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(26.dp))
+        Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6D6D))
+    }
+}
+
+@Composable
+private fun DashboardRowAction(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(SurfaceWhite)
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(PrimaryGreen.copy(alpha = 0.12f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(22.dp))
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = Color(0xFF6D6D6D))
+        }
+    }
+}
+
+@Composable
+private fun HistoryLine(type: String, description: String, date: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(SurfaceWhite)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = PrimaryGreen)
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(type, style = MaterialTheme.typography.labelMedium, color = Color(0xFF6D6D6D))
+            Text(description, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+        }
+        Text(date, style = MaterialTheme.typography.labelSmall, color = Color(0xFF6D6D6D))
     }
 }

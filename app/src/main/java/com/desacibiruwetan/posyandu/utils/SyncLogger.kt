@@ -15,10 +15,11 @@ suspend fun syncAllAndLog(
     anggotaRepo: AnggotaRepository,
 ) {
     Log.d(TAG, "=== SYNC START ===")
-    Log.d(TAG, "Token: Bearer ${token.take(8)}...")
+    val formattedToken = SessionManager.formatAuthorizationHeader(token)
+    Log.d(TAG, "Token: ${formattedToken.take(15)}...")
 
     try {
-        rumahRepo.pullDataFromServer(token)
+        rumahRepo.pullDataFromServer(formattedToken)
         val rumah = rumahRepo.getAllRumahLocal().first()
         Log.d(TAG, "Rumah    => ${rumah.size} data")
         rumah.forEach { Log.d(TAG, "  rumah id=${it.localId} serverId=${it.serverId} noRumah=${it.noRumah} synced=${it.isSynced}") }
@@ -27,7 +28,7 @@ suspend fun syncAllAndLog(
     }
 
     try {
-        keluargaRepo.pullDataFromServer("Bearer $token")
+        keluargaRepo.pullDataFromServer(formattedToken)
         val keluarga = keluargaRepo.getAllKeluargaLocal().first()
         Log.d(TAG, "Keluarga => ${keluarga.size} data")
         keluarga.forEach { Log.d(TAG, "  keluarga id=${it.localId} serverId=${it.serverId} noKK=${it.noKK} synced=${it.isSynced}") }
@@ -36,7 +37,7 @@ suspend fun syncAllAndLog(
     }
 
     try {
-        anggotaRepo.pullDataFromServer("Bearer $token")
+        anggotaRepo.pullDataFromServer(formattedToken)
         val anggota = anggotaRepo.getAllAnggotaLocal().first()
         Log.d(TAG, "Anggota  => ${anggota.size} data")
         anggota.forEach { Log.d(TAG, "  anggota id=${it.localId} serverId=${it.serverId} nama=${it.nama} nik=${it.nik} synced=${it.isSynced}") }

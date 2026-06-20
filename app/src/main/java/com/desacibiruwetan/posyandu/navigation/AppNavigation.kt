@@ -1,11 +1,9 @@
 package com.desacibiruwetan.posyandu.navigation
 
-import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -27,6 +25,7 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+import com.desacibiruwetan.posyandu.utils.SessionManager
 
 // Import Screens
 import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
@@ -55,7 +54,6 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
-import androidx.core.content.edit
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.desacibiruwetan.posyandu.ui.screen.warga.EditWargaScreen
@@ -66,9 +64,6 @@ fun AppNavigation() {
     val context = LocalContext.current
     val database = AppDatabase.getDatabase(context)
     val apiService = ApiConfig.getApiService()
-    val sharedPreferences =
-        remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
-
     val authViewModel: AuthViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -97,15 +92,19 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao(), database.balitaDao(), database.bumilDao())) as T
+                AnggotaViewmodel(
+                    AnggotaRepository(
+                        apiService,
+                        database.anggotaDao(),
+                        database.balitaDao(),
+                        database.bumilDao(),
+                        database.wusPusDao()
+                    )
+                ) as T
         }
     )
 
     val getMeState by authViewModel.getMeState.collectAsState()
-
-    fun safeFormatToken(rawToken: String): String {
-        return if (rawToken.startsWith("Bearer ")) rawToken else "Bearer $rawToken"
-    }
 
     val userName = when (val state = getMeState) {
         is UiState.Success -> {
@@ -157,11 +156,11 @@ fun AppNavigation() {
 
         composable(Screen.Dashboard.route) {
             LaunchedEffect(Unit) {
-                val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
+                val rawToken = SessionManager.getRawToken(context)
                 if (rawToken.isNotEmpty()) {
-                    val formattedToken = safeFormatToken(rawToken)
+                    val formattedToken = SessionManager.formatAuthorizationHeader(rawToken)
 
-                    authViewModel.getMe(formattedToken)
+                    authViewModel.getMe(rawToken)
                     rumahViewModel.syncDataRumah(formattedToken)
                     keluargaViewModel.syncDataKeluarga(formattedToken)
                     anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
@@ -206,7 +205,7 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    sharedPreferences.edit { clear() }
+                    SessionManager.clearSession(context)
                     navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
                 },
                 onNavItemSelected = handleBottomNav,

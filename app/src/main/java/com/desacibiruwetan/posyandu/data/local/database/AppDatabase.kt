@@ -11,10 +11,24 @@ import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
 import com.desacibiruwetan.posyandu.data.local.dao.WusPusDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
+import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 
-@Database(entities = [RumahEntity::class, KeluargaEntity::class, AnggotaEntity::class], version = 6, exportSchema = false)
+@Database(
+    entities = [
+        RumahEntity::class,
+        KeluargaEntity::class,
+        AnggotaEntity::class,
+        BalitaEntity::class,
+        BumilEntity::class,
+        WusPusEntity::class
+    ],
+    version = 7,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun rumahDao(): RumahDao

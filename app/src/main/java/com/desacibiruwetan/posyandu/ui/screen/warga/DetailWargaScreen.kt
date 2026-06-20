@@ -19,7 +19,9 @@ import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PregnantWoman
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,34 +69,36 @@ fun DetailWargaScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             if (warga != null) {
-                Text(
-                    text = warga.nama,
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 20.sp,
-                    color = Color(0xFF272727)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "NIK : ${warga.nik}",
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 15.sp,
-                    color = Color(0xFFA1A1A1)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    val genderColor =
-                        if (warga.jenisKelamin == "Laki-laki") Color(0xFF2C74B3) else Color(
-                            0xFFE94560
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SurfaceWhite, RoundedCornerShape(10.dp))
+                        .padding(18.dp)
+                ) {
+                    Column(horizontalAlignment = Alignment.Start) {
+                        Text(
+                            text = warga.nama,
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF272727)
                         )
-                    BadgeInfo(text = warga.jenisKelamin, bgColor = genderColor)
-                    BadgeInfo(text = "${warga.usia} Tahun", bgColor = PrimaryGreen)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(
+                            text = "NIK: ${warga.nik}",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = Color(0xFF6D6D6D)
+                        )
+                        Spacer(modifier = Modifier.height(14.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            val genderColor =
+                                if (warga.jenisKelamin == "Laki-laki") Color(0xFF2C74B3) else Color(0xFFE94560)
+                            BadgeInfo(text = warga.jenisKelamin, bgColor = genderColor)
+                            BadgeInfo(text = "${warga.usia ?: "-"} Tahun", bgColor = PrimaryGreen)
+                        }
+                    }
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(24.dp))
 
                 Column(modifier = Modifier.fillMaxWidth()) {
                     Text(
@@ -106,17 +110,7 @@ fun DetailWargaScreen(
                     )
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-//                        StatusChip(
-//                            text = "KB Aktif",
-//                            icon = Icons.Default.FamilyRestroom,
-//                            containerColor = Color(0xFFDF8B89),
-//                            borderColor = Color(0xFF9A3F3C),
-//                            contentColor = Color(0xFF9A3F3C)
-//                        )
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         StatusChip(
                             text = "${warga.kategoriUsia}",
                             icon = Icons.Default.ChildCare,
@@ -124,13 +118,13 @@ fun DetailWargaScreen(
                             borderColor = PrimaryGreen,
                             contentColor = PrimaryGreen
                         )
-//                        StatusChip(
-//                            text = "Bumil",
-//                            icon = Icons.Default.PregnantWoman,
-//                            containerColor = Color(0xFFF9F9F9),
-//                            borderColor = Color(0xFFACACAC),
-//                            contentColor = Color(0xFFACACAC)
-//                        )
+                        StatusChip(
+                            text = "Keluarga ${warga.keluargaId}",
+                            icon = Icons.Default.Home,
+                            containerColor = Color(0xFFF4FAF8),
+                            borderColor = Color(0xFFE0ECE8),
+                            contentColor = Color(0xFF44645B)
+                        )
                     }
                 }
 
@@ -156,11 +150,13 @@ fun DetailWargaScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 PrimaryButton(
-                    text = "Lihat Riwayat Kunjungan",
+                    text = "Riwayat Kunjungan Belum Tersedia",
                     icon = Icons.Default.History,
                     containerColor = Color(0xFFD5D5D5),
                     contentColor = Color(0xFF272727),
-                    onClick = { /* TODO */ })
+                    enabled = false,
+                    onClick = {}
+                )
 
             } else {
                 Text("Data warga tidak ditemukan.", color = Color.Gray)

@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
@@ -43,6 +45,7 @@ fun UpdateKbScreen(
     userName: String,
     anggotaViewModel: AnggotaViewmodel,
 ) {
+    val context = LocalContext.current
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -162,7 +165,9 @@ fun UpdateKbScreen(
                 PrimaryButton(
                     text = "Update Data KB",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        Toast.makeText(context, "Data KB siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
+                    }
                 )
             }
 
