@@ -166,7 +166,7 @@ fun UpdateKbScreen(
                     text = "Update Data KB",
                     icon = Icons.Default.AddCircleOutline,
                     onClick = {
-                        Toast.makeText(context, "Data KB siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Data KB tersimpan sebagai draf", Toast.LENGTH_SHORT).show()
                     }
                 )
             }

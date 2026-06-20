@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.viewmodel
 
+import android.content.Context
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.network.ApiService
@@ -37,17 +39,28 @@ private data class ReadEndpoint(
     val mapper: (JSONObject) -> ReadRecord
 )
 
-class DataReadViewModel(private val apiService: ApiService) : ViewModel() {
+class DataReadViewModel(
+    private val apiService: ApiService,
+    context: Context
+) : ViewModel() {
+    private val appContext = context.applicationContext
     private val _readState = MutableStateFlow<UiState<List<ReadCollection>>>(UiState.Idle)
     val readState: StateFlow<UiState<List<ReadCollection>>> = _readState.asStateFlow()
+
+    init {
+        loadCache()?.let { _readState.value = UiState.Success(it) }
+    }
 
     fun refresh(token: String) {
         if (token.isBlank()) return
         viewModelScope.launch {
-            _readState.value = UiState.Loading
+            if (_readState.value !is UiState.Success) {
+                _readState.value = UiState.Loading
+            }
             val collections = readEndpoints.map { endpoint ->
                 fetchCollection(token, endpoint)
             }
+            saveCache(collections)
             _readState.value = UiState.Success(collections)
         }
     }
@@ -85,7 +98,7 @@ class DataReadViewModel(private val apiService: ApiService) : ViewModel() {
                 canCreate = endpoint.canCreate
             )
         } catch (e: Exception) {
-            endpoint.errorCollection(e.localizedMessage ?: "Gagal membaca endpoint")
+            endpoint.errorCollection(e.localizedMessage ?: "Gagal membaca data")
         }
     }
 
@@ -116,11 +129,71 @@ class DataReadViewModel(private val apiService: ApiService) : ViewModel() {
                     id = "error",
                     title = "Gagal memuat",
                     subtitle = message,
-                    meta = "Endpoint tetap tersedia untuk dicoba ulang"
+                    meta = "Coba sinkronisasi ulang saat jaringan tersedia"
                 )
             ),
             canCreate = canCreate
         )
+    }
+
+    private fun saveCache(collections: List<ReadCollection>) {
+        val array = JSONArray()
+        collections.forEach { collection ->
+            array.put(JSONObject().apply {
+                put("key", collection.key)
+                put("title", collection.title)
+                put("endpoint", collection.endpoint)
+                put("description", collection.description)
+                put("count", collection.count)
+                put("canCreate", collection.canCreate)
+                put("records", JSONArray().apply {
+                    collection.records.forEach { record ->
+                        put(JSONObject().apply {
+                            put("id", record.id)
+                            put("title", record.title)
+                            put("subtitle", record.subtitle)
+                            put("meta", record.meta)
+                        })
+                    }
+                })
+            })
+        }
+        appContext.getSharedPreferences("data_read_cache", Context.MODE_PRIVATE).edit {
+            putString("collections", array.toString())
+        }
+    }
+
+    private fun loadCache(): List<ReadCollection>? {
+        val raw = appContext
+            .getSharedPreferences("data_read_cache", Context.MODE_PRIVATE)
+            .getString("collections", null)
+            ?: return null
+
+        return runCatching {
+            val array = JSONArray(raw)
+            (0 until array.length()).mapNotNull { index ->
+                val collection = array.optJSONObject(index) ?: return@mapNotNull null
+                val recordsArray = collection.optJSONArray("records") ?: JSONArray()
+                ReadCollection(
+                    key = collection.optString("key"),
+                    title = collection.optString("title"),
+                    endpoint = collection.optString("endpoint"),
+                    description = collection.optString("description"),
+                    count = collection.optInt("count"),
+                    canCreate = collection.optBoolean("canCreate", true),
+                    records = (0 until recordsArray.length()).mapNotNull { recordIndex ->
+                        recordsArray.optJSONObject(recordIndex)?.let { record ->
+                            ReadRecord(
+                                id = record.optString("id"),
+                                title = record.optString("title"),
+                                subtitle = record.optString("subtitle"),
+                                meta = record.optString("meta")
+                            )
+                        }
+                    }
+                )
+            }
+        }.getOrNull()
     }
 
     private fun JSONObject.text(vararg keys: String, fallback: String = "-"): String {

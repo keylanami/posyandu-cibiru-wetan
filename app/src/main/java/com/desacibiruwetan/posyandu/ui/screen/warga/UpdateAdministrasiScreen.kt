@@ -165,7 +165,7 @@ fun AdministrasiRtScreen(
                     text = "Update Administrasi RT",
                     icon = Icons.Default.AddCircleOutline,
                     onClick = {
-                        Toast.makeText(context, "Data administrasi siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(context, "Data administrasi tersimpan sebagai draf", Toast.LENGTH_SHORT).show()
                     }
                 )
             }

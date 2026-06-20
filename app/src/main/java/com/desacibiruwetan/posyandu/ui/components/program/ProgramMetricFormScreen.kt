@@ -78,7 +78,7 @@ fun ProgramMetricFormScreen(
                     onClick = {
                         onSubmit(values.mapValues { it.value.toIntOrNull() })
                         scope.launch {
-                            snackbarHostState.showSnackbar("Data $title siap disimpan saat endpoint diaktifkan")
+                            snackbarHostState.showSnackbar("Data $title tersimpan sebagai draf dan akan disinkronkan saat tersedia")
                         }
                     }
                 )

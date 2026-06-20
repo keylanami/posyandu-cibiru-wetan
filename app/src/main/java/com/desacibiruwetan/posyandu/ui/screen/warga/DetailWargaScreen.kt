@@ -198,7 +198,7 @@ private fun ActionPanel(onEdit: () -> Unit, onEvent: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         CommandRow("Edit identitas", "Perbarui data dasar dan sosial", Icons.Default.Edit, onEdit)
         CommandRow("Catat kejadian", "Kelahiran, pindah, nikah, cerai, meninggal", Icons.Default.AddCircleOutline, onEvent)
-        CommandRow("Riwayat warga", "Belum tersedia dari API", Icons.Default.History, {})
+        CommandRow("Riwayat warga", "Akan tampil setelah ada catatan kunjungan", Icons.Default.History, {})
     }
 }
 

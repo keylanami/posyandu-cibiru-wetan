@@ -50,7 +50,7 @@ fun RumahKeluargaScreen(
     var noRumah by remember { mutableStateOf("") }
     var alamat by remember { mutableStateOf("") }
 
-    val listKeluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
+    val keluargaOptions by keluargaViewModel.keluargaOptions.collectAsState()
 
     val rt = sharedPreferences.getString("USER_RT", "00") ?: "00"
     val rw = sharedPreferences.getString("USER_RW", "00") ?: "00"
@@ -65,6 +65,7 @@ fun RumahKeluargaScreen(
     LaunchedEffect(Unit) {
         rumahViewModel.syncDataRumah(realToken)
         keluargaViewModel.syncDataKeluarga(realToken)
+        keluargaViewModel.fetchKeluargaOptions(realToken)
     }
 
     Scaffold(
@@ -141,8 +142,8 @@ fun RumahKeluargaScreen(
 
                     OutlinedTextField(
                         value = noKk,
-                        onValueChange = {},
-                        readOnly = true,
+                        onValueChange = { noKk = it },
+                        readOnly = false,
                         label = { Text("No KK") },
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKK)
@@ -160,17 +161,21 @@ fun RumahKeluargaScreen(
                         expanded = expandedKK,
                         onDismissRequest = { expandedKK = false }
                     ) {
-                        if (listKeluarga.isEmpty()) {
+                        if (keluargaOptions.isEmpty()) {
                             DropdownMenuItem(
-                                text = { Text("Data Kosong (Lakukan Sinkronisasi)") },
+                                text = { Text("Opsi belum tersedia, isi manual") },
                                 onClick = { expandedKK = false }
                             )
                         } else {
-                            listKeluarga.forEach { keluarga ->
+                            keluargaOptions.forEach { keluarga ->
                                 DropdownMenuItem(
-                                    text = { Text(keluarga.noKK) },
+                                    text = {
+                                        Text(
+                                            "${keluarga.noKk} - ${keluarga.kepalaKeluarga ?: "Tanpa Kepala"}"
+                                        )
+                                    },
                                     onClick = {
-                                        noKk = keluarga.noKK
+                                        noKk = keluarga.noKk
                                         expandedKK = false
                                     }
                                 )

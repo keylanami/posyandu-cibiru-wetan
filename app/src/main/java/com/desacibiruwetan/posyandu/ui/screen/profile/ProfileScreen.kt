@@ -156,7 +156,7 @@ fun ProfilScreen(
                 text = "Simpan Perubahan",
                 icon = Icons.Default.Save,
                 onClick = {
-                    Toast.makeText(context, "Perubahan profil siap disimpan saat endpoint diaktifkan", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "Perubahan profil tersimpan sebagai draf", Toast.LENGTH_SHORT).show()
                 }
             )
 

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChildCare
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Favorite
@@ -80,7 +81,14 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.ReadCollection
+import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+
+private data class DetailInfo(
+    val title: String,
+    val subtitle: String,
+    val rows: List<Pair<String, String>>
+)
 
 @Composable
 fun CariWargaScreen(
@@ -101,6 +109,7 @@ fun CariWargaScreen(
 ) {
     var query by remember { mutableStateOf("") }
     var section by remember { mutableStateOf("Warga") }
+    var selectedDetail by remember { mutableStateOf<DetailInfo?>(null) }
     val sections = listOf("Warga", "Rumah", "Keluarga", "Kesehatan", "Program", "Log")
 
     val context = LocalContext.current
@@ -111,6 +120,10 @@ fun CariWargaScreen(
     val rumah by rumahViewModel.listRumahLocal.collectAsState()
     val keluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
     val readState by dataReadViewModel.readState.collectAsState()
+
+    LaunchedEffect(section) {
+        selectedDetail = null
+    }
 
     LaunchedEffect(rawToken) {
         if (rawToken.isNotEmpty()) {
@@ -149,7 +162,7 @@ fun CariWargaScreen(
                 AppSearchBar(
                     query = query,
                     onQueryChange = { query = it },
-                    placeholder = "Cari warga, rumah, KK, atau endpoint"
+                    placeholder = "Cari warga, rumah, KK, atau data program"
                 )
             }
             item {
@@ -171,6 +184,11 @@ fun CariWargaScreen(
                             )
                         )
                     }
+                }
+            }
+            selectedDetail?.let { detail ->
+                item {
+                    DetailPanel(detail = detail, onClose = { selectedDetail = null })
                 }
             }
 
@@ -197,7 +215,24 @@ fun CariWargaScreen(
                     item {
                         CommandBanner("Tambah / edit rumah dan keluarga", "Buka modul rumah untuk membuat rumah, KK, dan anggota keluarga.", Icons.Default.Home, onNavigateToRumahKeluarga)
                     }
-                    items(filtered, key = { it.localId }) { item -> RumahReadRow(item) }
+                    items(filtered, key = { it.localId }) { item ->
+                        RumahReadRow(
+                            item = item,
+                            onClick = {
+                                selectedDetail = DetailInfo(
+                                    title = "Rumah ${item.noRumah ?: "-"}",
+                                    subtitle = item.alamat ?: "Alamat belum diisi",
+                                    rows = listOf(
+                                        "RT ID" to (item.rtId?.toString() ?: "-"),
+                                        "Server ID" to (item.serverId?.toString() ?: "Belum sinkron"),
+                                        "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
+                                        "Dibuat" to (item.createdAt ?: "-"),
+                                        "Diubah" to (item.updatedAt ?: "-")
+                                    )
+                                )
+                            }
+                        )
+                    }
                 }
 
                 "Keluarga" -> {
@@ -206,13 +241,32 @@ fun CariWargaScreen(
                     item {
                         CommandBanner("Kelola KK", "Tambah keluarga dari modul rumah, lalu isi anggota di dalamnya.", Icons.Default.Groups, onNavigateToRumahKeluarga)
                     }
-                    items(filtered, key = { it.localId }) { item -> KeluargaReadRow(item) }
+                    items(filtered, key = { it.localId }) { item ->
+                        KeluargaReadRow(
+                            item = item,
+                            onClick = {
+                                selectedDetail = DetailInfo(
+                                    title = "KK ${item.noKK}",
+                                    subtitle = "Rumah ${item.rumahId}",
+                                    rows = listOf(
+                                        "Tempat tinggal" to if (item.isNgontrak) "Ngontrak" else "Milik sendiri",
+                                        "Kategori Gakin" to if (item.isGakin == true) "Ya" else "Tidak",
+                                        "Server ID" to (item.serverId?.toString() ?: "Belum sinkron"),
+                                        "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
+                                        "Dibuat" to (item.createdAt ?: "-")
+                                    )
+                                )
+                            }
+                        )
+                    }
                 }
 
                 "Kesehatan" -> {
-                    item { SectionIntro("Data kesehatan", "Read + update cohort warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
+                    item { SectionIntro("Data kesehatan", "Lihat dan update data sasaran warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
                     item { HealthActionGrid(onNavigateToUpdateBalita, onNavigateToUpdateBumil, onNavigateToUpdateWusPus, onNavigateToUpdateKb) }
-                    readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb"))
+                    readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb")) { collection, record ->
+                        selectedDetail = record.toDetail(collection.title)
+                    }
                 }
 
                 "Program" -> {
@@ -220,12 +274,16 @@ fun CariWargaScreen(
                     item {
                         ProgramActionGrid(onNavigateToProgram)
                     }
-                    readCollections(readState, query, setOf("kia", "phbs", "stunting", "kebakaran"))
+                    readCollections(readState, query, setOf("kia", "phbs", "stunting", "kebakaran")) { collection, record ->
+                        selectedDetail = record.toDetail(collection.title)
+                    }
                 }
 
                 "Log" -> {
-                    item { SectionIntro("Log aktivitas", "Read-only audit trail dari API", Icons.Default.Refresh, TextMuted) }
-                    readCollections(readState, query, setOf("logs"))
+                    item { SectionIntro("Log aktivitas", "Riwayat aktivitas sistem dan kader", Icons.Default.Refresh, TextMuted) }
+                    readCollections(readState, query, setOf("logs")) { collection, record ->
+                        selectedDetail = record.toDetail(collection.title)
+                    }
                 }
             }
             item { Spacer(modifier = Modifier.height(88.dp)) }
@@ -236,7 +294,8 @@ fun CariWargaScreen(
 private fun androidx.compose.foundation.lazy.LazyListScope.readCollections(
     state: UiState<List<ReadCollection>>,
     query: String,
-    keys: Set<String>
+    keys: Set<String>,
+    onRecordClick: (ReadCollection, ReadRecord) -> Unit
 ) {
     when (state) {
         UiState.Idle, UiState.Loading -> item {
@@ -249,12 +308,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.readCollections(
 
         is UiState.Success -> {
             val collections = state.data.filter { it.key in keys }
-                .filter { query.isBlank() || it.title.contains(query, true) || it.endpoint.contains(query, true) }
+                .filter { query.isBlank() || it.title.contains(query, true) || it.records.any { record -> record.title.contains(query, true) || record.subtitle.contains(query, true) } }
             if (collections.isEmpty()) {
-                item { EmptyState(icon = Icons.Default.ErrorOutline, message = "Tidak ada koleksi read yang cocok") }
+                item { EmptyState(icon = Icons.Default.ErrorOutline, message = "Tidak ada data yang cocok") }
             } else {
                 items(collections, key = { it.key }) { collection ->
-                    CollectionCard(collection)
+                    CollectionCard(collection = collection, onRecordClick = { onRecordClick(collection, it) })
                 }
             }
         }
@@ -333,26 +392,26 @@ private fun ResidentReadRow(item: AnggotaEntity, onClick: () -> Unit) {
 }
 
 @Composable
-private fun RumahReadRow(item: RumahEntity) {
+private fun RumahReadRow(item: RumahEntity, onClick: () -> Unit) {
     ReadRow(
         title = "Rumah ${item.noRumah ?: "-"}",
         subtitle = item.alamat ?: "Alamat belum diisi",
         meta = if (item.isSynced) "Tersinkron" else "Lokal",
         icon = Icons.Default.Home,
         color = HealthBlue,
-        onClick = {}
+        onClick = onClick
     )
 }
 
 @Composable
-private fun KeluargaReadRow(item: KeluargaEntity) {
+private fun KeluargaReadRow(item: KeluargaEntity, onClick: () -> Unit) {
     ReadRow(
         title = "KK ${item.noKK}",
         subtitle = "Rumah ${item.rumahId}",
         meta = listOf(if (item.isNgontrak) "Ngontrak" else "Tetap", if (item.isGakin == true) "Gakin" else "Non-gakin").joinToString(" - "),
         icon = Icons.Default.Groups,
         color = ActionAmber,
-        onClick = {}
+        onClick = onClick
     )
 }
 
@@ -448,7 +507,7 @@ private fun MiniAction(title: String, icon: ImageVector, onClick: () -> Unit, mo
 }
 
 @Composable
-private fun CollectionCard(collection: ReadCollection) {
+private fun CollectionCard(collection: ReadCollection, onRecordClick: (ReadRecord) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -460,7 +519,6 @@ private fun CollectionCard(collection: ReadCollection) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(collection.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-                Text(collection.endpoint, style = MaterialTheme.typography.labelMedium, color = PrimaryGreen)
                 Text(collection.description, style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
             Box(modifier = Modifier.background(FreshTeal, RoundedCornerShape(999.dp)).padding(horizontal = 12.dp, vertical = 7.dp)) {
@@ -468,11 +526,15 @@ private fun CollectionCard(collection: ReadCollection) {
             }
         }
         if (collection.records.isEmpty()) {
-            Text("Belum ada data dari endpoint ini.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            Text("Belum ada data tersimpan.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         } else {
             collection.records.forEach { record ->
                 Column(
-                    modifier = Modifier.fillMaxWidth().background(BgMint, RoundedCornerShape(14.dp)).padding(12.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(BgMint, RoundedCornerShape(14.dp))
+                        .clickable { onRecordClick(record) }
+                        .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(record.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
@@ -487,7 +549,7 @@ private fun CollectionCard(collection: ReadCollection) {
 @Composable
 private fun ReadLoadingCard() {
     Text(
-        text = "Memuat koleksi read dari API...",
+        text = "Memuat data terbaru...",
         style = MaterialTheme.typography.bodyMedium,
         color = TextMuted,
         modifier = Modifier.fillMaxWidth().background(SurfaceWhite, RoundedCornerShape(18.dp)).padding(16.dp)
@@ -497,9 +559,53 @@ private fun ReadLoadingCard() {
 @Composable
 private fun ReadErrorCard(message: String) {
     Text(
-        text = "Gagal memuat read API: $message",
+        text = "Gagal memuat data terbaru: $message",
         style = MaterialTheme.typography.bodyMedium,
         color = TextMuted,
         modifier = Modifier.fillMaxWidth().background(SurfaceWhite, RoundedCornerShape(18.dp)).padding(16.dp)
     )
 }
+
+@Composable
+private fun DetailPanel(detail: DetailInfo, onClose: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(DeepGreen, RoundedCornerShape(22.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(detail.title, style = MaterialTheme.typography.titleMedium, color = SurfaceWhite, fontWeight = FontWeight.Bold)
+                Text(detail.subtitle, style = MaterialTheme.typography.bodySmall, color = SurfaceWhite.copy(alpha = 0.72f))
+            }
+            IconButton(onClick = onClose) {
+                Icon(Icons.Default.Close, contentDescription = "Tutup", tint = SurfaceWhite)
+            }
+        }
+        detail.rows.forEach { (label, value) ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(SurfaceWhite.copy(alpha = 0.1f), RoundedCornerShape(14.dp))
+                    .padding(12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(label, style = MaterialTheme.typography.labelMedium, color = SurfaceWhite.copy(alpha = 0.72f))
+                Text(value, style = MaterialTheme.typography.labelMedium, color = SurfaceWhite, fontWeight = FontWeight.Bold)
+            }
+        }
+    }
+}
+
+private fun ReadRecord.toDetail(collectionTitle: String): DetailInfo =
+    DetailInfo(
+        title = title,
+        subtitle = collectionTitle,
+        rows = listOf(
+            "ID" to id,
+            "Ringkasan" to subtitle,
+            "Keterangan" to meta
+        )
+    )

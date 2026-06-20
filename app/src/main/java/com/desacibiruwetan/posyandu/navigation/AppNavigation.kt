@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -63,6 +64,9 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.EditWargaScreen
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val startDestination = remember {
+        if (SessionManager.getRawToken(context).isNotBlank()) Screen.Dashboard.route else Screen.Login.route
+    }
     val database = AppDatabase.getDatabase(context)
     val apiService = ApiConfig.getApiService()
     val authViewModel: AuthViewmodel = viewModel(
@@ -109,7 +113,7 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                DataReadViewModel(apiService) as T
+                DataReadViewModel(apiService, context.applicationContext) as T
         }
     )
 
@@ -143,7 +147,7 @@ fun AppNavigation() {
         }
     }
 
-    NavHost(navController = navController, startDestination = Screen.Login.route) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Login.route) {
             LoginScreenWrapper(
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) },
@@ -215,7 +219,8 @@ fun AppNavigation() {
             RiwayatScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
+                userName = userName,
+                dataReadViewModel = dataReadViewModel
             )
         }
 
