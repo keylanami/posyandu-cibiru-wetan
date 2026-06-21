@@ -10,6 +10,8 @@ import com.desacibiruwetan.posyandu.data.model.BumilReq
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
+import com.desacibiruwetan.posyandu.data.model.KiaData
+import com.desacibiruwetan.posyandu.data.model.KiaReq
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.PeduliStuntingData
@@ -319,5 +321,35 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<BaseResponse<Any>>
 
+    @GET("kias")
+    suspend fun getAllKia(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<KiaData>>>
+
+    @GET("kias/{id}")
+    suspend fun getKiaById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<KiaData>>
+
+    @POST("kias")
+    suspend fun postKia(
+        @Header("Authorization") token: String,
+        @Body request: KiaReq
+    ): Response<BaseResponse<KiaData>>
+
+
+    @PUT("kias/{id}")
+    suspend fun putKia(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: KiaReq
+    ): Response<BaseResponse<KiaData>>
+
+    @DELETE("kias/{id}")
+    suspend fun deleteKia(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?
+    ): Response<BaseResponse<Any>>
 
 }
