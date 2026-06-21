@@ -29,5 +29,7 @@ interface AnggotaDao{
     @Query("select * from tabel_anggota where keluargaId = :id order by localId desc")
     fun getAnggotaByKeluargaId(id: Int): Flow<List<AnggotaEntity>>
 
+    @Query("select * from tabel_anggota where localId = :id or serverId = :id limit 1")
+    suspend fun getAnggotaByLocalOrServerId(id: Int): AnggotaEntity?
 
 }

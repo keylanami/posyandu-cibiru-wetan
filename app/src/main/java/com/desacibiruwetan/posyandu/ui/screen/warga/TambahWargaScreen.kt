@@ -25,6 +25,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
@@ -41,6 +43,11 @@ import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 
+private data class KeluargaDropdownOption(
+    val saveId: Int,
+    val display: String
+)
+
 @Composable
 fun TambahWargaScreen(
     onBackClick: () -> Unit,
@@ -54,7 +61,9 @@ fun TambahWargaScreen(
     val userRt = sharedPreferences.getString("USER_RT", "04") ?: "04"
     val userRw = sharedPreferences.getString("USER_RW", "02") ?: "02"
 
-    val listKeluargaOptions by keluargaViewModel.keluargaOptions.collectAsState()
+    val apiKeluargaOptions by keluargaViewModel.keluargaOptions.collectAsState()
+    val localKeluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
+    val localAnggota by anggotaViewModel.listAnggotaLocal.collectAsState()
     var selectedKeluargaDisplay by remember { mutableStateOf("") }
     var selectedKeluargaId by remember { mutableStateOf<Int?>(null) }
 
@@ -82,12 +91,49 @@ fun TambahWargaScreen(
 
     LaunchedEffect(Unit) {
         if (token.isNotEmpty()) {
+            keluargaViewModel.syncDataKeluarga(token)
+            anggotaViewModel.syncDataAnggotaDariServer(token)
             keluargaViewModel.fetchKeluargaOptions(token)
         }
     }
 
-    val dropdownKeluargaStrings = listKeluargaOptions.map {
-        "${it.noKk} - ${it.kepalaKeluarga ?: "Tanpa Kepala"}"
+    val localDropdownOptions = remember(localKeluarga, localAnggota) {
+        localKeluarga.map { keluarga ->
+            val kepalaKeluarga = localAnggota.firstOrNull { anggota ->
+                anggota.belongsToKeluarga(keluarga) &&
+                    anggota.statusKeluarga.equals("Kepala Keluarga", ignoreCase = true)
+            }?.nama
+            val saveId = keluarga.serverId ?: keluarga.localId
+            val status = if (keluarga.isSynced) "" else " - tersimpan lokal"
+            KeluargaDropdownOption(
+                saveId = saveId,
+                display = "KK ${keluarga.noKK} - ${kepalaKeluarga ?: "Tanpa Kepala"}$status"
+            )
+        }
+    }
+    val apiOnlyDropdownOptions = remember(apiKeluargaOptions, localDropdownOptions) {
+        val knownServerIds = localKeluarga.mapNotNull { it.serverId }.toSet()
+        apiKeluargaOptions
+            .filter { it.id !in knownServerIds }
+            .map { option ->
+                KeluargaDropdownOption(
+                    saveId = option.id,
+                    display = "KK ${option.noKk} - ${option.kepalaKeluarga ?: "Tanpa Kepala"}"
+                )
+            }
+    }
+    val keluargaDropdownOptions = remember(localDropdownOptions, apiOnlyDropdownOptions) {
+        (localDropdownOptions + apiOnlyDropdownOptions).distinctBy { it.saveId }
+    }
+    val dropdownKeluargaStrings = keluargaDropdownOptions.map { it.display }
+
+    LaunchedEffect(keluargaDropdownOptions, selectedKeluargaDisplay) {
+        if (selectedKeluargaDisplay.isBlank()) return@LaunchedEffect
+        val selected = keluargaDropdownOptions.firstOrNull { it.display == selectedKeluargaDisplay }
+        selectedKeluargaId = selected?.saveId
+        if (selected == null) {
+            selectedKeluargaDisplay = ""
+        }
     }
 
     Scaffold(
@@ -144,11 +190,19 @@ fun TambahWargaScreen(
                         options = dropdownKeluargaStrings,
                         onValueChange = { selectedStr ->
                             selectedKeluargaDisplay = selectedStr
-                            val matched =
-                                listKeluargaOptions.find { "${it.noKk} - ${it.kepalaKeluarga ?: "Tanpa Kepala"}" == selectedStr }
-                            selectedKeluargaId = matched?.id
+                            selectedKeluargaId = keluargaDropdownOptions
+                                .firstOrNull { it.display == selectedStr }
+                                ?.saveId
                         }
                     )
+                    if (keluargaDropdownOptions.isEmpty()) {
+                        Text(
+                            "Belum ada KK tersimpan. Buat rumah dan KK dulu, lalu kembali ke form ini.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = Color(0xFF66756F),
+                            modifier = Modifier.padding(bottom = 12.dp)
+                        )
+                    }
 
                     AppTextField(
                         label = "Nama Lengkap",
@@ -329,4 +383,9 @@ fun RadioButtonItem(text: String, isSelected: Boolean, onClick: () -> Unit) {
             color = Color(0xFF272727)
         )
     }
+}
+
+private fun AnggotaEntity.belongsToKeluarga(keluarga: KeluargaEntity): Boolean {
+    val possibleIds = setOfNotNull(keluarga.serverId, keluarga.localId)
+    return keluargaId in possibleIds
 }

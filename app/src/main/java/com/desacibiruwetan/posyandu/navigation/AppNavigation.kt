@@ -1,6 +1,12 @@
 package com.desacibiruwetan.posyandu.navigation
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -21,6 +27,7 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.data.repository.AnggotaRepository
 import com.desacibiruwetan.posyandu.data.repository.AuthRepository
 import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
+import com.desacibiruwetan.posyandu.data.repository.OfflineSyncRepository
 import com.desacibiruwetan.posyandu.data.repository.RumahRepository
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
@@ -71,6 +78,9 @@ fun AppNavigation() {
     }
     val database = AppDatabase.getDatabase(context)
     val apiService = ApiConfig.getApiService()
+    val offlineSyncRepository = remember {
+        OfflineSyncRepository(apiService, database)
+    }
     val authViewModel: AuthViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -131,6 +141,42 @@ fun AppNavigation() {
         else -> "Kader"
     }
 
+    suspend fun syncPendingThenPull() {
+        val rawToken = SessionManager.getRawToken(context)
+        if (rawToken.isBlank()) return
+        val formattedToken = SessionManager.formatAuthorizationHeader(rawToken)
+
+        offlineSyncRepository.syncPendingChanges(formattedToken)
+        authViewModel.getMe(rawToken)
+        rumahViewModel.syncDataRumah(formattedToken)
+        keluargaViewModel.syncDataKeluarga(formattedToken)
+        anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
+        dataReadViewModel.refresh(formattedToken)
+    }
+
+    LaunchedEffect(Unit) {
+        syncPendingThenPull()
+    }
+
+    DisposableEffect(Unit) {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                coroutineScope.launch {
+                    syncPendingThenPull()
+                }
+            }
+        }
+
+        connectivityManager.registerNetworkCallback(request, callback)
+        onDispose {
+            runCatching { connectivityManager.unregisterNetworkCallback(callback) }
+        }
+    }
+
     val handleBottomNav: (Int) -> Unit = { index ->
         val route = when (index) {
             0 -> Screen.Dashboard.route
@@ -170,15 +216,7 @@ fun AppNavigation() {
 
         composable(Screen.Dashboard.route) {
             LaunchedEffect(Unit) {
-                val rawToken = SessionManager.getRawToken(context)
-                if (rawToken.isNotEmpty()) {
-                    val formattedToken = SessionManager.formatAuthorizationHeader(rawToken)
-
-                    authViewModel.getMe(rawToken)
-                    rumahViewModel.syncDataRumah(formattedToken)
-                    keluargaViewModel.syncDataKeluarga(formattedToken)
-                    anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
-                }
+                syncPendingThenPull()
             }
 
             DashboardScreen(

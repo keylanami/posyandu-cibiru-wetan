@@ -29,4 +29,7 @@ interface RumahDao{
 
     @Query("select * from tabel_rumah where localId = :id limit 1")
     fun getRumahById(id: Int): Flow<RumahEntity>
+
+    @Query("select * from tabel_rumah where localId = :id or server_id = :id limit 1")
+    suspend fun getRumahByLocalOrServerId(id: Int): RumahEntity?
 }

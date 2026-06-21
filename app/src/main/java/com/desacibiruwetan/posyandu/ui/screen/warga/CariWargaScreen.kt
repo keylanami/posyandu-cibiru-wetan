@@ -94,6 +94,12 @@ private data class DetailInfo(
     val rows: List<Pair<String, String>>
 )
 
+private data class DataAddAction(
+    val label: String,
+    val icon: ImageVector,
+    val onClick: () -> Unit
+)
+
 @Composable
 fun CariWargaScreen(
     onBackClick: () -> Unit,
@@ -124,6 +130,12 @@ fun CariWargaScreen(
     val rumah by rumahViewModel.listRumahLocal.collectAsState()
     val keluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
     val readState by dataReadViewModel.readState.collectAsState()
+    val addAction = when (section) {
+        "Warga" -> DataAddAction("Tambah warga", Icons.Default.Add, onAddWargaClick)
+        "Rumah" -> DataAddAction("Tambah rumah", Icons.Default.Home, onNavigateToRumahKeluarga)
+        "Keluarga" -> DataAddAction("Tambah KK", Icons.Default.Groups, onNavigateToRumahKeluarga)
+        else -> null
+    }
 
     LaunchedEffect(section) {
         selectedDetail = null
@@ -142,7 +154,9 @@ fun CariWargaScreen(
         topBar = { AppTopBar(title = "Pusat Data", onBackClick = onBackClick) },
         bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
         floatingActionButton = {
-            PrimaryFab(text = "Tambah", icon = Icons.Default.Add, onClick = onAddWargaClick)
+            addAction?.let { action ->
+                PrimaryFab(text = action.label, icon = action.icon, onClick = action.onClick)
+            }
         },
         containerColor = BgMint
     ) { paddingValues ->

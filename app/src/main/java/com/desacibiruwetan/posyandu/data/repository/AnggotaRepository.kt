@@ -46,9 +46,6 @@ class AnggotaRepository(
             if (response.isSuccessful) {
                 val dataServer = response.body()?.data
                 Log.d(TAG, "data dari server: ${dataServer?.size ?: "null"} item")
-                if (!dataServer.isNullOrEmpty()) {
-                    anggotaDao.deleteAllAnggotaLocal()
-                }
                 dataServer?.forEach { anggotaServer ->
                     val anggotaLokalBaru = AnggotaEntity(
                         serverId = anggotaServer.id,
