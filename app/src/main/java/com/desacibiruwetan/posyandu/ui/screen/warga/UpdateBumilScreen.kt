@@ -75,7 +75,7 @@ fun UpdateBumilScreen(
                     selectedWarga = warga
                     namaBumil = warga.nama
                     if (warga.serverId != null) {
-                        anggotaViewModel.getDetailBumilFromServer(token, warga.serverId)
+                        anggotaViewModel.getDetailBumilByAnggotaFromServer(token, warga.serverId)
                     }
                 }
             },

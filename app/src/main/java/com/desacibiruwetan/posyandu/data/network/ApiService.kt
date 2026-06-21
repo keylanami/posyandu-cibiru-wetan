@@ -207,6 +207,12 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<BaseResponse<BumilData>>
 
+    @GET("anggotas/{anggotaId}/bumils")
+    suspend fun getBumilsByAnggotaId(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int
+    ): Response<BaseResponse<List<BumilData>>>
+
 
     @PUT("bumils/{id}")
     suspend fun putBumil(

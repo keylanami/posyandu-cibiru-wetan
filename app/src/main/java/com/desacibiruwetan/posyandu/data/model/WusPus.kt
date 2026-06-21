@@ -26,7 +26,9 @@ data class WusPusData(
     val createdAt: String?= null,
 
     @Json(name = "updated_at")
-    val updatedAt: String?= null
+    val updatedAt: String?= null,
+
+    val kbs: List<KbData>? = null
 )
 
 

@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -43,6 +44,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.model.BumilData
+import com.desacibiruwetan.posyandu.data.model.KbData
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.items.InfoKependudukanCard
@@ -55,7 +59,10 @@ import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
+import com.desacibiruwetan.posyandu.utils.SessionManager
+import com.desacibiruwetan.posyandu.utils.formatDateForDisplay
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.WargaProgramSummary
 
 @Composable
 fun DetailWargaScreen(
@@ -65,8 +72,17 @@ fun DetailWargaScreen(
     nikWarga: String? = null,
     anggotaViewModel: AnggotaViewmodel,
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val token = SessionManager.getAuthorizationHeader(context)
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
+    val programSummaryState by anggotaViewModel.programSummaryState.collectAsState()
     val warga = listWargaAsli.find { it.nik == nikWarga }
+
+    LaunchedEffect(warga?.localId, warga?.serverId, token) {
+        if (warga != null) {
+            anggotaViewModel.loadProgramSummary(token, warga.localId, warga.serverId)
+        }
+    }
 
     Scaffold(
         topBar = { AppTopBar(title = "Detail Warga", onBackClick = onBackClick) },
@@ -92,11 +108,12 @@ fun DetailWargaScreen(
         ) {
             Spacer(modifier = Modifier.height(4.dp))
             IdentityHero(warga)
-            ProgramChips(warga)
+            ProgramChips(warga, (programSummaryState as? UiState.Success)?.data)
             ActionPanel(
                 onEdit = { onEditClick(warga.nik) },
                 onEvent = { onCatatKejadianClick(warga.nik) }
             )
+            ProgramDetailSection(programSummaryState)
             InfoKependudukanCard(warga = warga)
             Spacer(modifier = Modifier.height(32.dp))
         }
@@ -138,7 +155,7 @@ private fun IdentityHero(warga: AnggotaEntity) {
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 SummaryPill("Usia", "${warga.usia ?: "-"} tahun", Modifier.weight(1f))
-                SummaryPill("Keluarga", "#${warga.keluargaId}", Modifier.weight(1f))
+                SummaryPill("Relasi", warga.statusKeluarga, Modifier.weight(1f))
                 SummaryPill("Status", warga.statusWarga ?: "Aktif", Modifier.weight(1f))
             }
         }
@@ -158,7 +175,16 @@ private fun SummaryPill(label: String, value: String, modifier: Modifier = Modif
 }
 
 @Composable
-private fun ProgramChips(warga: AnggotaEntity) {
+private fun ProgramChips(warga: AnggotaEntity, summary: WargaProgramSummary?) {
+    val programItems = buildList {
+        add(warga.kategoriUsia ?: "Umum")
+        add(warga.jenisKelamin)
+        if (summary?.balita != null) add("Balita")
+        if (summary?.bumilLocal != null || summary?.bumilRemote?.isNotEmpty() == true) add("Bumil")
+        if (summary?.wusPusLocal != null || summary?.wusPusRemote != null) add("WUS/PUS")
+        if (summary?.kbs?.isNotEmpty() == true) add("KB")
+    }.distinct()
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -168,13 +194,26 @@ private fun ProgramChips(warga: AnggotaEntity) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Konteks program", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            ProgramBadge(warga.kategoriUsia ?: "Umum", Icons.Default.ChildCare, PrimaryGreen, Modifier.weight(1f))
-            ProgramBadge(warga.jenisKelamin, if (warga.jenisKelamin.equals("Laki-laki", true)) Icons.Default.Male else Icons.Default.Female, HealthBlue, Modifier.weight(1f))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            ProgramBadge("Rumah/KK", Icons.Default.Home, ActionAmber, Modifier.weight(1f))
-            ProgramBadge("KB/Bumil", Icons.Default.FamilyRestroom, PrimaryGreen, Modifier.weight(1f))
+        programItems.chunked(2).forEach { rowItems ->
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                rowItems.forEach { item ->
+                    val icon = when (item) {
+                        "Balita" -> Icons.Default.ChildCare
+                        "Bumil" -> Icons.Default.PregnantWoman
+                        "WUS/PUS", "KB" -> Icons.Default.FamilyRestroom
+                        "Laki-laki" -> Icons.Default.Male
+                        "Perempuan" -> Icons.Default.Female
+                        else -> Icons.Default.Home
+                    }
+                    val color = when (item) {
+                        "KB", "WUS/PUS" -> HealthBlue
+                        "Bumil" -> ActionAmber
+                        else -> PrimaryGreen
+                    }
+                    ProgramBadge(item, icon, color, Modifier.weight(1f))
+                }
+                if (rowItems.size == 1) Spacer(modifier = Modifier.weight(1f))
+            }
         }
     }
 }
@@ -189,8 +228,138 @@ private fun ProgramBadge(text: String, icon: ImageVector, color: Color, modifier
     ) {
         Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(7.dp))
-        Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+        Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
     }
+}
+
+@Composable
+private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
+    when (state) {
+        UiState.Idle, UiState.Loading -> Unit
+        is UiState.Error -> Unit
+        is UiState.Success -> {
+            val summary = state.data
+            if (!summary.hasData) return
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(SurfaceWhite, RoundedCornerShape(22.dp))
+                    .border(1.dp, BorderLight, RoundedCornerShape(22.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text("Data kesehatan warga", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+
+                summary.balita?.let {
+                    ProgramInfoCard(
+                        title = "Balita",
+                        icon = Icons.Default.ChildCare,
+                        color = PrimaryGreen,
+                        rows = listOf(
+                            "Nama ayah" to it.namaAyah,
+                            "Nama ibu" to it.namaIbu,
+                            "Tinggi badan" to "${it.tinggiBadan} cm",
+                            "Berat badan" to "${it.beratBadan} kg"
+                        )
+                    )
+                }
+
+                val bumilRows = summary.bumilRemote.ifEmpty {
+                    summary.bumilLocal?.let {
+                        listOf(
+                            BumilData(
+                                id = it.bumilServerId ?: it.idLocalBumil,
+                                anggotaId = it.anggotaServerId ?: it.anggotaLocalId,
+                                asiEksklusif = it.asiEksklusif,
+                                hamilKe = it.hamilKe,
+                                tanggalMulaiAsi = it.tanggalMulaiAsi,
+                                tanggalSelesaiAsi = it.tanggalSelesaiAsi,
+                                createdAt = it.createdAt,
+                                updatedAt = it.updatedAt
+                            )
+                        )
+                    }.orEmpty()
+                }
+                bumilRows.forEach { bumil ->
+                    ProgramInfoCard(
+                        title = "Bumil",
+                        icon = Icons.Default.PregnantWoman,
+                        color = ActionAmber,
+                        rows = listOf(
+                            "Hamil ke" to bumil.hamilKe.toString(),
+                            "ASI eksklusif" to if (bumil.asiEksklusif) "Ya" else "Tidak",
+                            "Mulai ASI" to formatDateForDisplay(bumil.tanggalMulaiAsi).ifBlank { "-" },
+                            "Selesai ASI" to formatDateForDisplay(bumil.tanggalSelesaiAsi).ifBlank { "-" }
+                        )
+                    )
+                }
+
+                (summary.wusPusRemote ?: summary.wusPusLocal)?.let { data ->
+                    val title = if (data is com.desacibiruwetan.posyandu.data.model.WusPusData) data.statusKategori else (data as com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity).statusKategori
+                    val namaSuami = if (data is com.desacibiruwetan.posyandu.data.model.WusPusData) data.namaSuami else (data as com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity).namaSuami
+                    val tanggal = if (data is com.desacibiruwetan.posyandu.data.model.WusPusData) data.tanggalMulaiStatus else (data as com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity).tanggalMulaiStatus
+                    val keterangan = if (data is com.desacibiruwetan.posyandu.data.model.WusPusData) data.keterangan else (data as com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity).keterangan
+                    ProgramInfoCard(
+                        title = title,
+                        icon = Icons.Default.FamilyRestroom,
+                        color = HealthBlue,
+                        rows = listOf(
+                            "Nama pasangan" to (namaSuami ?: "-"),
+                            "Mulai status" to formatDateForDisplay(tanggal).ifBlank { "-" },
+                            "Keterangan" to (keterangan ?: "-")
+                        )
+                    )
+                }
+
+                summary.kbs.forEach { kb ->
+                    KbInfoCard(kb)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProgramInfoCard(title: String, icon: ImageVector, color: Color, rows: List<Pair<String, String>>) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.padding(start = 8.dp)
+            )
+        }
+        rows.forEach { (label, value) ->
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                Text(label, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+                Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+            }
+        }
+    }
+}
+
+@Composable
+private fun KbInfoCard(kb: KbData) {
+    ProgramInfoCard(
+        title = "KB ${kb.jenisKb}",
+        icon = Icons.Default.FamilyRestroom,
+        color = HealthBlue,
+        rows = listOf(
+            "Status" to if (kb.statusAktif) "Aktif" else "Tidak aktif",
+            "Mulai KB" to formatDateForDisplay(kb.tanggalMulaiKb).ifBlank { "-" },
+            "Keterangan" to (kb.keterangan ?: "-")
+        )
+    )
 }
 
 @Composable

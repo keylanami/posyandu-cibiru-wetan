@@ -275,6 +275,10 @@ class AnggotaRepository(
         return apiService.getBalitaById(token, balitaId)
     }
 
+    suspend fun getBalitaLocalByAnggotaId(localId: Int, serverId: Int?): BalitaEntity? {
+        return balitaDao.getBalitaByAnggotaId(localId, serverId)
+    }
+
 
     suspend fun addDataBumil(
         token: String,
@@ -391,6 +395,14 @@ class AnggotaRepository(
         return apiService.getDetailBumilById(token, bumilId)
     }
 
+    suspend fun getBumilsByAnggotaId(token: String, anggotaId: Int): Response<BaseResponse<List<BumilData>>> {
+        return apiService.getBumilsByAnggotaId(token, anggotaId)
+    }
+
+    suspend fun getBumilLocalByAnggotaId(localId: Int, serverId: Int?): BumilEntity? {
+        return bumilDao.getBumilByAnggotaId(localId, serverId)
+    }
+
     suspend fun deleteBumil(token: String, bumilId: Int) {
         try {
             apiService.deleteBumil(token, bumilId)
@@ -464,6 +476,10 @@ class AnggotaRepository(
 
     suspend fun getDataWusPusById(token: String, wusPusId: Int): Response<BaseResponse<WusPusData>>{
         return apiService.getWusPusById(token, wusPusId)
+    }
+
+    fun getWusPusLocalByAnggotaId(localId: Int, serverId: Int?): WusPusEntity? {
+        return wusPusDao.getWuspusByAnggotaId(localId, serverId)
     }
 
     suspend fun createKb(
