@@ -474,16 +474,16 @@ class AnggotaRepository(
 
     suspend fun updateDataKb(
         token: String, kbLocalId: Int, kbServerId: Int?, wusPusIdServer: Int,
-        jenisKb: String, tanggalMulaiKb: String?, statusAktif: Boolean, keterangan: String?
+        jenisKb: String, tanggalMulaiKb: String?, statusAktif: Boolean, keterangan: String?, createdAt: String?, updatedAt: String?
     ) {
         val kbLokal = kbDao.getKbById(kbLocalId, kbServerId)
 
         val kbUpdate = kbLokal?.copy(
             wusPusId = wusPusIdServer, jenisKb = jenisKb, tanggalMulaiKb = tanggalMulaiKb,
-            statusAktif = statusAktif, keterangan = keterangan, isSynced = false
+            statusAktif = statusAktif, keterangan = keterangan, createdAt = createdAt, updatedAt = updatedAt, isSynced = false
         ) ?: KbEntity(
             wusPusId = wusPusIdServer, jenisKb = jenisKb, tanggalMulaiKb = tanggalMulaiKb,
-            statusAktif = statusAktif, keterangan = keterangan, isSynced = false
+            statusAktif = statusAktif, keterangan = keterangan, createdAt = createdAt, updatedAt = updatedAt, isSynced = false
         )
 
         if (kbLokal != null) kbDao.updateKbLocal(kbUpdate)

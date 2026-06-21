@@ -298,4 +298,17 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     }
 
 
+    fun updateDataKb(
+        token: String, kbLocalId: Int, kbServerId: Int?, wusPusIdServer: Int,
+        jenisKb: String, tanggalMulaiKb: String?, statusAktif: Boolean, keterangan: String?,
+        createdAt: String, updatedAt: String
+    ){
+        viewModelScope.launch {
+            repository.updateDataKb(
+                token, kbLocalId, kbServerId, wusPusIdServer,
+                jenisKb, tanggalMulaiKb, statusAktif, keterangan, createdAt, updatedAt
+            )
+        }
+    }
+
 }
