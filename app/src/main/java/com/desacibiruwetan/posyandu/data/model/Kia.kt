@@ -24,7 +24,7 @@ data class KiaData(
     val imunisasiBayiBalita: Int?= null,
 
     @Json(name = "bati_balita_sakit_terdata")
-    val batiBalitaSakitTerdata: Int?= null,
+    val bayiBalitaSakitTerdata: Int?= null,
 
     @Json(name = "kematian_bayi_balita")
     val kematianBayiBalita: Int?= null,
@@ -57,7 +57,7 @@ data class KiaReq(
     val imunisasiBayiBalita: Int?= null,
 
     @Json(name = "bati_balita_sakit_terdata")
-    val batiBalitaSakitTerdata: Int?= null,
+    val bayiBalitaSakitTerdata: Int?= null,
 
     @Json(name = "kematian_bayi_balita")
     val kematianBayiBalita: Int?= null,

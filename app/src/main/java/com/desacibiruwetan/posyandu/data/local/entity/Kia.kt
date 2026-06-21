@@ -9,14 +9,14 @@ data class KiaEntity(
     @PrimaryKey(autoGenerate = true)
     val idKiaLocal: Int =  0,
     val idKiaServer: Int?= null,
-    val ibuHamilRutinPeriksa: Int,
-    val persalinanTenagaKesehatan: Int,
-    val kematianIbuNifas: Int,
-    val kankerServiks: Int,
-    val imunisasiBayiBalita: Int,
-    val batiBalitaSakitTerdata: Int,
-    val kematianBayiBalita: Int,
-    val createdAt: String,
-    val updatedAt: String,
-    val isSynced: Boolean
+    val ibuHamilRutinPeriksa: Int?= null,
+    val persalinanTenagaKesehatan: Int?= null,
+    val kematianIbuNifas: Int?= null,
+    val kankerServiks: Int?= null,
+    val imunisasiBayiBalita: Int?= null,
+    val bayiBalitaSakitTerdata: Int?= null,
+    val kematianBayiBalita: Int?= null,
+    val createdAt: String?= null,
+    val updatedAt: String?= null,
+    val isSynced: Boolean = false
 )
