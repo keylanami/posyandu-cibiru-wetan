@@ -216,19 +216,24 @@ fun CariWargaScreen(
                         CommandBanner("Tambah / edit rumah dan keluarga", "Buka modul rumah untuk membuat rumah, KK, dan anggota keluarga.", Icons.Default.Home, onNavigateToRumahKeluarga)
                     }
                     items(filtered, key = { it.localId }) { item ->
+                        val relatedFamilies = keluarga.filter { it.belongsToRumah(item) }
                         RumahReadRow(
                             item = item,
+                            familyCount = relatedFamilies.size,
                             onClick = {
                                 selectedDetail = DetailInfo(
                                     title = "Rumah ${item.noRumah ?: "-"}",
                                     subtitle = item.alamat ?: "Alamat belum diisi",
                                     rows = listOf(
+                                        "Jumlah keluarga" to "${relatedFamilies.size}",
                                         "RT ID" to (item.rtId?.toString() ?: "-"),
                                         "Server ID" to (item.serverId?.toString() ?: "Belum sinkron"),
                                         "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
                                         "Dibuat" to (item.createdAt ?: "-"),
                                         "Diubah" to (item.updatedAt ?: "-")
-                                    )
+                                    ) + relatedFamilies.mapIndexed { index, family ->
+                                        "Keluarga ${index + 1}" to "KK ${family.noKK}"
+                                    }
                                 )
                             }
                         )
@@ -242,19 +247,24 @@ fun CariWargaScreen(
                         CommandBanner("Kelola KK", "Tambah keluarga dari modul rumah, lalu isi anggota di dalamnya.", Icons.Default.Groups, onNavigateToRumahKeluarga)
                     }
                     items(filtered, key = { it.localId }) { item ->
+                        val members = warga.filter { it.belongsToKeluarga(item) }
                         KeluargaReadRow(
                             item = item,
+                            memberCount = members.size,
                             onClick = {
                                 selectedDetail = DetailInfo(
                                     title = "KK ${item.noKK}",
                                     subtitle = "Rumah ${item.rumahId}",
                                     rows = listOf(
+                                        "Jumlah anggota" to "${members.size}",
                                         "Tempat tinggal" to if (item.isNgontrak) "Ngontrak" else "Milik sendiri",
                                         "Kategori Gakin" to if (item.isGakin == true) "Ya" else "Tidak",
                                         "Server ID" to (item.serverId?.toString() ?: "Belum sinkron"),
                                         "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
                                         "Dibuat" to (item.createdAt ?: "-")
-                                    )
+                                    ) + members.mapIndexed { index, member ->
+                                        "Anggota ${index + 1}" to "${member.nama} - ${member.statusKeluarga}"
+                                    }
                                 )
                             }
                         )
@@ -392,11 +402,11 @@ private fun ResidentReadRow(item: AnggotaEntity, onClick: () -> Unit) {
 }
 
 @Composable
-private fun RumahReadRow(item: RumahEntity, onClick: () -> Unit) {
+private fun RumahReadRow(item: RumahEntity, familyCount: Int, onClick: () -> Unit) {
     ReadRow(
         title = "Rumah ${item.noRumah ?: "-"}",
         subtitle = item.alamat ?: "Alamat belum diisi",
-        meta = if (item.isSynced) "Tersinkron" else "Lokal",
+        meta = "$familyCount keluarga - ${if (item.isSynced) "Tersinkron" else "Lokal"}",
         icon = Icons.Default.Home,
         color = HealthBlue,
         onClick = onClick
@@ -404,11 +414,11 @@ private fun RumahReadRow(item: RumahEntity, onClick: () -> Unit) {
 }
 
 @Composable
-private fun KeluargaReadRow(item: KeluargaEntity, onClick: () -> Unit) {
+private fun KeluargaReadRow(item: KeluargaEntity, memberCount: Int, onClick: () -> Unit) {
     ReadRow(
         title = "KK ${item.noKK}",
         subtitle = "Rumah ${item.rumahId}",
-        meta = listOf(if (item.isNgontrak) "Ngontrak" else "Tetap", if (item.isGakin == true) "Gakin" else "Non-gakin").joinToString(" - "),
+        meta = listOf("$memberCount anggota", if (item.isNgontrak) "Ngontrak" else "Tetap", if (item.isGakin == true) "Gakin" else "Non-gakin").joinToString(" - "),
         icon = Icons.Default.Groups,
         color = ActionAmber,
         onClick = onClick
@@ -609,3 +619,13 @@ private fun ReadRecord.toDetail(collectionTitle: String): DetailInfo =
             "Keterangan" to meta
         )
     )
+
+private fun KeluargaEntity.belongsToRumah(rumah: RumahEntity): Boolean {
+    val possibleIds = setOfNotNull(rumah.serverId, rumah.localId)
+    return rumahId in possibleIds
+}
+
+private fun AnggotaEntity.belongsToKeluarga(keluarga: KeluargaEntity): Boolean {
+    val possibleIds = setOfNotNull(keluarga.serverId, keluarga.localId)
+    return keluargaId in possibleIds
+}

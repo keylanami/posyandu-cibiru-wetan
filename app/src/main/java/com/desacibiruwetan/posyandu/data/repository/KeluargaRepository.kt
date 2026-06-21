@@ -59,7 +59,14 @@ class KeluargaRepository(
     }
 
 
-    suspend fun addNewKeluarga(token: String, rumahId: Int, noKK: String, isNgontrak: Boolean, isGakin: Boolean): Long{
+    suspend fun addNewKeluarga(
+        token: String,
+        rumahId: Int,
+        noKK: String,
+        isNgontrak: Boolean,
+        isGakin: Boolean,
+        noRumahForApi: Int = rumahId
+    ): Long{
         val entitasBaru = KeluargaEntity(
             rumahId = rumahId,
             noKK = noKK,
@@ -77,7 +84,7 @@ class KeluargaRepository(
                 isGakin = isGakin,
             )
 
-            val response = apiService.postDataKeluarga(token, rumahId, request)
+            val response = apiService.postDataKeluarga(token, noRumahForApi, request)
 
             if (response.isSuccessful){
                 val dataServer = response.body()?.data

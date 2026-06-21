@@ -243,7 +243,8 @@ fun RumahKeluargaScreen(
                                     newRumahId,
                                     noKk,
                                     isNgontrak,
-                                    isGakin
+                                    isGakin,
+                                    noRumahForApi = noRumahInt
                                 ) { newKeluargaId ->
                                     Toast.makeText(
                                         context,
