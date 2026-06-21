@@ -65,6 +65,13 @@ class DataReadViewModel(
         }
     }
 
+    fun clearCache() {
+        appContext.getSharedPreferences("data_read_cache", Context.MODE_PRIVATE).edit {
+            clear()
+        }
+        _readState.value = UiState.Idle
+    }
+
     private suspend fun fetchCollection(token: String, endpoint: ReadEndpoint): ReadCollection {
         return try {
             val response = apiService.getRawReadCollection(endpoint.path, token)
@@ -88,12 +95,12 @@ class DataReadViewModel(
                 items.optJSONObject(index)?.let(endpoint.mapper)
             }
 
-            ReadCollection(
-                key = endpoint.key,
-                title = endpoint.title,
-                endpoint = "GET /${endpoint.path}",
-                description = endpoint.description,
-                count = count,
+                ReadCollection(
+                    key = endpoint.key,
+                    title = endpoint.title,
+                    endpoint = endpoint.title,
+                    description = endpoint.description,
+                    count = count,
                 records = records,
                 canCreate = endpoint.canCreate
             )
@@ -121,7 +128,7 @@ class DataReadViewModel(
         return ReadCollection(
             key = key,
             title = title,
-            endpoint = "GET /$path",
+            endpoint = title,
             description = description,
             count = 0,
             records = listOf(

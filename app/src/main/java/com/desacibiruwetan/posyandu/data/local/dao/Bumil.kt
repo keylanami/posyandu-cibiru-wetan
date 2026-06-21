@@ -24,6 +24,9 @@ interface BumilDao {
     @Query("DELETE FROM tabel_bumil where idLocalBumil = :localId or bumilServerId = :serverId")
     suspend fun deleteAllBumil(localId: Int, serverId: Int?)
 
+    @Query("DELETE FROM tabel_bumil")
+    suspend fun deleteAllBumilLocal()
+
     @Query("SELECT * FROM tabel_bumil WHERE isSynced = 0")
     suspend fun getBumilBelumSync(): List<BumilEntity>
 

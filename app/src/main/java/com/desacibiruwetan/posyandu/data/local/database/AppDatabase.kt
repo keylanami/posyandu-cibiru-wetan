@@ -26,7 +26,7 @@ import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
         BumilEntity::class,
         WusPusEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,6 +37,15 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun balitaDao(): BalitaDao
     abstract fun bumilDao(): BumilDao
     abstract fun wusPusDao(): WusPusDao
+
+    suspend fun clearUserData() {
+        wusPusDao().deleteAllWusPusLocal()
+        bumilDao().deleteAllBumilLocal()
+        balitaDao().deleteAllBalita()
+        anggotaDao().deleteAllAnggotaLocal()
+        keluargaDao().deleteAllKeluargaLocal()
+        rumahDao().deleteAllRumahLocal()
+    }
 
     companion object {
         @Volatile

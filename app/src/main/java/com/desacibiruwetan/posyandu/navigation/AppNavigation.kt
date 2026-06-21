@@ -5,6 +5,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -59,11 +60,13 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.desacibiruwetan.posyandu.ui.screen.warga.EditWargaScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
     val startDestination = remember {
         if (SessionManager.getRawToken(context).isNotBlank()) Screen.Dashboard.route else Screen.Login.route
     }
@@ -228,8 +231,12 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    SessionManager.clearSession(context)
-                    navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                    coroutineScope.launch {
+                        database.clearUserData()
+                        dataReadViewModel.clearCache()
+                        SessionManager.clearSession(context)
+                        navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                    }
                 },
                 onNavItemSelected = handleBottomNav,
                 authViewModel = authViewModel

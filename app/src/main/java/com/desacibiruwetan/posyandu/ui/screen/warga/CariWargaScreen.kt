@@ -83,8 +83,12 @@ import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.ReadCollection
 import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 private data class DetailInfo(
+    val key: String,
     val title: String,
     val subtitle: String,
     val rows: List<Pair<String, String>>
@@ -186,12 +190,6 @@ fun CariWargaScreen(
                     }
                 }
             }
-            selectedDetail?.let { detail ->
-                item {
-                    DetailPanel(detail = detail, onClose = { selectedDetail = null })
-                }
-            }
-
             when (section) {
                 "Warga" -> {
                     val filtered = warga.filter {
@@ -216,27 +214,31 @@ fun CariWargaScreen(
                         CommandBanner("Tambah / edit rumah dan keluarga", "Buka modul rumah untuk membuat rumah, KK, dan anggota keluarga.", Icons.Default.Home, onNavigateToRumahKeluarga)
                     }
                     items(filtered, key = { it.localId }) { item ->
+                        val detailKey = "rumah-${item.localId}"
                         val relatedFamilies = keluarga.filter { it.belongsToRumah(item) }
                         RumahReadRow(
                             item = item,
                             familyCount = relatedFamilies.size,
                             onClick = {
                                 selectedDetail = DetailInfo(
+                                    key = detailKey,
                                     title = "Rumah ${item.noRumah ?: "-"}",
                                     subtitle = item.alamat ?: "Alamat belum diisi",
                                     rows = listOf(
                                         "Jumlah keluarga" to "${relatedFamilies.size}",
-                                        "RT ID" to (item.rtId?.toString() ?: "-"),
-                                        "Server ID" to (item.serverId?.toString() ?: "Belum sinkron"),
+                                        "Alamat" to (item.alamat ?: "-"),
                                         "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
-                                        "Dibuat" to (item.createdAt ?: "-"),
-                                        "Diubah" to (item.updatedAt ?: "-")
+                                        "Dibuat" to formatIndonesianDate(item.createdAt),
+                                        "Diubah" to formatIndonesianDate(item.updatedAt)
                                     ) + relatedFamilies.mapIndexed { index, family ->
                                         "Keluarga ${index + 1}" to "KK ${family.noKK}"
                                     }
                                 )
                             }
                         )
+                        if (selectedDetail?.key == detailKey) {
+                            DetailPanel(detail = selectedDetail!!, onClose = { selectedDetail = null })
+                        }
                     }
                 }
 
@@ -247,35 +249,44 @@ fun CariWargaScreen(
                         CommandBanner("Kelola KK", "Tambah keluarga dari modul rumah, lalu isi anggota di dalamnya.", Icons.Default.Groups, onNavigateToRumahKeluarga)
                     }
                     items(filtered, key = { it.localId }) { item ->
+                        val detailKey = "keluarga-${item.localId}"
                         val members = warga.filter { it.belongsToKeluarga(item) }
+                        val rumahLabel = rumah.firstOrNull { item.belongsToRumah(it) }?.noRumah?.let { "Rumah $it" }
+                            ?: "Rumah belum dikenali"
                         KeluargaReadRow(
                             item = item,
                             memberCount = members.size,
+                            rumahLabel = rumahLabel,
                             onClick = {
                                 selectedDetail = DetailInfo(
+                                    key = detailKey,
                                     title = "KK ${item.noKK}",
-                                    subtitle = "Rumah ${item.rumahId}",
+                                    subtitle = rumahLabel,
                                     rows = listOf(
                                         "Jumlah anggota" to "${members.size}",
+                                        "Rumah" to rumahLabel,
                                         "Tempat tinggal" to if (item.isNgontrak) "Ngontrak" else "Milik sendiri",
                                         "Kategori Gakin" to if (item.isGakin == true) "Ya" else "Tidak",
-                                        "Server ID" to (item.serverId?.toString() ?: "Belum sinkron"),
                                         "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
-                                        "Dibuat" to (item.createdAt ?: "-")
+                                        "Dibuat" to formatIndonesianDate(item.createdAt),
+                                        "Diubah" to formatIndonesianDate(item.updatedAt)
                                     ) + members.mapIndexed { index, member ->
                                         "Anggota ${index + 1}" to "${member.nama} - ${member.statusKeluarga}"
                                     }
                                 )
                             }
                         )
+                        if (selectedDetail?.key == detailKey) {
+                            DetailPanel(detail = selectedDetail!!, onClose = { selectedDetail = null })
+                        }
                     }
                 }
 
                 "Kesehatan" -> {
                     item { SectionIntro("Data kesehatan", "Lihat dan update data sasaran warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
                     item { HealthActionGrid(onNavigateToUpdateBalita, onNavigateToUpdateBumil, onNavigateToUpdateWusPus, onNavigateToUpdateKb) }
-                    readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb")) { collection, record ->
-                        selectedDetail = record.toDetail(collection.title)
+                    readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
+                        selectedDetail = record.toDetail(collection.title, detailKey)
                     }
                 }
 
@@ -284,15 +295,15 @@ fun CariWargaScreen(
                     item {
                         ProgramActionGrid(onNavigateToProgram)
                     }
-                    readCollections(readState, query, setOf("kia", "phbs", "stunting", "kebakaran")) { collection, record ->
-                        selectedDetail = record.toDetail(collection.title)
+                    readCollections(readState, query, setOf("kia", "phbs", "stunting", "kebakaran"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
+                        selectedDetail = record.toDetail(collection.title, detailKey)
                     }
                 }
 
                 "Log" -> {
                     item { SectionIntro("Log aktivitas", "Riwayat aktivitas sistem dan kader", Icons.Default.Refresh, TextMuted) }
-                    readCollections(readState, query, setOf("logs")) { collection, record ->
-                        selectedDetail = record.toDetail(collection.title)
+                    readCollections(readState, query, setOf("logs"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
+                        selectedDetail = record.toDetail(collection.title, detailKey)
                     }
                 }
             }
@@ -305,7 +316,9 @@ private fun androidx.compose.foundation.lazy.LazyListScope.readCollections(
     state: UiState<List<ReadCollection>>,
     query: String,
     keys: Set<String>,
-    onRecordClick: (ReadCollection, ReadRecord) -> Unit
+    selectedDetail: DetailInfo?,
+    onCloseDetail: () -> Unit,
+    onRecordClick: (ReadCollection, ReadRecord, String) -> Unit
 ) {
     when (state) {
         UiState.Idle, UiState.Loading -> item {
@@ -323,7 +336,12 @@ private fun androidx.compose.foundation.lazy.LazyListScope.readCollections(
                 item { EmptyState(icon = Icons.Default.ErrorOutline, message = "Tidak ada data yang cocok") }
             } else {
                 items(collections, key = { it.key }) { collection ->
-                    CollectionCard(collection = collection, onRecordClick = { onRecordClick(collection, it) })
+                    CollectionCard(
+                        collection = collection,
+                        selectedDetail = selectedDetail,
+                        onCloseDetail = onCloseDetail,
+                        onRecordClick = { record, detailKey -> onRecordClick(collection, record, detailKey) }
+                    )
                 }
             }
         }
@@ -414,10 +432,10 @@ private fun RumahReadRow(item: RumahEntity, familyCount: Int, onClick: () -> Uni
 }
 
 @Composable
-private fun KeluargaReadRow(item: KeluargaEntity, memberCount: Int, onClick: () -> Unit) {
+private fun KeluargaReadRow(item: KeluargaEntity, memberCount: Int, rumahLabel: String, onClick: () -> Unit) {
     ReadRow(
         title = "KK ${item.noKK}",
-        subtitle = "Rumah ${item.rumahId}",
+        subtitle = rumahLabel,
         meta = listOf("$memberCount anggota", if (item.isNgontrak) "Ngontrak" else "Tetap", if (item.isGakin == true) "Gakin" else "Non-gakin").joinToString(" - "),
         icon = Icons.Default.Groups,
         color = ActionAmber,
@@ -517,7 +535,12 @@ private fun MiniAction(title: String, icon: ImageVector, onClick: () -> Unit, mo
 }
 
 @Composable
-private fun CollectionCard(collection: ReadCollection, onRecordClick: (ReadRecord) -> Unit) {
+private fun CollectionCard(
+    collection: ReadCollection,
+    selectedDetail: DetailInfo?,
+    onCloseDetail: () -> Unit,
+    onRecordClick: (ReadRecord, String) -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -539,17 +562,21 @@ private fun CollectionCard(collection: ReadCollection, onRecordClick: (ReadRecor
             Text("Belum ada data tersimpan.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         } else {
             collection.records.forEach { record ->
+                val detailKey = "${collection.key}-${record.id}"
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .background(BgMint, RoundedCornerShape(14.dp))
-                        .clickable { onRecordClick(record) }
+                        .clickable { onRecordClick(record, detailKey) }
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     Text(record.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                     Text(record.subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
                     Text(record.meta, style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                }
+                if (selectedDetail?.key == detailKey) {
+                    DetailPanel(detail = selectedDetail, onClose = onCloseDetail)
                 }
             }
         }
@@ -609,16 +636,44 @@ private fun DetailPanel(detail: DetailInfo, onClose: () -> Unit) {
     }
 }
 
-private fun ReadRecord.toDetail(collectionTitle: String): DetailInfo =
+private fun ReadRecord.toDetail(collectionTitle: String, detailKey: String): DetailInfo =
     DetailInfo(
+        key = detailKey,
         title = title,
         subtitle = collectionTitle,
         rows = listOf(
-            "ID" to id,
             "Ringkasan" to subtitle,
-            "Keterangan" to meta
+            "Keterangan" to (formatIndonesianDate(meta).takeIf { it != meta } ?: meta)
         )
     )
+
+private fun formatIndonesianDate(value: String?): String {
+    val source = value?.trim().orEmpty()
+    if (source.isBlank() || source == "null") return "-"
+
+    val locale = Locale("id", "ID")
+    val outputPattern = if (source.length <= 10) "d MMMM yyyy" else "d MMMM yyyy, HH.mm"
+    val output = SimpleDateFormat(outputPattern, locale)
+    val patterns = listOf(
+        "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+        "yyyy-MM-dd'T'HH:mm:ss'Z'",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd"
+    )
+
+    patterns.forEach { pattern ->
+        val parser = SimpleDateFormat(pattern, Locale.US).apply {
+            isLenient = false
+            if (pattern.endsWith("'Z'")) {
+                timeZone = TimeZone.getTimeZone("UTC")
+            }
+        }
+        runCatching { parser.parse(source) }.getOrNull()?.let { return output.format(it) }
+    }
+
+    return source
+}
 
 private fun KeluargaEntity.belongsToRumah(rumah: RumahEntity): Boolean {
     val possibleIds = setOfNotNull(rumah.serverId, rumah.localId)
