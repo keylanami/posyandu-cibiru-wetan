@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
@@ -35,6 +38,18 @@ import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+
+private fun formatToApiDate(raw: String): String? {
+    if (raw.isEmpty() || raw.length != 8) return null
+    val d = raw.substring(0, 2)
+    val m = raw.substring(2, 4)
+    val y = raw.substring(4, 8)
+    return "$d-$m-$y"
+}
 
 @Composable
 fun UpdateKbScreen(
@@ -43,6 +58,10 @@ fun UpdateKbScreen(
     userName: String,
     anggotaViewModel: AnggotaViewmodel,
 ) {
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -59,8 +78,13 @@ fun UpdateKbScreen(
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
-                selectedWarga = warga
-                namaWarga = warga.nama
+                if (warga.jenisKelamin.equals("Laki-laki", ignoreCase = true)) {
+                    Toast.makeText(context, "Akseptor KB harus WUS/PUS (Perempuan)!", Toast.LENGTH_SHORT).show()
+                } else {
+                    selectedWarga = warga
+                    namaWarga = warga.nama
+                    // Catatan: Jika ada state GET KB Autofill, panggil di sini
+                }
             },
             anggotaViewModel = anggotaViewModel
         )
@@ -160,9 +184,42 @@ fun UpdateKbScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 PrimaryButton(
-                    text = "Update Data KB",
+                    text = "Simpan Data KB",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        val warga = selectedWarga
+                        if (warga == null) {
+                            Toast.makeText(context, "Pilih WUS/PUS terlebih dahulu!", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (jenisKb.isBlank()) {
+                            Toast.makeText(context, "Jenis KB wajib diisi!", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+
+                        val currentDate = SimpleDateFormat(
+                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+                            Locale.getDefault()
+                        ).format(
+                            Date()
+                        )
+
+                        anggotaViewModel.updateDataKb(
+                            token = token,
+                            kbLocalId = 0,
+                            kbServerId = null,
+                            wusPusIdServer = warga.serverId ?: 0,
+                            jenisKb = jenisKb,
+                            tanggalMulaiKb = formatToApiDate(tanggalMulaiKb),
+                            statusAktif = statusAktif,
+                            keterangan = keterangan.ifBlank { null },
+                            createdAt = currentDate,
+                            updatedAt = currentDate
+                        )
+
+                        Toast.makeText(context, "Data KB berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        onBackClick()
+                    }
                 )
             }
 
