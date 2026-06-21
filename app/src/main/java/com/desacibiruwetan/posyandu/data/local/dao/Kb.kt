@@ -21,7 +21,7 @@ interface KbDao {
     suspend fun deleteAllKbLocal()
 
     @Query("select * from tabel_kb where idKbLocal = :localId or idKbServer = :serverId limit 1")
-    suspend fun getKbByAnggotaId(localId: Int, serverId: Int): KbEntity?
+    suspend fun getKbById(localId: Int, serverId: Int?): KbEntity?
 
     @Update
     suspend fun updateKbLocal(kb: KbEntity)

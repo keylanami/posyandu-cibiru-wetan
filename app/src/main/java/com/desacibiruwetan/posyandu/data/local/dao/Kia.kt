@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface KiaDao {
-    @Query("select * from tabel_kia order by id desc")
+    @Query("select * from tabel_kia order by idKiaLocal desc")
     fun getAllKiaDao(): Flow<List<KiaEntity>>
 
     @Query("select * from tabel_kia where isSynced = 0")
@@ -20,8 +20,8 @@ interface KiaDao {
     @Query("delete from tabel_kia")
     suspend fun deleteAllKiaLocal()
 
-    @Query("select * from tabel_kia where id = :localId or idServer = :serverId limit 1")
-    suspend fun getKiaByAnggotaId(localId: Int, serverId: Int): KiaEntity?
+    @Query("select * from tabel_kia where idKiaLocal = :localId or idKiaServer = :serverId limit 1")
+    suspend fun getKiaByAnggotaId(localId: Int, serverId: Int?): KiaEntity?
 
     @Update
     suspend fun updateKiaLocal(kia: KiaEntity)

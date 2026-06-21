@@ -1,12 +1,14 @@
 package com.desacibiruwetan.posyandu.data.local.entity
 
 import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 
 @Entity("tabel_kia")
 data class KiaEntity(
-    val id: Int,
-    val idServer: Int,
+    @PrimaryKey(autoGenerate = true)
+    val idKiaLocal: Int =  0,
+    val idKiaServer: Int?= null,
     val ibuHamilRutinPeriksa: Int,
     val persalinanTenagaKesehatan: Int,
     val kematianIbuNifas: Int,
