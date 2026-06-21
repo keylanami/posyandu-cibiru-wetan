@@ -1,8 +1,8 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -39,11 +39,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -56,14 +54,16 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.CategoryCard
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
+import com.desacibiruwetan.posyandu.ui.components.input.AppDateField
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
-import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
@@ -74,11 +74,9 @@ fun CatatKejadianScreen(
     initialNik: String? = null
 ) {
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()
     val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
 
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
+    val token = SessionManager.getAuthorizationHeader(context)
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -114,22 +112,38 @@ fun CatatKejadianScreen(
         }
     }
 
-    val simpanKejadian = {
+    val simpanKejadian = save@{
         if (selectedWarga == null) {
             Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
-        } else if (tanggalKejadian.length < 8) {
-            Toast.makeText(context, "Tanggal tidak valid (Harus 8 digit)", Toast.LENGTH_SHORT)
+        } else if (tanggalKejadian.isBlank()) {
+            Toast.makeText(context, "Pilih tanggal kejadian", Toast.LENGTH_SHORT)
                 .show()
         } else {
-            val apiDate = "${tanggalKejadian.substring(0, 2)}-${
-                tanggalKejadian.substring(
-                    2,
-                    4
-                )
-            }-${tanggalKejadian.substring(4, 8)}"
+            val apiDate = tanggalKejadian
 
             when (selectedCategory) {
                 "Kelahiran" -> {
+                    val tb = tbLahir.toDoubleOrNull()
+                    val bb = bbLahir.toDoubleOrNull()
+                    if (
+                        namaBayi.isBlank() ||
+                        nik.length != 16 ||
+                        jenisKelaminBayi.isBlank() ||
+                        namaAyah.isBlank() ||
+                        namaIbu.isBlank() ||
+                        tb == null ||
+                        tb <= 0.0 ||
+                        bb == null ||
+                        bb <= 0.0
+                    ) {
+                        Toast.makeText(
+                            context,
+                            "Lengkapi nama bayi, NIK 16 digit, gender, orang tua, BB, dan TB.",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        return@save
+                    }
+
                     val catatanKelahiran =
                         "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
 
@@ -151,8 +165,6 @@ fun CatatKejadianScreen(
                         kategoriUsia = "Balita",
                         onSuccess = { localId, serverId ->
                             if (serverId != null) {
-                                val tb = tbLahir.toDoubleOrNull() ?: 0.0
-                                val bb = bbLahir.toDoubleOrNull() ?: 0.0
                                 anggotaViewModel.createDataBalita(
                                     token,
                                     localId,
@@ -376,8 +388,8 @@ fun CatatKejadianScreen(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
-                    .background(SurfaceWhite, RoundedCornerShape(15.dp))
+                    .background(SurfaceWhite, RoundedCornerShape(18.dp))
+                    .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
                     .padding(24.dp)
             ) {
                 Column {
@@ -411,7 +423,9 @@ fun CatatKejadianScreen(
                                     label = "NIK",
                                     value = nik,
                                     keyboardType = KeyboardType.Number,
-                                    onValueChange = { nik = it })
+                                    onValueChange = {
+                                        if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
+                                    })
                             }
 
                             Column(
@@ -455,15 +469,15 @@ fun CatatKejadianScreen(
                                 AppTextField(
                                     label = "BB Lahir (kg)",
                                     value = bbLahir,
-                                    keyboardType = KeyboardType.Number,
-                                    onValueChange = { bbLahir = it },
+                                    keyboardType = KeyboardType.Decimal,
+                                    onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) bbLahir = it },
                                     modifier = Modifier.weight(1f)
                                 )
                                 AppTextField(
                                     label = "TB Lahir (cm)",
                                     value = tbLahir,
-                                    keyboardType = KeyboardType.Number,
-                                    onValueChange = { tbLahir = it },
+                                    keyboardType = KeyboardType.Decimal,
+                                    onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) tbLahir = it },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -501,16 +515,11 @@ fun CatatKejadianScreen(
                         else -> "Tanggal Kejadian"
                     }
 
-                    AppTextField(
+                    AppDateField(
                         label = labelTanggal,
                         value = tanggalKejadian,
-                        placeholder = "dd/mm/yyyy",
-                        keyboardType = KeyboardType.Number,
-                        visualTransformation = DateVisualTransformation(),
-                        onValueChange = {
-                            if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalKejadian =
-                                it
-                        })
+                        onValueChange = { tanggalKejadian = it }
+                    )
 
                     AppTextField(
                         label = if (selectedCategory == "Meninggal") "Penyebab / Catatan" else "Keterangan",

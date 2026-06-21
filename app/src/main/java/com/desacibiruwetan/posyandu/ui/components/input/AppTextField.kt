@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -28,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 
 @Composable
 fun AppTextField(
@@ -42,16 +44,21 @@ fun AppTextField(
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
-    val bgColor = if (isDarkTheme) Color(0xFF303030) else SurfaceLightGray
+    val bgColor = if (isDarkTheme) Color(0xFF20302C) else SurfaceLightGray
 
     Column(modifier = modifier
         .fillMaxWidth()
-        .padding(bottom = 8.dp)) {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium)
+        .padding(bottom = 12.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge,
+            color = TextMuted
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
         BasicTextField(
@@ -61,26 +68,29 @@ fun AppTextField(
             singleLine = singleLine,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
             visualTransformation = visualTransformation,
-            textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) Color.Gray else MaterialTheme.colorScheme.onSurface),
+            textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) TextMuted else MaterialTheme.colorScheme.onSurface),
             modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
             decorationBox = { innerTextField ->
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(if (singleLine) 38.dp else 114.dp)
-                        .background(color = bgColor, shape = RoundedCornerShape(5.dp))
+                        .height(if (singleLine) 52.dp else 132.dp)
+                        .background(color = bgColor, shape = RoundedCornerShape(14.dp))
                         .border(
-                            width = if (isFocused && !readOnly) 1.5.dp else 1.dp,
+                            width = if (isFocused && !readOnly) 2.dp else 1.dp,
                             color = borderColor,
-                            shape = RoundedCornerShape(5.dp)
+                            shape = RoundedCornerShape(14.dp)
                         )
-                        .padding(horizontal = 12.dp, vertical = if (singleLine) 0.dp else 12.dp),
-                    contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart
+                        .padding(horizontal = 16.dp, vertical = if (singleLine) 0.dp else 14.dp),
+                    verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top
                 ) {
-                    if (value.isEmpty()) {
-                        Text(text = placeholder, style = MaterialTheme.typography.labelMedium)
+                    Box(modifier = Modifier.weight(1f), contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart) {
+                        if (value.isEmpty()) {
+                            Text(text = placeholder, style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.36f)))
+                        }
+                        innerTextField()
                     }
-                    innerTextField()
+                    trailingContent?.invoke()
                 }
             }
         )
@@ -89,7 +99,7 @@ fun AppTextField(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 11.sp,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier.padding(top = 6.dp)
             )
         }
     }

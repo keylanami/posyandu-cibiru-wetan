@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -49,6 +48,7 @@ import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
@@ -59,8 +59,7 @@ fun UpdateBalitaScreen(
     anggotaViewModel: AnggotaViewmodel
 ) {
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
+    val token = SessionManager.getAuthorizationHeader(context)
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -70,11 +69,6 @@ fun UpdateBalitaScreen(
     var namaIbu by remember { mutableStateOf("") }
     var tinggiBadan by remember { mutableStateOf("") }
     var beratBadan by remember { mutableStateOf("") }
-
-
-    var isAsiEksklusif by remember { mutableStateOf(true) }
-    var tanggalMulaiAsi by remember { mutableStateOf("") }
-    var tanggalSelesaiAsi by remember { mutableStateOf("") }
 
     val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
@@ -177,18 +171,18 @@ fun UpdateBalitaScreen(
                         AppTextField(
                             label = "Tinggi Badan (cm)",
                             value = tinggiBadan,
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.Decimal,
                             placeholder = "0.0",
-                            onValueChange = { tinggiBadan = it })
+                            onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) tinggiBadan = it })
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Box(Modifier.weight(1f)) {
                         AppTextField(
                             label = "Berat Badan (kg)",
                             value = beratBadan,
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.Decimal,
                             placeholder = "0.0",
-                            onValueChange = { beratBadan = it })
+                            onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) beratBadan = it })
                     }
                 }
 
@@ -208,8 +202,25 @@ fun UpdateBalitaScreen(
                             return@PrimaryButton
                         }
 
-                        val tb = tinggiBadan.toDoubleOrNull() ?: 0.0
-                        val bb = beratBadan.toDoubleOrNull() ?: 0.0
+                        if (namaAyah.isBlank() || namaIbu.isBlank()) {
+                            Toast.makeText(
+                                context,
+                                "Nama ayah dan ibu wajib diisi",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@PrimaryButton
+                        }
+
+                        val tb = tinggiBadan.toDoubleOrNull()
+                        val bb = beratBadan.toDoubleOrNull()
+                        if (tb == null || tb <= 0.0 || bb == null || bb <= 0.0) {
+                            Toast.makeText(
+                                context,
+                                "Tinggi dan berat badan harus lebih dari 0",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@PrimaryButton
+                        }
 
                         anggotaViewModel.updateDataBalita(
                             token = token,

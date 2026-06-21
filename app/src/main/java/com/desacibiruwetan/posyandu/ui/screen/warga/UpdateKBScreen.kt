@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
-import android.content.Context
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -25,7 +24,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.network.UiState
@@ -33,42 +31,15 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
+import com.desacibiruwetan.posyandu.ui.components.input.AppDateField
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSwitch
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
-import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-
-
-private fun convertServerDateToRaw(serverDate: String?): String {
-    if (serverDate.isNullOrEmpty()) return ""
-
-    // Potong huruf "T" dan sisanya jika ada (contoh: 2026-06-09T00:00:00.000Z)
-    val datePart = if (serverDate.contains("T")) serverDate.substringBefore("T") else serverDate
-
-    if (datePart.contains("-")) {
-        val parts = datePart.split("-")
-        if (parts.size == 3) {
-            if (parts[0].length == 4) return "${parts[2]}${parts[1]}${parts[0]}" // YYYY-MM-DD -> DDMMYYYY
-            if (parts[2].length == 4) return "${parts[0]}${parts[1]}${parts[2]}" // DD-MM-YYYY -> DDMMYYYY
-        }
-    }
-    return datePart.filter { it.isDigit() }.take(8)
-}
-
-private fun formatToApiDate(raw: String): String? {
-    if (raw.isEmpty() || raw.length != 8) return null
-    val d = raw.substring(0, 2)
-    val m = raw.substring(2, 4)
-    val y = raw.substring(4, 8)
-    return "$d-$m-$y"
-}
 
 @Composable
 fun UpdateKbScreen(
@@ -77,50 +48,36 @@ fun UpdateKbScreen(
     userName: String,
     anggotaViewModel: AnggotaViewmodel,
 ) {
-
     val context = LocalContext.current
-    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
-    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
+    val token = SessionManager.getAuthorizationHeader(context)
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
-
-    val detailKb by anggotaViewModel.detailKbState.collectAsState()
-    val activeWusPusId by anggotaViewModel.activeWusPusId.collectAsState()
-    val activeKbLocalId by anggotaViewModel.activeKbLocalId.collectAsState()
 
     var namaWarga by remember { mutableStateOf("") }
     var jenisKb by remember { mutableStateOf("") }
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var statusAktif by remember { mutableStateOf(true) }
     var keterangan by remember { mutableStateOf("") }
+    var isSaving by remember { mutableStateOf(false) }
 
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
+    val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
 
-
-    LaunchedEffect(detailKb) {
-        if (detailKb is UiState.Success) {
-            val dataServer = (detailKb as UiState.Success).data.data
-            if (dataServer != null) {
-                jenisKb = dataServer.jenisKb
-                tanggalMulaiKb = convertServerDateToRaw(dataServer.tanggalMulaiKb) // Gunakan helper tanggal yang sudah ada
-                statusAktif = dataServer.statusAktif
-                keterangan = dataServer.keterangan ?: ""
-            }
+    LaunchedEffect(detailWusPus) {
+        if (detailWusPus is UiState.Error) {
+            Toast.makeText(context, "Warga ini belum punya data WUS/PUS", Toast.LENGTH_SHORT).show()
         }
     }
-
 
     if (showDialog) {
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
-                if (warga.jenisKelamin.equals("Laki-laki", ignoreCase = true)) {
-                    Toast.makeText(context, "Akseptor KB harus WUS/PUS (Perempuan)!", Toast.LENGTH_SHORT).show()
-                } else {
-                    selectedWarga = warga
-                    namaWarga = warga.nama
-                    anggotaViewModel.prepareKbData(token, warga.localId, warga.serverId)
+                selectedWarga = warga
+                namaWarga = warga.nama
+                if (warga.serverId != null) {
+                    anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
                 }
             },
             anggotaViewModel = anggotaViewModel
@@ -164,8 +121,9 @@ fun UpdateKbScreen(
                         AppTextField(
                             label = "Nama Warga",
                             value = namaWarga,
-                            onValueChange = { namaWarga = it },
-                            placeholder = "Masukkan nama warga"
+                            onValueChange = {},
+                            readOnly = true,
+                            placeholder = "Pilih dari pencarian"
                         )
                     }
                 } else {
@@ -188,15 +146,10 @@ fun UpdateKbScreen(
                     onValueChange = { jenisKb = it }
                 )
 
-                AppTextField(
+                AppDateField(
                     label = "Tanggal Mulai KB",
                     value = tanggalMulaiKb,
-                    placeholder = "dd/mm/yyyy",
-                    keyboardType = KeyboardType.Number,
-                    visualTransformation = DateVisualTransformation(),
-                    onValueChange = {
-                        if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb = it
-                    }
+                    onValueChange = { tanggalMulaiKb = it }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -221,43 +174,37 @@ fun UpdateKbScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 PrimaryButton(
-                    text = "Simpan Data KB",
+                    text = if (isSaving) "Menyimpan..." else "Simpan Data KB",
                     icon = Icons.Default.AddCircleOutline,
+                    enabled = !isSaving,
                     onClick = {
-                        val warga = selectedWarga
-                        val wusPusId = activeWusPusId
-
-                        if (warga == null) {
-                            Toast.makeText(context, "Pilih warga terlebih dahulu!", Toast.LENGTH_SHORT).show()
-                            return@PrimaryButton
-                        }
-                        // Validasi Backend: KB tidak bisa dibuat jika warganya belum didaftarkan sebagai WUS/PUS
-                        if (wusPusId == null) {
-                            Toast.makeText(context, "Warga belum terdaftar sebagai WUS/PUS! Daftarkan dulu di menu Wus/Pus.", Toast.LENGTH_LONG).show()
+                        if (selectedWarga == null) {
+                            Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
                             return@PrimaryButton
                         }
                         if (jenisKb.isBlank()) {
-                            Toast.makeText(context, "Jenis KB wajib diisi!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Pilih jenis KB terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        val wusPusId = (detailWusPus as? UiState.Success)?.data?.data?.id
+                        if (wusPusId == null) {
+                            Toast.makeText(context, "Pilih warga yang sudah terdaftar WUS/PUS", Toast.LENGTH_SHORT).show()
                             return@PrimaryButton
                         }
 
-                        val currentDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
-
-                        anggotaViewModel.updateDataKb(
+                        isSaving = true
+                        anggotaViewModel.createKb(
                             token = token,
-                            kbLocalId = activeKbLocalId ?: 0,
-                            kbServerId = null, // Akan di-resolve oleh repository
-                            wusPusIdServer = wusPusId, // Fix: Kirimkan ID WusPus yang sebenarnya!
+                            wusPusId = wusPusId,
                             jenisKb = jenisKb,
-                            tanggalMulaiKb = formatToApiDate(tanggalMulaiKb),
+                            tanggalMulaiKb = tanggalMulaiKb.ifBlank { null },
                             statusAktif = statusAktif,
-                            keterangan = keterangan.ifBlank { null },
-                            createdAt = currentDate,
-                            updatedAt = currentDate
-                        )
-
-                        Toast.makeText(context, "Data KB berhasil disimpan!", Toast.LENGTH_SHORT).show()
-                        onBackClick()
+                            keterangan = keterangan.ifBlank { null }
+                        ) { success, message ->
+                            isSaving = false
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            if (success) onBackClick()
+                        }
                     }
                 )
             }

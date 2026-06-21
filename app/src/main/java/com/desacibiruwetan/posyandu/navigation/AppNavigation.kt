@@ -1,16 +1,21 @@
 package com.desacibiruwetan.posyandu.navigation
 
 import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -22,11 +27,14 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.data.repository.AnggotaRepository
 import com.desacibiruwetan.posyandu.data.repository.AuthRepository
 import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
+import com.desacibiruwetan.posyandu.data.repository.OfflineSyncRepository
 import com.desacibiruwetan.posyandu.data.repository.RumahRepository
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+import com.desacibiruwetan.posyandu.utils.SessionManager
 
 // Import Screens
 import com.desacibiruwetan.posyandu.ui.screen.auth.LoginScreenWrapper
@@ -55,20 +63,24 @@ import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBalitaScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateBumilScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateKbScreen
 import com.desacibiruwetan.posyandu.ui.screen.warga.UpdateWusPusScreen
-import androidx.core.content.edit
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.desacibiruwetan.posyandu.ui.screen.warga.EditWargaScreen
+import kotlinx.coroutines.launch
 
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val startDestination = remember {
+        if (SessionManager.getRawToken(context).isNotBlank()) Screen.Dashboard.route else Screen.Login.route
+    }
     val database = AppDatabase.getDatabase(context)
     val apiService = ApiConfig.getApiService()
-    val sharedPreferences =
-        remember { context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE) }
-
+    val offlineSyncRepository = remember {
+        OfflineSyncRepository(apiService, database)
+    }
     val authViewModel: AuthViewmodel = viewModel(
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
@@ -97,15 +109,27 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao(), database.balitaDao(), database.bumilDao(), database.wusPusDao())) as T
+                AnggotaViewmodel(
+                    AnggotaRepository(
+                        apiService,
+                        database.anggotaDao(),
+                        database.balitaDao(),
+                        database.bumilDao(),
+                        database.wusPusDao()
+                    )
+                ) as T
+        }
+    )
+
+    val dataReadViewModel: DataReadViewModel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                DataReadViewModel(apiService, context.applicationContext) as T
         }
     )
 
     val getMeState by authViewModel.getMeState.collectAsState()
-
-    fun safeFormatToken(rawToken: String): String {
-        return if (rawToken.startsWith("Bearer ")) rawToken else "Bearer $rawToken"
-    }
 
     val userName = when (val state = getMeState) {
         is UiState.Success -> {
@@ -115,6 +139,42 @@ fun AppNavigation() {
 
         is UiState.Loading -> "Memuat..."
         else -> "Kader"
+    }
+
+    suspend fun syncPendingThenPull() {
+        val rawToken = SessionManager.getRawToken(context)
+        if (rawToken.isBlank()) return
+        val formattedToken = SessionManager.formatAuthorizationHeader(rawToken)
+
+        offlineSyncRepository.syncPendingChanges(formattedToken)
+        authViewModel.getMe(rawToken)
+        rumahViewModel.syncDataRumah(formattedToken)
+        keluargaViewModel.syncDataKeluarga(formattedToken)
+        anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
+        dataReadViewModel.refresh(formattedToken)
+    }
+
+    LaunchedEffect(Unit) {
+        syncPendingThenPull()
+    }
+
+    DisposableEffect(Unit) {
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                coroutineScope.launch {
+                    syncPendingThenPull()
+                }
+            }
+        }
+
+        connectivityManager.registerNetworkCallback(request, callback)
+        onDispose {
+            runCatching { connectivityManager.unregisterNetworkCallback(callback) }
+        }
     }
 
     val handleBottomNav: (Int) -> Unit = { index ->
@@ -128,14 +188,13 @@ fun AppNavigation() {
 
         if (route != null) {
             navController.navigate(route) {
-                popUpTo(navController.graph.findStartDestination().id) { saveState = true }
                 launchSingleTop = true
                 restoreState = true
             }
         }
     }
 
-    NavHost(navController = navController, startDestination = Screen.Login.route) {
+    NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Login.route) {
             LoginScreenWrapper(
                 onNavigateToRegister = { navController.navigate(Screen.Register.route) },
@@ -157,15 +216,7 @@ fun AppNavigation() {
 
         composable(Screen.Dashboard.route) {
             LaunchedEffect(Unit) {
-                val rawToken = sharedPreferences.getString("TOKEN", "") ?: ""
-                if (rawToken.isNotEmpty()) {
-                    val formattedToken = safeFormatToken(rawToken)
-
-                    authViewModel.getMe(formattedToken)
-                    rumahViewModel.syncDataRumah(formattedToken)
-                    keluargaViewModel.syncDataKeluarga(formattedToken)
-                    anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
-                }
+                syncPendingThenPull()
             }
 
             DashboardScreen(
@@ -190,7 +241,16 @@ fun AppNavigation() {
                 onAddWargaClick = { navController.navigate(Screen.TambahWarga.route) },
                 onNavigateToDetailWarga = { nikWarga -> navController.navigate("${Screen.DetailWarga.route}/$nikWarga") },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
+                rumahViewModel = rumahViewModel,
+                keluargaViewModel = keluargaViewModel,
+                dataReadViewModel = dataReadViewModel,
+                onNavigateToRumahKeluarga = { navController.navigate(Screen.RumahKeluarga.route) },
+                onNavigateToUpdateBalita = { navController.navigate(Screen.UpdateBalita.route) },
+                onNavigateToUpdateBumil = { navController.navigate(Screen.UpdateBumil.route) },
+                onNavigateToUpdateWusPus = { navController.navigate(Screen.UpdateWusPus.route) },
+                onNavigateToUpdateKb = { navController.navigate(Screen.UpdateKb.route) },
+                onNavigateToProgram = { route -> navController.navigate(route) }
             )
         }
 
@@ -198,7 +258,8 @@ fun AppNavigation() {
             RiwayatScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
+                userName = userName,
+                dataReadViewModel = dataReadViewModel
             )
         }
 
@@ -206,8 +267,12 @@ fun AppNavigation() {
             ProfilScreen(
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
-                    sharedPreferences.edit { clear() }
-                    navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                    coroutineScope.launch {
+                        database.clearUserData()
+                        dataReadViewModel.clearCache()
+                        SessionManager.clearSession(context)
+                        navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                    }
                 },
                 onNavItemSelected = handleBottomNav,
                 authViewModel = authViewModel

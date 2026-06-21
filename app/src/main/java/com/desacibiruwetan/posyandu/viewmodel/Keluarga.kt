@@ -3,6 +3,7 @@ package com.desacibiruwetan.posyandu.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
+import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -27,9 +28,17 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
         }
     }
 
-    fun tambahKeluarga(token: String, rumahId: Int, noKk: String, isNgontrak: Boolean, isGakin: Boolean, onSuccess: (Int) -> Unit){
+    fun tambahKeluarga(
+        token: String,
+        rumahId: Int,
+        noKk: String,
+        isNgontrak: Boolean,
+        isGakin: Boolean,
+        noRumahForApi: Int = rumahId,
+        onSuccess: (Int) -> Unit
+    ){
         viewModelScope.launch {
-            val newId = repository.addNewKeluarga(token, rumahId, noKk, isNgontrak, isGakin)
+            val newId = repository.addNewKeluarga(token, rumahId, noKk, isNgontrak, isGakin, noRumahForApi)
             onSuccess(newId.toInt())
         }
     }
@@ -43,7 +52,24 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
 
     fun fetchKeluargaOptions(token: String) {
         viewModelScope.launch {
-            _keluargaOptions.value = repository.getKeluargaOptionsFromServer(token)
+            val localOptions = listKeluargaLocal.value.map {
+                KeluargaOpt(
+                    id = it.serverId ?: it.localId,
+                    noKk = it.noKK,
+                    kepalaKeluarga = null
+                )
+            }
+            if (localOptions.isNotEmpty()) {
+                _keluargaOptions.value = localOptions
+            }
+
+            val serverOptions = repository.getKeluargaOptionsFromServer(token)
+            if (serverOptions.isNotEmpty()) {
+                val localOnlyOptions = localOptions.filter { local ->
+                    serverOptions.none { server -> server.id == local.id }
+                }
+                _keluargaOptions.value = localOnlyOptions + serverOptions
+            }
         }
     }
 }

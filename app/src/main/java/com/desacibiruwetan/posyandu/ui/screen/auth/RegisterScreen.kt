@@ -3,15 +3,28 @@ package com.desacibiruwetan.posyandu.ui.screen.auth
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
@@ -22,12 +35,14 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.network.UiState
-import com.desacibiruwetan.posyandu.ui.components.bar.AuthHeader
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppPasswordField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.ui.theme.TextDark
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
@@ -47,12 +62,11 @@ fun RegisterScreenWrapper(
             }
 
             is UiState.Error -> {
-                val errorMessage = (registerState as UiState.Error).message
-                Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+                Toast.makeText(context, (registerState as UiState.Error).message, Toast.LENGTH_LONG).show()
                 viewmodel.resetRegisterState()
             }
 
-            else -> {}
+            else -> Unit
         }
     }
 
@@ -60,19 +74,17 @@ fun RegisterScreenWrapper(
         RegisterScreen(
             isLoading = registerState is UiState.Loading,
             onNavigateToLogin = onNavigateToLogin,
-            onRegisterSubmit = { request ->
-                viewmodel.register(request)
-            }
+            onRegisterSubmit = { request -> viewmodel.register(request) }
         )
 
         if (registerState is UiState.Loading) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Black.copy(alpha = 0.3f)),
+                    .background(Color.Black.copy(alpha = 0.30f)),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Color.White)
+                CircularProgressIndicator(color = SurfaceWhite)
             }
         }
     }
@@ -89,28 +101,27 @@ fun RegisterScreen(
     var phone by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
-
     var errors by remember { mutableStateOf(mapOf<String, String?>()) }
 
     fun validate() {
         val newErrors = mutableMapOf<String, String?>()
         if (nik.length < 16) newErrors["nik"] = "NIK harus 16 digit"
-        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) newErrors["email"] =
-            "Email tidak valid"
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) newErrors["email"] = "Email tidak valid"
         if (phone.length < 10) newErrors["phone"] = "Nomor telepon minimal 10 digit"
         if (password.length < 8) newErrors["password"] = "Password minimal 8 karakter"
         if (confirmPassword != password) newErrors["confirm"] = "Password tidak cocok"
 
         errors = newErrors
         if (newErrors.isEmpty() && !isLoading) {
-            val request = RegisterRequest(
-                nik = nik,
-                email = email,
-                phoneNumber = phone,
-                password = password,
-                passwordConfirmation = confirmPassword
+            onRegisterSubmit(
+                RegisterRequest(
+                    nik = nik,
+                    email = email,
+                    phoneNumber = phone,
+                    password = password,
+                    passwordConfirmation = confirmPassword
+                )
             )
-            onRegisterSubmit(request)
         }
     }
 
@@ -121,24 +132,69 @@ fun RegisterScreen(
     ) {
         Box(
             modifier = Modifier
-                .align(Alignment.Center)
-                .padding(vertical = 24.dp)
-                .width(368.dp)
-                .shadow(16.dp, spotColor = Color(0x40DFDFDF), shape = RoundedCornerShape(15.dp))
-                .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(15.dp))
-                .padding(24.dp)
+                .fillMaxWidth()
+                .height(230.dp)
+                .background(DeepGreen)
+        )
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 20.dp)
         ) {
+            Spacer(modifier = Modifier.height(56.dp))
+
+            Text(
+                text = "Daftar Kader",
+                style = MaterialTheme.typography.headlineMedium,
+                color = SurfaceWhite
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "Buat akun untuk mengakses pendataan Posyandu Cibiru Wetan.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SurfaceWhite.copy(alpha = 0.82f)
+            )
+
+            Spacer(modifier = Modifier.height(28.dp))
+
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.verticalScroll(rememberScrollState())
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(24.dp))
+                    .padding(22.dp)
             ) {
-                AuthHeader()
-                Spacer(modifier = Modifier.height(24.dp))
+                Box(
+                    modifier = Modifier
+                        .background(FreshTeal, RoundedCornerShape(18.dp))
+                        .padding(horizontal = 14.dp, vertical = 10.dp)
+                ) {
+                    Text(
+                        text = "Identitas akun kader",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = PrimaryGreen
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(22.dp))
+
+                Text(
+                    text = "Lengkapi data awal",
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text(
+                    text = "Pastikan NIK dan nomor telepon aktif.",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = TextMuted
+                )
+
+                Spacer(modifier = Modifier.height(22.dp))
 
                 AppTextField(
                     label = "NIK",
                     value = nik,
-                    onValueChange = { nik = it },
+                    onValueChange = { if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it },
                     error = errors["nik"],
                     keyboardType = KeyboardType.Number
                 )
@@ -154,7 +210,7 @@ fun RegisterScreen(
                 AppTextField(
                     label = "Nomor Telepon",
                     value = phone,
-                    onValueChange = { phone = it },
+                    onValueChange = { if (it.all { char -> char.isDigit() }) phone = it },
                     error = errors["phone"],
                     keyboardType = KeyboardType.Phone
                 )
@@ -174,29 +230,30 @@ fun RegisterScreen(
                     error = errors["confirm"]
                 )
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
                 PrimaryButton(
                     text = if (isLoading) "Memproses..." else "Daftar",
                     onClick = { validate() }
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(18.dp))
 
                 Text(
                     text = buildAnnotatedString {
-                        withStyle(SpanStyle(color = TextDark)) { append("Sudah terdaftar sebagai kader? ") }
-                        withStyle(
-                            SpanStyle(
-                                color = PrimaryGreen,
-                                fontWeight = FontWeight.Bold
-                            )
-                        ) { append("Masuk") }
+                        withStyle(SpanStyle(color = MaterialTheme.colorScheme.onSurface)) {
+                            append("Sudah terdaftar sebagai kader? ")
+                        }
+                        withStyle(SpanStyle(color = PrimaryGreen, fontWeight = FontWeight.Bold)) {
+                            append("Masuk")
+                        }
                     },
                     modifier = Modifier.clickable(enabled = !isLoading) { onNavigateToLogin() },
                     style = MaterialTheme.typography.bodyMedium
                 )
             }
+
+            Spacer(modifier = Modifier.height(28.dp))
         }
     }
 }

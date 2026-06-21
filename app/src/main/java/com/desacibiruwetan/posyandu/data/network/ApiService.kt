@@ -6,29 +6,29 @@ import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.BumilReq
-import com.desacibiruwetan.posyandu.data.model.KbData
-import com.desacibiruwetan.posyandu.data.model.KbReq
+import com.desacibiruwetan.posyandu.data.model.ActivityLogData
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
+import com.desacibiruwetan.posyandu.data.model.KbData
+import com.desacibiruwetan.posyandu.data.model.KbRequest
 import com.desacibiruwetan.posyandu.data.model.KiaData
-import com.desacibiruwetan.posyandu.data.model.KiaReq
-import com.desacibiruwetan.posyandu.data.model.LogAktivitasPaginated
+import com.desacibiruwetan.posyandu.data.model.KiaRequest
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.PeduliStuntingData
-import com.desacibiruwetan.posyandu.data.model.PeduliStuntingReq
+import com.desacibiruwetan.posyandu.data.model.PeduliStuntingRequest
 import com.desacibiruwetan.posyandu.data.model.PhbsData
-import com.desacibiruwetan.posyandu.data.model.PhbsReq
+import com.desacibiruwetan.posyandu.data.model.PhbsRequest
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.model.RumahData
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
 import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranData
-import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranReq
+import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranRequest
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
-import com.desacibiruwetan.posyandu.data.schema.LogAktivitas
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
+import okhttp3.ResponseBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -38,7 +38,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
-import retrofit2.http.Query
+import retrofit2.http.Url
 
 interface ApiService {
 
@@ -207,6 +207,12 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<BaseResponse<BumilData>>
 
+    @GET("anggotas/{anggotaId}/bumils")
+    suspend fun getBumilsByAnggotaId(
+        @Header("Authorization") token: String,
+        @Path("anggotaId") anggotaId: Int
+    ): Response<BaseResponse<List<BumilData>>>
+
 
     @PUT("bumils/{id}")
     suspend fun putBumil(
@@ -219,14 +225,14 @@ interface ApiService {
     @DELETE("bumils/{id}")
     suspend fun deleteBumil(
         @Header("Authorization") token: String,
-        @Path("bumilId") bumilId: Int
+        @Path("id") id: Int
     ): Response<BaseResponse<Any>>
 
 
     @GET("wus-pus")
     suspend fun getAllWusPus(
         @Header("Authorization") token: String
-    ): Response<BaseResponse<WusPusData>>
+    ): Response<BaseResponse<List<WusPusData>>>
 
 
     @GET("anggotas/{anggotaId}/wus-pus")
@@ -266,62 +272,33 @@ interface ApiService {
         @Path("anggotaId") anggotaId: Int
     ): Response<BaseResponse<Any>>
 
+    @GET("kbs")
+    suspend fun getAllKb(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<KbData>>>
 
-    @GET("phbs/{id}")
-    suspend fun getPhbsById(
+    @POST("wus-pus/{wusPusId}/kbs")
+    suspend fun postKb(
+        @Header("Authorization") token: String,
+        @Path("wusPusId") wusPusId: Int,
+        @Body request: KbRequest
+    ): Response<BaseResponse<KbData>>
+
+    @GET("kbs/{id}")
+    suspend fun getKbById(
         @Header("Authorization") token: String,
         @Path("id") id: Int
-    ): Response<BaseResponse<PhbsData>>
+    ): Response<BaseResponse<KbData>>
 
-
-    @GET("phbs")
-    suspend fun getPhbs(
-        @Header("Authorization") token: String
-    ): Response<BaseResponse<List<PhbsData>>>
-
-
-    @POST("phbs")
-    suspend fun postPhbs(
+    @PUT("kbs/{id}")
+    suspend fun putKb(
         @Header("Authorization") token: String,
-        @Body request: PhbsReq
-    ): Response<BaseResponse<PhbsData>>
+        @Path("id") id: Int,
+        @Body request: KbRequest
+    ): Response<BaseResponse<KbData>>
 
-
-    @PUT("phbs/{id}")
-    suspend fun putPhbs(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int?,
-        @Body request: PhbsReq
-    ): Response<BaseResponse<PhbsData>>
-
-
-    @GET("peduli-stuntings")
-    suspend fun getAllPeduliStunting(
-        @Header("Authorization") token: String
-    ): Response<BaseResponse<List<PeduliStuntingData>>>
-
-    @GET("peduli-stuntings/{id}")
-    suspend fun getPeduliStuntingById(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int
-    ): Response<BaseResponse<PeduliStuntingData>>
-
-    @POST("peduli-stuntings")
-    suspend fun postPeduliStunting(
-        @Header("Authorization") token: String,
-        @Body request: PeduliStuntingReq
-    ): Response<BaseResponse<PeduliStuntingData>>
-
-    @PUT("peduli-stuntings/{id}")
-    suspend fun putPeduliStunting(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int?,
-        @Body request: PeduliStuntingReq
-    ): Response<BaseResponse<PeduliStuntingData>>
-
-
-    @DELETE("peduli-stuntings/{id}")
-    suspend fun deletePeduliStunting(
+    @DELETE("kbs/{id}")
+    suspend fun deleteKb(
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<BaseResponse<Any>>
@@ -331,103 +308,130 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<BaseResponse<List<KiaData>>>
 
+    @POST("kias")
+    suspend fun postKia(
+        @Header("Authorization") token: String,
+        @Body request: KiaRequest
+    ): Response<BaseResponse<KiaData>>
+
     @GET("kias/{id}")
     suspend fun getKiaById(
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<BaseResponse<KiaData>>
 
-    @POST("kias")
-    suspend fun postKia(
-        @Header("Authorization") token: String,
-        @Body request: KiaReq
-    ): Response<BaseResponse<KiaData>>
-
-
     @PUT("kias/{id}")
     suspend fun putKia(
         @Header("Authorization") token: String,
-        @Path("id") id: Int?,
-        @Body request: KiaReq
+        @Path("id") id: Int,
+        @Body request: KiaRequest
     ): Response<BaseResponse<KiaData>>
 
     @DELETE("kias/{id}")
     suspend fun deleteKia(
         @Header("Authorization") token: String,
-        @Path("id") id: Int?
+        @Path("id") id: Int
     ): Response<BaseResponse<Any>>
 
+    @GET("phbs")
+    suspend fun getAllPhbs(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<PhbsData>>>
+
+    @POST("phbs")
+    suspend fun postPhbs(
+        @Header("Authorization") token: String,
+        @Body request: PhbsRequest
+    ): Response<BaseResponse<PhbsData>>
+
+    @GET("phbs/{id}")
+    suspend fun getPhbsById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<PhbsData>>
+
+    @PUT("phbs/{id}")
+    suspend fun putPhbs(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: PhbsRequest
+    ): Response<BaseResponse<PhbsData>>
+
+    @DELETE("phbs/{id}")
+    suspend fun deletePhbs(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<Any>>
+
+    @GET("peduli-stuntings")
+    suspend fun getAllPeduliStunting(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<PeduliStuntingData>>>
+
+    @POST("peduli-stuntings")
+    suspend fun postPeduliStunting(
+        @Header("Authorization") token: String,
+        @Body request: PeduliStuntingRequest
+    ): Response<BaseResponse<PeduliStuntingData>>
+
+    @GET("peduli-stuntings/{id}")
+    suspend fun getPeduliStuntingById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<PeduliStuntingData>>
+
+    @PUT("peduli-stuntings/{id}")
+    suspend fun putPeduliStunting(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: PeduliStuntingRequest
+    ): Response<BaseResponse<PeduliStuntingData>>
+
+    @DELETE("peduli-stuntings/{id}")
+    suspend fun deletePeduliStunting(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<Any>>
 
     @GET("siaga-kebakarans")
     suspend fun getAllSiagaKebakaran(
         @Header("Authorization") token: String
     ): Response<BaseResponse<List<SiagaKebakaranData>>>
 
-    @GET("siaga-kebakarans/{id")
+    @POST("siaga-kebakarans")
+    suspend fun postSiagaKebakaran(
+        @Header("Authorization") token: String,
+        @Body request: SiagaKebakaranRequest
+    ): Response<BaseResponse<SiagaKebakaranData>>
+
+    @GET("siaga-kebakarans/{id}")
     suspend fun getSiagaKebakaranById(
         @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<BaseResponse<SiagaKebakaranData>>
 
-    @POST("siaga-kebakarans")
-    suspend fun postSiagaKebakaran(
-        @Header("Authorization") token: String,
-        @Body request: SiagaKebakaranReq
-    ): Response<BaseResponse<SiagaKebakaranData>>
-
     @PUT("siaga-kebakarans/{id}")
     suspend fun putSiagaKebakaran(
-        @Header("Authorizatopn") token: String,
-        @Path("id") id: Int?,
-        @Body request: SiagaKebakaranReq
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: SiagaKebakaranRequest
     ): Response<BaseResponse<SiagaKebakaranData>>
 
     @DELETE("siaga-kebakarans/{id}")
     suspend fun deleteSiagaKebakaran(
         @Header("Authorization") token: String,
-        @Path("id") id: Int?,
-    ): Response<BaseResponse<Any>>
-
-
-    @GET("kbs")
-    suspend fun getAllKbs(
-        @Header("Authorization") token: String
-    ): Response<BaseResponse<List<KbData>>>
-
-
-    @GET("kbs/{id}")
-    suspend fun getKbById(
-        @Header("Authorization") token: String,
         @Path("id") id: Int
-    ): Response<BaseResponse<KbData>>
-
-    @POST("wus-pus/{wusPusId}/kbs")
-    suspend fun postKb(
-        @Header("Authorization") token: String,
-        @Path("wusPusId") wusPusId: Int,
-        @Body request: KbReq
-    ): Response<BaseResponse<KbData>>
-
-    @PUT("kbs/{id}")
-    suspend fun putKb(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int?,
-        @Body request: KbReq
-    ): Response<BaseResponse<KbData>>
-
-    @DELETE("kbs/{id}")
-    suspend fun deleteKb(
-        @Header("Authorization") token: String,
-        @Path("id") id: Int?
     ): Response<BaseResponse<Any>>
 
+    @GET("log-aktivitas")
+    suspend fun getActivityLogs(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<ActivityLogData>>>
 
-    @GET("log-aktivias")
-    suspend fun getLogAktivitas(
-        @Header("Authorization") token: String,
-        @Query("jenis") jenis: String? = null,
-        @Query("per_page") perPage: Int? = 100,
-    ): Response<BaseResponse<List<LogAktivitasPaginated>>>
-
+    @GET
+    suspend fun getRawReadCollection(
+        @Url path: String,
+        @Header("Authorization") token: String
+    ): Response<ResponseBody>
 
 }

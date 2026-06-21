@@ -29,4 +29,7 @@ interface KeluargaDao{
     @Query("select * from tabel_keluarga where rumahId = :id order by localId desc")
     fun getKeluargaByRumahId(id: Int): Flow<List<KeluargaEntity>>
 
+    @Query("select * from tabel_keluarga where localId = :id or serverId = :id limit 1")
+    suspend fun getKeluargaByLocalOrServerId(id: Int): KeluargaEntity?
+
 }

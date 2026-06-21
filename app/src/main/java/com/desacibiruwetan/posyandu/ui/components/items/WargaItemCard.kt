@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.components.items
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -19,12 +20,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.Inter
+import com.desacibiruwetan.posyandu.ui.theme.BorderGray
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
@@ -38,13 +40,8 @@ fun WargaItemCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 16.dp,
-                spotColor = Color(0x40A6A6A6),
-                ambientColor = Color(0x40A6A6A6),
-                shape = RoundedCornerShape(5.dp)
-            )
-            .background(color = SurfaceWhite, shape = RoundedCornerShape(5.dp))
+            .background(color = SurfaceWhite, shape = RoundedCornerShape(16.dp))
+            .border(1.dp, BorderGray.copy(alpha = 0.7f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -54,8 +51,8 @@ fun WargaItemCard(
             Text(
                 text = name,
                 fontFamily = Inter,
-                fontWeight = FontWeight.Medium,
-                fontSize = 12.sp,
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 15.sp,
                 color = Color(0xFF272727)
             )
             Spacer(modifier = Modifier.height(4.dp))
@@ -63,24 +60,25 @@ fun WargaItemCard(
                 text = "NIK : $nik",
                 fontFamily = Inter,
                 fontWeight = FontWeight.Medium,
-                fontSize = 11.sp,
-                color = Color(0xFFA2A2A2)
+                fontSize = 12.sp,
+                color = Color(0xFF6D7C78)
             )
             Spacer(modifier = Modifier.height(8.dp))
 
             // Badge RT/RW
             Box(
                 modifier = Modifier
-                    .background(color = PrimaryGreen, shape = RoundedCornerShape(12.dp))
+                    .background(color = FreshTeal, shape = RoundedCornerShape(100.dp))
+                    .border(1.dp, PrimaryGreen.copy(alpha = 0.18f), RoundedCornerShape(100.dp))
                     .padding(horizontal = 12.dp, vertical = 6.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = rtRw,
                     fontFamily = Inter,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.SemiBold,
                     fontSize = 10.sp,
-                    color = SurfaceWhite
+                    color = PrimaryGreen
                 )
             }
         }
@@ -88,7 +86,7 @@ fun WargaItemCard(
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = "Detail",
-            tint = Color(0xFFA2A2A2),
+            tint = PrimaryGreen,
             modifier = Modifier.size(24.dp)
         )
     }

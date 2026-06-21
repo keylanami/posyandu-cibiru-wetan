@@ -4,6 +4,9 @@ import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
+import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.KbData
@@ -18,6 +21,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+data class WargaProgramSummary(
+    val balita: BalitaEntity? = null,
+    val bumilLocal: BumilEntity? = null,
+    val bumilRemote: List<BumilData> = emptyList(),
+    val wusPusLocal: WusPusEntity? = null,
+    val wusPusRemote: WusPusData? = null,
+    val kbs: List<KbData> = emptyList()
+) {
+    val hasData: Boolean
+        get() = balita != null || bumilLocal != null || bumilRemote.isNotEmpty() || wusPusLocal != null || wusPusRemote != null || kbs.isNotEmpty()
+}
 
 
 class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() {
@@ -40,14 +55,8 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     private val _detailWusPusState = MutableStateFlow<UiState<BaseResponse<WusPusData>>>(UiState.Idle)
     val detailWusPusState = _detailWusPusState.asStateFlow()
 
-    private val _detailKbState = MutableStateFlow<UiState<BaseResponse<KbData>>>(UiState.Idle)
-    val detailKbState = _detailKbState.asStateFlow()
-
-    private val _activeWusPusId = MutableStateFlow<Int?>(null)
-    val activeWusPusId = _activeWusPusId.asStateFlow()
-
-    private val _activeKbLocalId = MutableStateFlow<Int?>(null)
-    val activeKbLocalId = _activeKbLocalId.asStateFlow()
+    private val _programSummaryState = MutableStateFlow<UiState<WargaProgramSummary>>(UiState.Idle)
+    val programSummaryState = _programSummaryState.asStateFlow()
 
 
     fun syncDataAnggotaDariServer(token: String) {
@@ -258,6 +267,29 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         }
     }
 
+    fun getDetailBumilByAnggotaFromServer(token: String, anggotaId: Int) {
+        viewModelScope.launch {
+            _detailBumilState.value = UiState.Loading
+            try {
+                val response = repository.getBumilsByAnggotaId(token, anggotaId)
+                val bumil = response.body()?.data?.firstOrNull()
+                if (response.isSuccessful && bumil != null) {
+                    _detailBumilState.value = UiState.Success(
+                        BaseResponse(
+                            success = true,
+                            message = response.body()?.message ?: "Success",
+                            data = bumil
+                        )
+                    )
+                } else {
+                    _detailBumilState.value = UiState.Error("Data Bumil belum tersedia")
+                }
+            } catch (e: Exception) {
+                _detailBumilState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
+            }
+        }
+    }
+
 
 
     fun updateDataWusPus(
@@ -307,54 +339,68 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         }
     }
 
-
-    fun updateDataKb(
-        token: String, kbLocalId: Int, kbServerId: Int?, wusPusIdServer: Int,
-        jenisKb: String, tanggalMulaiKb: String?, statusAktif: Boolean, keterangan: String?,
-        createdAt: String, updatedAt: String
-    ){
+    fun loadProgramSummary(token: String, anggotaLocalId: Int, anggotaServerId: Int?) {
         viewModelScope.launch {
-            repository.updateDataKb(
-                token, kbLocalId, kbServerId, wusPusIdServer,
-                jenisKb, tanggalMulaiKb, statusAktif, keterangan, createdAt, updatedAt
+            _programSummaryState.value = UiState.Loading
+            val balita = repository.getBalitaLocalByAnggotaId(anggotaLocalId, anggotaServerId)
+            val bumilLocal = repository.getBumilLocalByAnggotaId(anggotaLocalId, anggotaServerId)
+            val wusPusLocal = repository.getWusPusLocalByAnggotaId(anggotaLocalId, anggotaServerId)
+
+            var bumilRemote = emptyList<BumilData>()
+            var wusPusRemote: WusPusData? = null
+            if (anggotaServerId != null && token.isNotBlank()) {
+                runCatching {
+                    repository.getBumilsByAnggotaId(token, anggotaServerId)
+                }.getOrNull()?.takeIf { it.isSuccessful }?.body()?.data?.let {
+                    bumilRemote = it
+                }
+
+                runCatching {
+                    repository.getDataWusPusById(token, anggotaServerId)
+                }.getOrNull()?.takeIf { it.isSuccessful }?.body()?.data?.let {
+                    wusPusRemote = it
+                }
+            }
+
+            _programSummaryState.value = UiState.Success(
+                WargaProgramSummary(
+                    balita = balita,
+                    bumilLocal = bumilLocal,
+                    bumilRemote = bumilRemote,
+                    wusPusLocal = wusPusLocal,
+                    wusPusRemote = wusPusRemote,
+                    kbs = wusPusRemote?.kbs.orEmpty()
+                )
             )
         }
     }
 
-
-    fun getDetailKbFromServer(token: String, kbId: Int) {
+    fun createKb(
+        token: String,
+        wusPusId: Int,
+        jenisKb: String,
+        tanggalMulaiKb: String?,
+        statusAktif: Boolean,
+        keterangan: String?,
+        onResult: (Boolean, String) -> Unit = { _, _ -> }
+    ) {
         viewModelScope.launch {
-            _detailKbState.value = UiState.Loading
             try {
-                val response = repository.getKbById(token, kbId)
-                if (response.isSuccessful && response.body() != null) {
-                    _detailKbState.value = UiState.Success(response.body()!!)
+                val response = repository.createKb(
+                    token = token,
+                    wusPusId = wusPusId,
+                    jenisKb = jenisKb,
+                    tanggalMulaiKb = tanggalMulaiKb,
+                    statusAktif = statusAktif,
+                    keterangan = keterangan
+                )
+                if (response.isSuccessful) {
+                    onResult(true, response.body()?.message ?: "Data KB berhasil disimpan")
                 } else {
-                    _detailKbState.value = UiState.Error("Gagal memuat detail KB: ${response.message()}")
+                    onResult(false, "Gagal menyimpan data KB: ${response.message()}")
                 }
             } catch (e: Exception) {
-                _detailKbState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
-            }
-        }
-    }
-
-    fun prepareKbData(token: String, anggotaLocalId: Int, anggotaServerId: Int?) {
-        viewModelScope.launch {
-            _detailKbState.value = UiState.Idle
-
-            val wusPus = repository.getWusPusLokal(anggotaLocalId, anggotaServerId)
-            val wusPusId = wusPus?.wusPusServerId
-            _activeWusPusId.value = wusPusId
-
-            if (wusPusId != null) {
-                val kb = repository.getKbLokalByWusPus(wusPusId)
-                _activeKbLocalId.value = kb?.idKbLocal
-
-                if (kb?.idKbServer != null) {
-                    getDetailKbFromServer(token, kb.idKbServer)
-                }
-            } else {
-                _activeKbLocalId.value = null
+                onResult(false, "Gagal menyimpan data KB: ${e.localizedMessage}")
             }
         }
     }

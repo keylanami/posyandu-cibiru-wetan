@@ -4,12 +4,10 @@ import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
-import com.desacibiruwetan.posyandu.data.local.dao.KbDao
 import com.desacibiruwetan.posyandu.data.local.dao.WusPusDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
-import com.desacibiruwetan.posyandu.data.local.entity.KbEntity
 import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
@@ -17,7 +15,7 @@ import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.BumilReq
 import com.desacibiruwetan.posyandu.data.model.KbData
-import com.desacibiruwetan.posyandu.data.model.KbReq
+import com.desacibiruwetan.posyandu.data.model.KbRequest
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
@@ -32,8 +30,7 @@ class AnggotaRepository(
     private val anggotaDao: AnggotaDao,
     private val balitaDao: BalitaDao,
     private val bumilDao: BumilDao,
-    private val wusPusDao: WusPusDao,
-    private val kbDao: KbDao
+    private val wusPusDao: WusPusDao
 ) {
 
     fun getAllAnggotaLocal(): Flow<List<AnggotaEntity>> = anggotaDao.getAllAnggotaDao()
@@ -49,9 +46,6 @@ class AnggotaRepository(
             if (response.isSuccessful) {
                 val dataServer = response.body()?.data
                 Log.d(TAG, "data dari server: ${dataServer?.size ?: "null"} item")
-                if (!dataServer.isNullOrEmpty()) {
-                    anggotaDao.deleteAllAnggotaLocal()
-                }
                 dataServer?.forEach { anggotaServer ->
                     val anggotaLokalBaru = AnggotaEntity(
                         serverId = anggotaServer.id,
@@ -278,6 +272,10 @@ class AnggotaRepository(
         return apiService.getBalitaById(token, balitaId)
     }
 
+    suspend fun getBalitaLocalByAnggotaId(localId: Int, serverId: Int?): BalitaEntity? {
+        return balitaDao.getBalitaByAnggotaId(localId, serverId)
+    }
+
 
     suspend fun addDataBumil(
         token: String,
@@ -394,6 +392,14 @@ class AnggotaRepository(
         return apiService.getDetailBumilById(token, bumilId)
     }
 
+    suspend fun getBumilsByAnggotaId(token: String, anggotaId: Int): Response<BaseResponse<List<BumilData>>> {
+        return apiService.getBumilsByAnggotaId(token, anggotaId)
+    }
+
+    suspend fun getBumilLocalByAnggotaId(localId: Int, serverId: Int?): BumilEntity? {
+        return bumilDao.getBumilByAnggotaId(localId, serverId)
+    }
+
     suspend fun deleteBumil(token: String, bumilId: Int) {
         try {
             apiService.deleteBumil(token, bumilId)
@@ -413,7 +419,7 @@ class AnggotaRepository(
         keterangan: String?,
         createdAt: String,
         updatedAt: String
-    ) {
+    ){
         val wusPusLokal = wusPusDao.getWuspusByAnggotaId(anggotaLocalId, anggotaServerId)
         val wusPusUpdate = wusPusLokal?.copy(
             namaSuami = namaSuami,
@@ -457,74 +463,43 @@ class AnggotaRepository(
         }
     }
 
-    suspend fun deleteDataWusPusById(token: String, wusPusId: Int) {
+    suspend fun deleteDataWusPusById(token: String, wusPusId: Int){
         try {
             apiService.deleteWusPus(token, wusPusId)
-        } catch (e: Exception) {
+        } catch (e: Exception){
             Log.e(TAG, "Gagal delete wus pus: ${e.message}")
         }
     }
 
-    suspend fun getDataWusPusById(
-        token: String,
-        wusPusId: Int
-    ): Response<BaseResponse<WusPusData>> {
+    suspend fun getDataWusPusById(token: String, wusPusId: Int): Response<BaseResponse<WusPusData>>{
         return apiService.getWusPusById(token, wusPusId)
     }
 
-    suspend fun getWusPusLokal(anggotaLocalId: Int, anggotaServerId: Int?): WusPusEntity? {
-        return wusPusDao.getWuspusByAnggotaId(anggotaLocalId, anggotaServerId)
+    suspend fun getWusPusLocalByAnggotaId(localId: Int, serverId: Int?): WusPusEntity? {
+        return wusPusDao.getWuspusByAnggotaId(localId, serverId)
     }
 
-    suspend fun getKbLokalByWusPus(wusPusId: Int): KbEntity? {
-        return kbDao.getKbByWusPusId(wusPusId)
-    }
-
-    suspend fun updateDataKb(
-        token: String, kbLocalId: Int, kbServerId: Int?, wusPusIdServer: Int,
-        jenisKb: String, tanggalMulaiKb: String?, statusAktif: Boolean, keterangan: String?, createdAt: String?, updatedAt: String?
-    ) {
-        val kbLokal = kbDao.getKbById(kbLocalId, kbServerId) ?: kbDao.getKbByWusPusId(wusPusIdServer)
-
-        val kbUpdate = kbLokal?.copy(
-            wusPusId = wusPusIdServer, jenisKb = jenisKb, tanggalMulaiKb = tanggalMulaiKb,
-            statusAktif = statusAktif, keterangan = keterangan, createdAt = createdAt, updatedAt = updatedAt, isSynced = false
-        ) ?: KbEntity(
-            wusPusId = wusPusIdServer, jenisKb = jenisKb, tanggalMulaiKb = tanggalMulaiKb,
-            statusAktif = statusAktif, keterangan = keterangan, createdAt = createdAt, updatedAt = updatedAt, isSynced = false
+    suspend fun createKb(
+        token: String,
+        wusPusId: Int,
+        jenisKb: String,
+        tanggalMulaiKb: String?,
+        statusAktif: Boolean,
+        keterangan: String?
+    ): Response<BaseResponse<KbData>> {
+        return apiService.postKb(
+            token = token,
+            wusPusId = wusPusId,
+            request = KbRequest(
+                jenisKb = jenisKb,
+                tanggalMulaiKb = tanggalMulaiKb,
+                statusAktif = statusAktif,
+                keterangan = keterangan
+            )
         )
-
-        if (kbLokal != null) kbDao.updateKbLocal(kbUpdate)
-        else kbDao.insertKbLocal(kbUpdate)
-
-        if (kbUpdate.idKbServer != null) {
-            try {
-                val req = KbReq(jenisKb, tanggalMulaiKb, statusAktif, keterangan)
-                val res = apiService.putKb(token, kbUpdate.idKbServer, req)
-                if (res.isSuccessful) kbDao.updateKbLocal(kbUpdate.copy(isSynced = true))
-            } catch (e: Exception) {
-                Log.e("Repo", "Offline PUT KB")
-            }
-        } else {
-            try {
-                val req = KbReq(jenisKb, tanggalMulaiKb, statusAktif, keterangan)
-                val res = apiService.postKb(token, wusPusIdServer, req)
-                if (res.isSuccessful && res.body()?.data != null) {
-                    kbDao.updateKbLocal(
-                        kbUpdate.copy(
-                            idKbServer = res.body()!!.data!!.id,
-                            isSynced = true
-                        )
-                    )
-                }
-            } catch (e: Exception) {
-                Log.e("Repo", "Offline POST KB")
-            }
-        }
     }
 
-    suspend fun getKbById(token: String, kbId: Int): Response<BaseResponse<KbData>> {
-        return apiService.getKbById(token, kbId)
-    }
+
+
 
 }

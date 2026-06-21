@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -35,6 +37,7 @@ fun AdministrasiRtScreen(
     onNavItemSelected: (Int) -> Unit,
     userName: String
 ) {
+    val context = LocalContext.current
 
     var bulan by remember { mutableStateOf("") }
     var tahun by remember { mutableStateOf("") }
@@ -161,7 +164,9 @@ fun AdministrasiRtScreen(
                 PrimaryButton(
                     text = "Update Administrasi RT",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        Toast.makeText(context, "Data administrasi tersimpan sebagai draf", Toast.LENGTH_SHORT).show()
+                    }
                 )
             }
 

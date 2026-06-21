@@ -2,6 +2,7 @@ package com.desacibiruwetan.posyandu.ui.components.dialog
 
 import android.content.Context
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -15,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Face
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -24,6 +26,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -31,6 +34,8 @@ import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.items.WargaItemCard
+import com.desacibiruwetan.posyandu.ui.theme.BorderLight
+import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
@@ -65,12 +70,27 @@ fun SearchWargaDialog(
     ) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(0.9f)
-                .fillMaxHeight(0.8f)
-                .clip(RoundedCornerShape(15.dp))
+                .fillMaxWidth(0.94f)
+                .fillMaxHeight(0.82f)
+                .clip(RoundedCornerShape(28.dp))
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(24.dp)
+                .border(1.dp, BorderLight, RoundedCornerShape(28.dp))
+                .padding(20.dp)
         ) {
+            Text(
+                text = "Pilih Warga",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = displayRtRw,
+                style = MaterialTheme.typography.bodyMedium,
+                color = TextMuted
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
             AppSearchBar(
                 query = searchQuery,
                 onQueryChange = { searchQuery = it },
