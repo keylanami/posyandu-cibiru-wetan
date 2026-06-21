@@ -478,7 +478,7 @@ class AnggotaRepository(
         return apiService.getWusPusById(token, wusPusId)
     }
 
-    fun getWusPusLocalByAnggotaId(localId: Int, serverId: Int?): WusPusEntity? {
+    suspend fun getWusPusLocalByAnggotaId(localId: Int, serverId: Int?): WusPusEntity? {
         return wusPusDao.getWuspusByAnggotaId(localId, serverId)
     }
 

@@ -26,5 +26,5 @@ interface WusPusDao {
     suspend fun deleteAllWusPusLocal()
 
     @Query("select * from tabel_wuspus where anggotaLocalId = :localId or anggotaServerId = :serverId limit 1")
-    fun getWuspusByAnggotaId(localId: Int, serverId: Int?): WusPusEntity?
+    suspend fun getWuspusByAnggotaId(localId: Int, serverId: Int?): WusPusEntity?
 }
