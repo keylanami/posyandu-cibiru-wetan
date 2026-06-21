@@ -14,16 +14,9 @@ class RiwayatRepository(
 
     suspend fun syncRiwayatFromServer(token: String) {
         try {
-            val response = apiService.getLogAktivitas(token, perPage = 100)
-
-            // FIX: Pisahkan pengecekan agar Kotlin Smart Cast bekerja sempurna
-            val paginatedData = response.body()?.data
-
-            if (response.isSuccessful && paginatedData?.listAktivitas != null) {
-
-                // Tidak ada lagi .data.data yang membingungkan!
-                val logItems = paginatedData.listAktivitas
-
+            val response = apiService.getActivityLogs(token)
+            if (response.isSuccessful) {
+                val logItems = response.body()?.data.orEmpty()
                 val entitasList = logItems.map { item ->
                     RiwayatEntity(
                         id = item.id,
@@ -34,7 +27,6 @@ class RiwayatRepository(
                         event = item.event,
                         causerType = item.causerType,
                         causerId = item.causerId,
-                        properties = item.properties?.toString(),
                         batchUuid = item.batchUuid,
                         createdAt = item.createdAt,
                         updatedAt = item.updatedAt

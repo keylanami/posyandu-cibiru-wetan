@@ -9,10 +9,10 @@ import com.desacibiruwetan.posyandu.data.local.entity.KiaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.PeduliStuntingEntity
 import com.desacibiruwetan.posyandu.data.local.entity.PhbsEntity
 import com.desacibiruwetan.posyandu.data.local.entity.SiagaKebakaranEntity
-import com.desacibiruwetan.posyandu.data.model.KiaReq
-import com.desacibiruwetan.posyandu.data.model.PeduliStuntingReq
-import com.desacibiruwetan.posyandu.data.model.PhbsReq
-import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranReq
+import com.desacibiruwetan.posyandu.data.model.KiaRequest
+import com.desacibiruwetan.posyandu.data.model.PeduliStuntingRequest
+import com.desacibiruwetan.posyandu.data.model.PhbsRequest
+import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranRequest
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.firstOrNull
 
@@ -50,14 +50,14 @@ class PilotRepository(
         else phbsDao.insertPhbsLocal(phbsUpdate)
 
         val serverId = phbsUpdate.idPhbsServer
-        val req = PhbsReq(
-            patuhProtokolKesehatan,
-            rumahJambanSehat,
-            rumahAirBersih,
-            kasusDiare,
-            keluargaSadarGizi,
-            rumahTanpaAsapRokok,
-            babs
+        val req = PhbsRequest(
+            patuhProtokolKesehatan = patuhProtokolKesehatan,
+            rumahJambanSehat = rumahJambanSehat,
+            rumahAirBersih = rumahAirBersih,
+            kasusDiare = kasusDiare,
+            keluargaSadarGizi = keluargaSadarGizi,
+            rumahTanpaAsapRokok = rumahTanpaAsapRokok,
+            babs = babs
         )
 
         try {
@@ -113,13 +113,14 @@ class PilotRepository(
         else stuntingDao.insertPeduliStuntingLocal(update)
 
         val serverId = update.idPeduliStuntingServer
-        val req = PeduliStuntingReq(
-            bayiLahirPrematur,
-            bayiBblr,
-            balitaStunting,
-            balitaRutinPemeriksaanTumbuhKembang,
-            kehamilanTidakDirencankan,
-            jarakKehamilanTerlaluDekat
+        val req = PeduliStuntingRequest(
+            bayiLahirPrematur = bayiLahirPrematur,
+            bayiBblr = bayiBblr,
+            balitaKurangGizi = null,
+            balitaStunting = balitaStunting,
+            balitaRutinPemeriksaanTumbuhKembang = balitaRutinPemeriksaanTumbuhKembang,
+            kehamilanTidakDirencanakan = kehamilanTidakDirencankan,
+            jarakKehamilanTerlaluDekat = jarakKehamilanTerlaluDekat
         )
 
         try {
@@ -182,14 +183,14 @@ class PilotRepository(
         else kiaDao.insertKiaLocal(update)
 
         val serverId = update.idKiaServer
-        val req = KiaReq(
-            ibuHamilRutinPeriksa,
-            persalinanTenagaKesehatan,
-            kematianIbuNifas,
-            kankerServiks,
-            imunisasiBayiBalita,
-            bayiBalitaSakitTerdata,
-            kematianBayiBalita
+        val req = KiaRequest(
+            ibuHamilRutinPeriksa = ibuHamilRutinPeriksa,
+            persalinanTenagaKesehatan = persalinanTenagaKesehatan,
+            kematianIbuNifas = kematianIbuNifas,
+            kankerServiks = kankerServiks,
+            imunisasiBayiBalita = imunisasiBayiBalita,
+            bayiBalitaSakitTerdata = bayiBalitaSakitTerdata,
+            kematianBayiBalita = kematianBayiBalita
         )
 
 
@@ -250,14 +251,14 @@ class PilotRepository(
         else kebakaranDao.insertSiagaKebakaran(update)
 
         val serverId = update.idSiagaKebakaranServer
-        val req = SiagaKebakaranReq(
-            kebakaranRumahTangga,
-            kebakaranNonRumahTangga,
-            rumahPunyaAparAtauAir,
-            rumahSemiPermanenKayu,
-            rumahPunyaP3k,
-            kecelakaanRumahTangga,
-            instalasiHydrant,
+        val req = SiagaKebakaranRequest(
+            kebakaranRumahTangga = kebakaranRumahTangga,
+            kebakaranNonRumahTangga = kebakaranNonRumahTangga,
+            rumahPunyaAparAtauAir = rumahPunyaAparAtauAir,
+            rumahSemiPermanenKayu = rumahSemiPermanenKayu,
+            rumahPunyaP3k = rumahPunyaP3k,
+            kecelakaanRumahTangga = kecelakaanRumahTangga,
+            instalasiHydrant = instalasiHydrant,
         )
 
         try {

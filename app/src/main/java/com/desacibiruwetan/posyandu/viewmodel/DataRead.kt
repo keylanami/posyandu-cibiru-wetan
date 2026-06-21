@@ -12,12 +12,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
+import java.text.SimpleDateFormat
+import java.util.Locale
+import java.util.TimeZone
 
 data class ReadRecord(
     val id: String,
     val title: String,
     val subtitle: String,
-    val meta: String
+    val meta: String,
+    val details: List<Pair<String, String>> = emptyList()
 )
 
 data class ReadCollection(
@@ -36,6 +40,7 @@ private data class ReadEndpoint(
     val path: String,
     val description: String,
     val canCreate: Boolean = true,
+    val previewLimit: Int = 5,
     val mapper: (JSONObject) -> ReadRecord
 )
 
@@ -91,7 +96,7 @@ class DataReadViewModel(
                 else -> items.length()
             }
 
-            val records = (0 until minOf(items.length(), 5)).mapNotNull { index ->
+            val records = (0 until minOf(items.length(), endpoint.previewLimit)).mapNotNull { index ->
                 items.optJSONObject(index)?.let(endpoint.mapper)
             }
 
@@ -160,6 +165,14 @@ class DataReadViewModel(
                             put("title", record.title)
                             put("subtitle", record.subtitle)
                             put("meta", record.meta)
+                            put("details", JSONArray().apply {
+                                record.details.forEach { (label, value) ->
+                                    put(JSONObject().apply {
+                                        put("label", label)
+                                        put("value", value)
+                                    })
+                                }
+                            })
                         })
                     }
                 })
@@ -190,11 +203,17 @@ class DataReadViewModel(
                     canCreate = collection.optBoolean("canCreate", true),
                     records = (0 until recordsArray.length()).mapNotNull { recordIndex ->
                         recordsArray.optJSONObject(recordIndex)?.let { record ->
+                            val detailsArray = record.optJSONArray("details") ?: JSONArray()
                             ReadRecord(
                                 id = record.optString("id"),
                                 title = record.optString("title"),
                                 subtitle = record.optString("subtitle"),
-                                meta = record.optString("meta")
+                                meta = record.optString("meta"),
+                                details = (0 until detailsArray.length()).mapNotNull { detailIndex ->
+                                    detailsArray.optJSONObject(detailIndex)?.let { detail ->
+                                        detail.optString("label") to detail.optString("value")
+                                    }
+                                }
                             )
                         }
                     }
@@ -209,6 +228,157 @@ class DataReadViewModel(
             if (value.isNotBlank() && value != "null") return value
         }
         return fallback
+    }
+
+    private fun JSONObject.objectOrNull(vararg keys: String): JSONObject? {
+        keys.forEach { key ->
+            optJSONObject(key)?.let { return it }
+        }
+        return null
+    }
+
+    private fun JSONObject.boolText(key: String, yes: String = "Ya", no: String = "Tidak"): String {
+        return when {
+            !has(key) || isNull(key) -> "-"
+            optBoolean(key) -> yes
+            else -> no
+        }
+    }
+
+    private fun JSONObject.valueText(key: String): String {
+        val raw = opt(key) ?: return "-"
+        if (raw == JSONObject.NULL) return "-"
+        if (raw is Boolean) return if (raw) "Ya" else "Tidak"
+        return formatIndonesianDate(raw.toString(), dateOnly = key.startsWith("tanggal_"))
+            .takeIf { it != raw.toString() }
+            ?: raw.toString()
+    }
+
+    private fun JSONObject.compactRows(vararg keys: Pair<String, String>, limit: Int = 6): List<Pair<String, String>> {
+        return keys.mapNotNull { (key, label) ->
+            val value = valueText(key)
+            if (value.isBlank() || value == "-") null else label to value
+        }.take(limit)
+    }
+
+    private fun readableModule(value: String): String {
+        return when (value) {
+            "anggotas" -> "Warga"
+            "rumahs" -> "Rumah"
+            "keluargas" -> "Keluarga"
+            "balitas" -> "Balita"
+            "bumils" -> "Bumil"
+            "wus_pus" -> "WUS/PUS"
+            "kbs" -> "KB"
+            "auth" -> "Akun"
+            else -> value.replace("_", " ").replace("-", " ").replaceFirstChar { it.titlecase(Locale("id", "ID")) }
+        }
+    }
+
+    private fun readableEvent(value: String): String {
+        return when (value.lowercase(Locale.US)) {
+            "created" -> "Menambah"
+            "updated" -> "Mengubah"
+            "deleted" -> "Menghapus"
+            "login" -> "Masuk akun"
+            "logout" -> "Keluar akun"
+            else -> value.replace("_", " ").replaceFirstChar { it.titlecase(Locale("id", "ID")) }
+        }
+    }
+
+    private fun logSummary(logName: String, event: String, data: JSONObject): String {
+        val source = data.objectOrNull("subject") ?: data.objectOrNull("properties")?.objectOrNull("attributes") ?: data
+        return when (logName) {
+            "anggotas" -> source.text("nama", fallback = "Data warga diperbarui")
+            "rumahs" -> "Rumah ${source.text("no_rumah", fallback = "-")} - ${source.text("alamat", fallback = "alamat belum tersedia")}"
+            "keluargas" -> "KK ${source.text("no_kk", fallback = "-")}"
+            "balitas" -> source.text("nama", fallback = "Data balita diperbarui")
+            "bumils" -> "Hamil ke-${source.text("hamil_ke", fallback = "-")} - ASI eksklusif ${source.boolText("asi_eksklusif")}"
+            "wus_pus" -> "${source.text("status_kategori", fallback = "WUS/PUS")} - ${source.text("nama_suami", fallback = "tanpa nama suami")}"
+            "kbs" -> "${source.text("jenis_kb", fallback = "KB")} - ${source.boolText("status_aktif", yes = "aktif", no = "tidak aktif")}"
+            "auth" -> if (event == "login") "Login berhasil" else data.text("description", fallback = "Aktivitas akun")
+            else -> data.text("description", fallback = "Aktivitas ${readableModule(logName)}")
+        }
+    }
+
+    private fun logRows(logName: String, event: String, data: JSONObject): List<Pair<String, String>> {
+        val source = data.objectOrNull("subject") ?: data.objectOrNull("properties")?.objectOrNull("attributes") ?: data
+        val coreRows = listOf(
+            "Modul" to readableModule(logName),
+            "Aksi" to readableEvent(event),
+            "Waktu" to formatIndonesianDate(data.text("created_at", fallback = "-"))
+        )
+        val subjectRows = when (logName) {
+            "anggotas" -> source.compactRows(
+                "nama" to "Nama",
+                "nik" to "NIK",
+                "tanggal_lahir" to "Tanggal lahir",
+                "jenis_kelamin" to "Jenis kelamin",
+                "status_keluarga" to "Status keluarga",
+                "status_sipil" to "Status sipil",
+                "pekerjaan" to "Pekerjaan"
+            )
+            "rumahs" -> source.compactRows(
+                "no_rumah" to "No rumah",
+                "alamat" to "Alamat"
+            )
+            "keluargas" -> source.compactRows(
+                "no_kk" to "No KK",
+                "isNgontrak" to "Ngontrak",
+                "isGakin" to "Gakin"
+            )
+            "bumils" -> source.compactRows(
+                "hamil_ke" to "Hamil ke",
+                "asi_eksklusif" to "ASI eksklusif",
+                "tanggal_mulai_asi" to "Mulai ASI",
+                "tanggal_selesai_asi" to "Selesai ASI"
+            )
+            "wus_pus" -> source.compactRows(
+                "status_kategori" to "Kategori",
+                "nama_suami" to "Nama suami",
+                "tanggal_mulai_status" to "Mulai status",
+                "keterangan" to "Keterangan"
+            )
+            "kbs" -> source.compactRows(
+                "jenis_kb" to "Jenis KB",
+                "tanggal_mulai_kb" to "Mulai KB",
+                "status_aktif" to "Status aktif",
+                "keterangan" to "Keterangan"
+            )
+            else -> emptyList()
+        }
+
+        return (coreRows + subjectRows).distinctBy { it.first }
+    }
+
+    private fun formatIndonesianDate(value: String?, dateOnly: Boolean = false): String {
+        val source = value?.trim().orEmpty()
+        if (source.isBlank() || source == "null") return "-"
+
+        val locale = Locale("id", "ID")
+        val outputPattern = if (!dateOnly && source.contains(":")) "d MMMM yyyy, HH.mm" else "d MMMM yyyy"
+        val output = SimpleDateFormat(outputPattern, locale)
+        val patterns = listOf(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
+            "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "yyyy-MM-dd HH:mm:ss",
+            "yyyy-MM-dd",
+            "d MMMM yyyy, HH.mm",
+            "d MMMM yyyy"
+        )
+
+        patterns.forEach { pattern ->
+            val parser = SimpleDateFormat(pattern, locale).apply {
+                isLenient = false
+                if (pattern.endsWith("'Z'")) {
+                    timeZone = TimeZone.getTimeZone("UTC")
+                }
+            }
+            runCatching { parser.parse(source) }.getOrNull()?.let { return output.format(it) }
+        }
+
+        return source
     }
 
     private val readEndpoints = listOf(
@@ -321,13 +491,19 @@ class DataReadViewModel(
             title = "Log Aktivitas",
             path = "log-aktivitas",
             description = "Jejak aktivitas sistem dan kader",
-            canCreate = false
+            canCreate = false,
+            previewLimit = 20
         ) {
+            val logName = it.text("log_name", fallback = "log")
+            val event = it.text("event", "description", fallback = "aktivitas")
+            val module = readableModule(logName)
+            val action = readableEvent(event)
             ReadRecord(
                 id = it.text("id"),
-                title = it.text("description", fallback = "Aktivitas #${it.text("id")}"),
-                subtitle = it.text("event", "log_name", fallback = "Log"),
-                meta = it.text("created_at", fallback = "Waktu tidak tersedia")
+                title = if (logName == "auth") action else "$action $module",
+                subtitle = logSummary(logName, event, it),
+                meta = formatIndonesianDate(it.text("created_at", fallback = "Waktu tidak tersedia")),
+                details = logRows(logName, event, it)
             )
         }
     )

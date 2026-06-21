@@ -42,6 +42,7 @@ import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
@@ -168,6 +169,37 @@ private fun ActivityCard(item: ReadRecord) {
             Text(item.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
             Text(item.subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
             Text(item.meta, style = MaterialTheme.typography.labelMedium, color = TextMuted)
+            if (item.details.isNotEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp)
+                        .background(SurfaceMuted, RoundedCornerShape(14.dp))
+                        .padding(10.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    item.details.take(7).forEach { (label, value) ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextMuted,
+                                modifier = Modifier.weight(0.42f)
+                            )
+                            Text(
+                                text = value,
+                                style = MaterialTheme.typography.labelSmall,
+                                fontWeight = FontWeight.SemiBold,
+                                modifier = Modifier.weight(0.58f)
+                            )
+                        }
+                    }
+                }
+            }
         }
     }
 }
