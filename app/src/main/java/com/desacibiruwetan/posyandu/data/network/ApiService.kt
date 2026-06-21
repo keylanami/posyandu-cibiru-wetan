@@ -311,6 +311,12 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<BaseResponse<PeduliStuntingData>>
 
+    @POST("peduli-stuntings")
+    suspend fun postPeduliStunting(
+        @Header("Authorization") token: String,
+        @Body request: PeduliStuntingReq
+    ): Response<BaseResponse<PeduliStuntingData>>
+
     @PUT("peduli-stuntings/{id}")
     suspend fun putPeduliStunting(
         @Header("Authorization") token: String,
