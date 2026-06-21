@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -24,22 +27,19 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.viewmodel.PilotViewmodel
 
 @Composable
 fun PilotSiagaKebakaraanScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String
+    userName: String,
+    pilotViewModel: PilotViewmodel
 ){
 
-//    Kebakaran Rumah Tangga
-//    Kebakaran Non Rumah Tangga
-//            Rumah Punya APAR atau Air
-//    Rumah Semi Permanen Kayu
-//            Rumah Punya P3K
-//    Kecelakaan Rumah Tangga
-//    Instalasi Hydrant
-
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
 
     var kebakaranRumahTangga by remember { mutableStateOf("") }
     var kebakaranNonRumahTangga by remember { mutableStateOf("") }
@@ -122,7 +122,20 @@ fun PilotSiagaKebakaraanScreen(
                 PrimaryButton(
                     text = "Update Data Siaga Kebakaran",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        pilotViewModel.submitSiagaKebakaran(
+                            token = token,
+                            kebakaranRumahTangga = kebakaranRumahTangga.toIntOrNull(),
+                            kebakaranNonRumahTangga = kebakaranNonRumahTangga.toIntOrNull(),
+                            rumahPunyaAparAtauAir = rumahPunyaAPARatauAir.toIntOrNull(),
+                            rumahSemiPermanenKayu = rumahSemiPermanenKayu.toIntOrNull(),
+                            rumahPunyaP3k = rumahPunyaP3K.toIntOrNull(),
+                            kecelakaanRumahTangga = kecelakaanRumahTangga.toIntOrNull(),
+                            instalasiHydrant = instalasiHydrant.toIntOrNull()
+                        )
+                        Toast.makeText(context, "Data Siaga Kebakaran berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        onBackClick()
+                    }
                 )
 
             }

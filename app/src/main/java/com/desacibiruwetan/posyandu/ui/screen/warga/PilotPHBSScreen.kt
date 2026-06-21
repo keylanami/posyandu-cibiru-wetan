@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -24,19 +27,26 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.viewmodel.PilotViewmodel
 
 @Composable
 fun PilotPHBSScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String
+    userName: String,
+    pilotViewModel: PilotViewmodel
 ) {
 
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
 
     var patuhProtokolKesehatan by remember { mutableStateOf("") }
     var rumahJambanSehat by remember { mutableStateOf("") }
     var rumahAirBersih by remember { mutableStateOf("") }
     var kasusDiare by remember { mutableStateOf("") }
+    var keluargaSadarGizi by remember { mutableStateOf("") }
     var rumahTanpaAsapRokok by remember { mutableStateOf("") }
     var babs by remember { mutableStateOf("") }
 
@@ -87,6 +97,15 @@ fun PilotPHBSScreen(
                     keyboardType = KeyboardType.Number,
                     onValueChange = { kasusDiare = it }
                 )
+
+                AppTextField(
+                    label = "Keluarga Sadar Gizi",
+                    value = keluargaSadarGizi,
+                    placeholder = "Masukkan jumlah keluarga sadar gizi",
+                    keyboardType = KeyboardType.Number,
+                    onValueChange = { keluargaSadarGizi = it }
+                )
+
                 AppTextField(
                     label = "Rumah Tanpa Asap Rokok",
                     value = rumahTanpaAsapRokok,
@@ -107,7 +126,20 @@ fun PilotPHBSScreen(
                 PrimaryButton(
                     text = "Update Data PHBS",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        pilotViewModel.submitPhbs(
+                            token = token,
+                            patuhProtokolKesehatan = patuhProtokolKesehatan.toIntOrNull(),
+                            rumahJambanSehat = rumahJambanSehat.toIntOrNull(),
+                            rumahAirBersih = rumahAirBersih.toIntOrNull(),
+                            kasusDiare = kasusDiare.toIntOrNull(),
+                            keluargaSadarGizi = keluargaSadarGizi.toIntOrNull(),
+                            rumahTanpaAsapRokok = rumahTanpaAsapRokok.toIntOrNull(),
+                            babs = babs.toIntOrNull()
+                        )
+                        Toast.makeText(context, "Data PHBS berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        onBackClick()
+                    }
                 )
             }
 

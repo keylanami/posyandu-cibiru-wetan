@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -24,13 +27,19 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
+import com.desacibiruwetan.posyandu.viewmodel.PilotViewmodel
 
 @Composable
 fun PilotStuntingScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String
+    userName: String,
+    pilotViewModel: PilotViewmodel
 ) {
+
+    val context = LocalContext.current
+    val sharedPreferences = context.getSharedPreferences("posyandu_prefs", Context.MODE_PRIVATE)
+    val token = "Bearer ${sharedPreferences.getString("TOKEN", "")}"
 
     var bayiLahirPrematur by remember { mutableStateOf("") }
     var bayiBBLR by remember { mutableStateOf("") }
@@ -114,11 +123,23 @@ fun PilotStuntingScreen(
                 PrimaryButton(
                     text = "Update Data Stunting",
                     icon = Icons.Default.AddCircleOutline,
-                    onClick = { /* TODO */ }
+                    onClick = {
+                        pilotViewModel.submitPeduliStunting(
+                            token = token,
+                            bayiLahirPrematur = bayiLahirPrematur.toIntOrNull(),
+                            bayiBblr = bayiBBLR.toIntOrNull(),
+                            balitaStunting = balitaStunting.toIntOrNull(),
+                            balitaRutinPemeriksaanTumbuhKembang = balitaRutinPemeriksaanTumbuhKembang.toIntOrNull(),
+                            kehamilanTidakDirencankan = kehamilanTidakDirencanakan.toIntOrNull(),
+                            jarakKehamilanTerlaluDekat = jarakKehamilanTerlaluDekat.toIntOrNull()
+                        )
+                        Toast.makeText(context, "Data Stunting berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        onBackClick()
+                    }
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(80.dp))
 
 
         }
