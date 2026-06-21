@@ -1,6 +1,8 @@
 package com.desacibiruwetan.posyandu.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.desacibiruwetan.posyandu.data.local.entity.SiagaKebakaranEntity
@@ -15,6 +17,9 @@ interface SiagaKebakaranDao {
 
     @Update
     suspend fun updateSiagaKebakaran(siagaKebakaran: SiagaKebakaranEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSiagaKebakaran(siagaKebakaran: SiagaKebakaranEntity): Long
 
     @Query("select * from tabel_siaga_kebakaran where isSynced = 0")
     suspend fun getSiagaKebakaranBelumSinkron(): List<SiagaKebakaranEntity>

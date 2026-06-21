@@ -1,6 +1,8 @@
 package com.desacibiruwetan.posyandu.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.desacibiruwetan.posyandu.data.local.entity.KiaEntity
@@ -13,16 +15,20 @@ interface KiaDao {
     fun getAllKiaDao(): Flow<List<KiaEntity>>
 
     @Query("select * from tabel_kia where isSynced = 0")
-    fun getKiaBelumSinkron(): List<KiaEntity>
+    suspend fun getKiaBelumSinkron(): List<KiaEntity>
 
     @Query("delete from tabel_kia")
-    fun deleteAllKiaLocal()
+    suspend fun deleteAllKiaLocal()
 
     @Query("select * from tabel_kia where id = :localId or idServer = :serverId limit 1")
-    fun getKiaByAnggotaId(localId: Int, serverId: Int): KiaEntity?
+    suspend fun getKiaByAnggotaId(localId: Int, serverId: Int): KiaEntity?
 
     @Update
-    fun updateKiaLocal(kia: KiaEntity)
+    suspend fun updateKiaLocal(kia: KiaEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertKiaLocal(kia: KiaEntity): Long
+
 
 
 }

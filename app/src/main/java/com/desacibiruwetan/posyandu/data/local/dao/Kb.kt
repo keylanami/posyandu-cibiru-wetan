@@ -1,6 +1,8 @@
 package com.desacibiruwetan.posyandu.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.desacibiruwetan.posyandu.data.local.entity.KbEntity
@@ -13,14 +15,17 @@ interface KbDao {
     fun getAllKbDao(): Flow<List<KbEntity>>
 
     @Query("select * from tabel_kb where isSynced = 0")
-    fun getKbBelumSinkron(): List<KbEntity>
+    suspend fun getKbBelumSinkron(): List<KbEntity>
 
     @Query("delete from tabel_kb")
-    fun deleteAllKbLocal()
+    suspend fun deleteAllKbLocal()
 
     @Query("select * from tabel_kb where idKbLocal = :localId or idKbServer = :serverId limit 1")
-    fun getKbByAnggotaId(localId: Int, serverId: Int): KbEntity?
+    suspend fun getKbByAnggotaId(localId: Int, serverId: Int): KbEntity?
 
     @Update
-    fun updateKbLocal(kb: KbEntity)
+    suspend fun updateKbLocal(kb: KbEntity)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertKbLocal(kb: KbEntity): Long
 }

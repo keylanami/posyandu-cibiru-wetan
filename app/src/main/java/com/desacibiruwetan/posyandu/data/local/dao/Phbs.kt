@@ -1,6 +1,8 @@
 package com.desacibiruwetan.posyandu.data.local.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.desacibiruwetan.posyandu.data.local.entity.PhbsEntity
@@ -16,6 +18,9 @@ interface PhbsDao {
     @Update
     suspend fun updatePhbsLocal(phbs: PhbsEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPhbsLocal(phbs: PhbsEntity): Long
+
     @Query("select * from tabel_phbs where isSynced = 0")
     suspend fun getPhbsBelumSinkron(): List<PhbsEntity>
 
@@ -23,5 +28,5 @@ interface PhbsDao {
     suspend fun deleteAllPhbsLocal()
 
     @Query("select * from tabel_phbs where idPhbsLocal = :localId or idPhbsServer = :serverId limit 1")
-    suspend fun getPhbsByAnggotaId(localId: Int, serverId: Int?): PhbsEntity?
+    suspend fun getPhbsById(localId: Int, serverId: Int?): PhbsEntity?
 }
