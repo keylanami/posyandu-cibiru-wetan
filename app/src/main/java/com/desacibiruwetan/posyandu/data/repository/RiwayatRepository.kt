@@ -16,12 +16,10 @@ class RiwayatRepository(
         try {
             val response = apiService.getLogAktivitas(token, perPage = 100)
 
-            // FIX: Pisahkan pengecekan agar Kotlin Smart Cast bekerja sempurna
             val paginatedData = response.body()?.data
 
             if (response.isSuccessful && paginatedData?.listAktivitas != null) {
 
-                // Tidak ada lagi .data.data yang membingungkan!
                 val logItems = paginatedData.listAktivitas
 
                 val entitasList = logItems.map { item ->
