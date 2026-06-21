@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BumilData
+import com.desacibiruwetan.posyandu.data.model.KbData
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.network.BaseResponse
 import com.desacibiruwetan.posyandu.data.network.UiState
@@ -41,6 +42,12 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
 
     private val _detailKbState = MutableStateFlow<UiState<BaseResponse<KbData>>>(UiState.Idle)
     val detailKbState = _detailKbState.asStateFlow()
+
+    private val _activeWusPusId = MutableStateFlow<Int?>(null)
+    val activeWusPusId = _activeWusPusId.asStateFlow()
+
+    private val _activeKbLocalId = MutableStateFlow<Int?>(null)
+    val activeKbLocalId = _activeKbLocalId.asStateFlow()
 
 
     fun syncDataAnggotaDariServer(token: String) {
@@ -327,6 +334,27 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 }
             } catch (e: Exception) {
                 _detailKbState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
+            }
+        }
+    }
+
+    fun prepareKbData(token: String, anggotaLocalId: Int, anggotaServerId: Int?) {
+        viewModelScope.launch {
+            _detailKbState.value = UiState.Idle
+
+            val wusPus = repository.getWusPusLokal(anggotaLocalId, anggotaServerId)
+            val wusPusId = wusPus?.wusPusServerId
+            _activeWusPusId.value = wusPusId
+
+            if (wusPusId != null) {
+                val kb = repository.getKbLokalByWusPus(wusPusId)
+                _activeKbLocalId.value = kb?.idKbLocal
+
+                if (kb?.idKbServer != null) {
+                    getDetailKbFromServer(token, kb.idKbServer)
+                }
+            } else {
+                _activeKbLocalId.value = null
             }
         }
     }

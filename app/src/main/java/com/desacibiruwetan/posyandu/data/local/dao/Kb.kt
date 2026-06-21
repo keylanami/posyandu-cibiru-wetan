@@ -26,6 +26,9 @@ interface KbDao {
     @Update
     suspend fun updateKbLocal(kb: KbEntity)
 
+    @Query("select * from tabel_kb where wusPusId = :wusPusId limit 1")
+    suspend fun getKbByWusPusId(wusPusId: Int): KbEntity?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertKbLocal(kb: KbEntity): Long
 }

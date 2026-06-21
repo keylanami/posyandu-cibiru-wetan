@@ -472,12 +472,19 @@ class AnggotaRepository(
         return apiService.getWusPusById(token, wusPusId)
     }
 
+    suspend fun getWusPusLokal(anggotaLocalId: Int, anggotaServerId: Int?): WusPusEntity? {
+        return wusPusDao.getWuspusByAnggotaId(anggotaLocalId, anggotaServerId)
+    }
+
+    suspend fun getKbLokalByWusPus(wusPusId: Int): KbEntity? {
+        return kbDao.getKbByWusPusId(wusPusId)
+    }
 
     suspend fun updateDataKb(
         token: String, kbLocalId: Int, kbServerId: Int?, wusPusIdServer: Int,
         jenisKb: String, tanggalMulaiKb: String?, statusAktif: Boolean, keterangan: String?, createdAt: String?, updatedAt: String?
     ) {
-        val kbLokal = kbDao.getKbById(kbLocalId, kbServerId)
+        val kbLokal = kbDao.getKbById(kbLocalId, kbServerId) ?: kbDao.getKbByWusPusId(wusPusIdServer)
 
         val kbUpdate = kbLokal?.copy(
             wusPusId = wusPusIdServer, jenisKb = jenisKb, tanggalMulaiKb = tanggalMulaiKb,

@@ -17,6 +17,8 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +28,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
@@ -42,6 +45,22 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+
+private fun convertServerDateToRaw(serverDate: String?): String {
+    if (serverDate.isNullOrEmpty()) return ""
+
+    // Potong huruf "T" dan sisanya jika ada (contoh: 2026-06-09T00:00:00.000Z)
+    val datePart = if (serverDate.contains("T")) serverDate.substringBefore("T") else serverDate
+
+    if (datePart.contains("-")) {
+        val parts = datePart.split("-")
+        if (parts.size == 3) {
+            if (parts[0].length == 4) return "${parts[2]}${parts[1]}${parts[0]}" // YYYY-MM-DD -> DDMMYYYY
+            if (parts[2].length == 4) return "${parts[0]}${parts[1]}${parts[2]}" // DD-MM-YYYY -> DDMMYYYY
+        }
+    }
+    return datePart.filter { it.isDigit() }.take(8)
+}
 
 private fun formatToApiDate(raw: String): String? {
     if (raw.isEmpty() || raw.length != 8) return null
@@ -66,6 +85,10 @@ fun UpdateKbScreen(
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
+    val detailKb by anggotaViewModel.detailKbState.collectAsState()
+    val activeWusPusId by anggotaViewModel.activeWusPusId.collectAsState()
+    val activeKbLocalId by anggotaViewModel.activeKbLocalId.collectAsState()
+
     var namaWarga by remember { mutableStateOf("") }
     var jenisKb by remember { mutableStateOf("") }
     var tanggalMulaiKb by remember { mutableStateOf("") }
@@ -73,6 +96,20 @@ fun UpdateKbScreen(
     var keterangan by remember { mutableStateOf("") }
 
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
+
+
+    LaunchedEffect(detailKb) {
+        if (detailKb is UiState.Success) {
+            val dataServer = (detailKb as UiState.Success).data.data
+            if (dataServer != null) {
+                jenisKb = dataServer.jenisKb
+                tanggalMulaiKb = convertServerDateToRaw(dataServer.tanggalMulaiKb) // Gunakan helper tanggal yang sudah ada
+                statusAktif = dataServer.statusAktif
+                keterangan = dataServer.keterangan ?: ""
+            }
+        }
+    }
+
 
     if (showDialog) {
         SearchWargaDialog(
@@ -83,7 +120,7 @@ fun UpdateKbScreen(
                 } else {
                     selectedWarga = warga
                     namaWarga = warga.nama
-                    // Catatan: Jika ada state GET KB Autofill, panggil di sini
+                    anggotaViewModel.prepareKbData(token, warga.localId, warga.serverId)
                 }
             },
             anggotaViewModel = anggotaViewModel
@@ -188,8 +225,15 @@ fun UpdateKbScreen(
                     icon = Icons.Default.AddCircleOutline,
                     onClick = {
                         val warga = selectedWarga
+                        val wusPusId = activeWusPusId
+
                         if (warga == null) {
-                            Toast.makeText(context, "Pilih WUS/PUS terlebih dahulu!", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Pilih warga terlebih dahulu!", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        // Validasi Backend: KB tidak bisa dibuat jika warganya belum didaftarkan sebagai WUS/PUS
+                        if (wusPusId == null) {
+                            Toast.makeText(context, "Warga belum terdaftar sebagai WUS/PUS! Daftarkan dulu di menu Wus/Pus.", Toast.LENGTH_LONG).show()
                             return@PrimaryButton
                         }
                         if (jenisKb.isBlank()) {
@@ -197,18 +241,13 @@ fun UpdateKbScreen(
                             return@PrimaryButton
                         }
 
-                        val currentDate = SimpleDateFormat(
-                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                            Locale.getDefault()
-                        ).format(
-                            Date()
-                        )
+                        val currentDate = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(Date())
 
                         anggotaViewModel.updateDataKb(
                             token = token,
-                            kbLocalId = 0,
-                            kbServerId = null,
-                            wusPusIdServer = warga.serverId ?: 0,
+                            kbLocalId = activeKbLocalId ?: 0,
+                            kbServerId = null, // Akan di-resolve oleh repository
+                            wusPusIdServer = wusPusId, // Fix: Kirimkan ID WusPus yang sebenarnya!
                             jenisKb = jenisKb,
                             tanggalMulaiKb = formatToApiDate(tanggalMulaiKb),
                             statusAktif = statusAktif,
