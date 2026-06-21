@@ -154,7 +154,7 @@ private fun IdentityHero(warga: AnggotaEntity) {
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                SummaryPill("Usia", "${warga.usia ?: "-"} tahun", Modifier.weight(1f))
+                SummaryPill("Usia", warga.usia ?: "-", Modifier.weight(1f))
                 SummaryPill("Relasi", warga.statusKeluarga, Modifier.weight(1f))
                 SummaryPill("Status", warga.statusWarga ?: "Aktif", Modifier.weight(1f))
             }
