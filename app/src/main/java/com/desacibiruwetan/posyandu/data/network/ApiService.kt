@@ -7,6 +7,8 @@ import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.BumilReq
+import com.desacibiruwetan.posyandu.data.model.KbData
+import com.desacibiruwetan.posyandu.data.model.KbReq
 import com.desacibiruwetan.posyandu.data.model.KeluargaData
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
@@ -383,6 +385,39 @@ interface ApiService {
     suspend fun deleteSiagaKebakaran(
         @Header("Authorization") token: String,
         @Path("id") id: Int?,
+    ): Response<BaseResponse<Any>>
+
+
+    @GET("kbs")
+    suspend fun getAllKbs(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<KbData>>>
+
+
+    @GET("kbs/{id}")
+    suspend fun getKbById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<KbData>>
+
+    @POST("wus-pus/{wusPusId}/kbs")
+    suspend fun postKb(
+        @Header("Authorization") token: String,
+        @Path("wusPusId") wusPusId: Int,
+        @Body request: KbReq
+    ): Response<BaseResponse<KbData>>
+
+    @PUT("kbs/{id}")
+    suspend fun putKb(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+        @Body request: KbReq
+    ): Response<BaseResponse<KbData>>
+
+    @DELETE("kbs/{id}")
+    suspend fun deleteKb(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?
     ): Response<BaseResponse<Any>>
 
 
