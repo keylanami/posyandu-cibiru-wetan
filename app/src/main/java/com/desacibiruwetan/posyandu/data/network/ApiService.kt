@@ -298,13 +298,6 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<BaseResponse<List<PeduliStuntingData>>>
 
-
-    @POST("peduli-stuntings")
-    suspend fun getPeduliStunting(
-        @Header("Authorization") token: String,
-        @Body request: PeduliStuntingReq
-    ): Response<BaseResponse<PeduliStuntingData>>
-
     @GET("peduli-stuntings/{id}")
     suspend fun getPeduliStuntingById(
         @Header("Authorization") token: String,

@@ -123,7 +123,7 @@ class PilotRepository(
         )
 
         try {
-            if (serverId!= null){
+            if (serverId != null) {
                 val res = apiService.putPeduliStunting(token, serverId, req)
                 if (res.isSuccessful) stuntingDao.updatePeduliStuntingLocal(update.copy(isSynced = true))
             } else {
@@ -164,14 +164,18 @@ class PilotRepository(
             kematianBayiBalita = kematianBayiBalita,
             isSynced = false
         ) ?: KiaEntity(
-            ibuHamilRutinPeriksa = ibuHamilRutinPeriksa,
-            persalinanTenagaKesehatan = persalinanTenagaKesehatan,
-            kematianIbuNifas = kematianIbuNifas,
-            kankerServiks = kankerServiks,
-            imunisasiBayiBalita = imunisasiBayiBalita,
-            bayiBalitaSakitTerdata = bayiBalitaSakitTerdata,
-            kematianBayiBalita = kematianBayiBalita,
-            isSynced = false
+            idKiaLocal = 0,
+            idKiaServer = 0,
+            ibuHamilRutinPeriksa = ibuHamilRutinPeriksa ?: 0,
+            persalinanTenagaKesehatan = persalinanTenagaKesehatan ?: 0,
+            kematianIbuNifas = kematianIbuNifas ?: 0,
+            kankerServiks = kankerServiks ?: 0,
+            imunisasiBayiBalita = imunisasiBayiBalita ?: 0,
+            bayiBalitaSakitTerdata = bayiBalitaSakitTerdata ?: 0,
+            kematianBayiBalita = kematianBayiBalita ?: 0,
+            isSynced = false,
+            createdAt = "",
+            updatedAt = ""
         )
 
         if (lokal != null) kiaDao.updateKiaLocal(update)
@@ -210,7 +214,6 @@ class PilotRepository(
     }
 
 
-
     suspend fun updateDataSiagaKebakaran(
         token: String,
         kebakaranRumahTangga: Int?,
@@ -243,7 +246,7 @@ class PilotRepository(
         )
 
 
-        if (lokal!= null) kebakaranDao.updateSiagaKebakaran(update)
+        if (lokal != null) kebakaranDao.updateSiagaKebakaran(update)
         else kebakaranDao.insertSiagaKebakaran(update)
 
         val serverId = update.idSiagaKebakaranServer
@@ -258,7 +261,7 @@ class PilotRepository(
         )
 
         try {
-            if (serverId!= null){
+            if (serverId != null) {
                 val res = apiService.putSiagaKebakaran(token, serverId, req)
                 if (res.isSuccessful) kebakaranDao.updateSiagaKebakaran(update.copy(isSynced = true))
             } else {
@@ -273,7 +276,7 @@ class PilotRepository(
                 }
             }
 
-        } catch (e: Exception){
+        } catch (e: Exception) {
             Log.e(TAG, "Offline, Kebakaran lokal. ${e.message}")
         }
     }
