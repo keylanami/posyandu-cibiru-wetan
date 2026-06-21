@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.data.network
 
-import androidx.room.Update
 import com.desacibiruwetan.posyandu.data.model.AnggotaData
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
@@ -14,6 +13,7 @@ import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.KiaData
 import com.desacibiruwetan.posyandu.data.model.KiaReq
+import com.desacibiruwetan.posyandu.data.model.LogAktivitasPaginated
 import com.desacibiruwetan.posyandu.data.model.LoginData
 import com.desacibiruwetan.posyandu.data.model.LoginRequest
 import com.desacibiruwetan.posyandu.data.model.PeduliStuntingData
@@ -27,6 +27,7 @@ import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranData
 import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranReq
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
+import com.desacibiruwetan.posyandu.data.schema.LogAktivitas
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import retrofit2.Response
 import retrofit2.http.Body
@@ -37,6 +38,7 @@ import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -418,6 +420,14 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") id: Int?
     ): Response<BaseResponse<Any>>
+
+
+    @GET("log-aktivias")
+    suspend fun getLogAktivitas(
+        @Header("Authorization") token: String,
+        @Query("jenis") jenis: String? = null,
+        @Query("per_page") perPage: Int? = 100,
+    ): Response<BaseResponse<List<LogAktivitasPaginated>>>
 
 
 }

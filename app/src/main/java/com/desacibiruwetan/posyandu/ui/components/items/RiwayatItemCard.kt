@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.LocationOn
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,20 +32,14 @@ import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 fun RiwayatItemCard(
     title: String,
     description: String,
-    location: String,
     timestamp: String,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .shadow(
-                elevation = 16.dp,
-                spotColor = Color(0x40DFDFDF),
-                ambientColor = Color(0x40DFDFDF),
-                shape = RoundedCornerShape(15.dp)
-            )
-            .background(color = SurfaceWhite, shape = RoundedCornerShape(15.dp))
+            .shadow(16.dp, spotColor = Color(0x1A000000), shape = RoundedCornerShape(15.dp))
+            .background(SurfaceWhite, RoundedCornerShape(15.dp))
             .padding(20.dp)
     ) {
         Column {
@@ -53,7 +47,7 @@ fun RiwayatItemCard(
                 text = title,
                 fontFamily = Inter,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 15.sp,
+                fontSize = 16.sp,
                 color = Color(0xFF272727)
             )
 
@@ -68,30 +62,20 @@ fun RiwayatItemCard(
                 lineHeight = 18.sp
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.End
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(
-                        imageVector = Icons.Outlined.LocationOn,
-                        contentDescription = "Location",
-                        tint = Color(0xFFA2A2A2),
-                        modifier = Modifier.size(18.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = location,
-                        fontFamily = Inter,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 13.sp,
-                        color = Color(0xFFA2A2A2)
-                    )
-                }
-
+                Icon(
+                    imageVector = Icons.Outlined.Schedule,
+                    contentDescription = "Waktu",
+                    tint = Color(0xFFA2A2A2),
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = timestamp,
                     fontFamily = Inter,
