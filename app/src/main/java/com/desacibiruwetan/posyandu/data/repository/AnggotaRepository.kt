@@ -16,6 +16,7 @@ import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.BumilReq
+import com.desacibiruwetan.posyandu.data.model.KbData
 import com.desacibiruwetan.posyandu.data.model.KbReq
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
@@ -515,5 +516,8 @@ class AnggotaRepository(
         }
     }
 
+    suspend fun getKbById(token: String, kbId: Int): Response<BaseResponse<KbData>> {
+        return apiService.getKbById(token, kbId)
+    }
 
 }

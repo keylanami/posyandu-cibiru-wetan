@@ -39,6 +39,9 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     private val _detailWusPusState = MutableStateFlow<UiState<BaseResponse<WusPusData>>>(UiState.Idle)
     val detailWusPusState = _detailWusPusState.asStateFlow()
 
+    private val _detailKbState = MutableStateFlow<UiState<BaseResponse<KbData>>>(UiState.Idle)
+    val detailKbState = _detailKbState.asStateFlow()
+
 
     fun syncDataAnggotaDariServer(token: String) {
         viewModelScope.launch { repository.pullDataFromServer(token) }
@@ -308,6 +311,23 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 token, kbLocalId, kbServerId, wusPusIdServer,
                 jenisKb, tanggalMulaiKb, statusAktif, keterangan, createdAt, updatedAt
             )
+        }
+    }
+
+
+    fun getDetailKbFromServer(token: String, kbId: Int) {
+        viewModelScope.launch {
+            _detailKbState.value = UiState.Loading
+            try {
+                val response = repository.getKbById(token, kbId)
+                if (response.isSuccessful && response.body() != null) {
+                    _detailKbState.value = UiState.Success(response.body()!!)
+                } else {
+                    _detailKbState.value = UiState.Error("Gagal memuat detail KB: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                _detailKbState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
+            }
         }
     }
 
