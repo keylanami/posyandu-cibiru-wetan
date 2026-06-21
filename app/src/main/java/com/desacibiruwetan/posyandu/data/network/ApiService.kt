@@ -21,6 +21,8 @@ import com.desacibiruwetan.posyandu.data.model.PhbsReq
 import com.desacibiruwetan.posyandu.data.model.RegisterRequest
 import com.desacibiruwetan.posyandu.data.model.RumahData
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
+import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranData
+import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranReq
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
@@ -351,5 +353,37 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") id: Int?
     ): Response<BaseResponse<Any>>
+
+
+    @GET("siaga-kebakarans")
+    suspend fun getAllSiagaKebakaran(
+        @Header("Authorization") token: String
+    ): Response<BaseResponse<List<SiagaKebakaranData>>>
+
+    @GET("siaga-kebakarans/{id")
+    suspend fun getSiagaKebakaranById(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int
+    ): Response<BaseResponse<SiagaKebakaranData>>
+
+    @POST("siaga-kebakarans")
+    suspend fun postSiagaKebakaran(
+        @Header("Authorization") token: String,
+        @Body request: SiagaKebakaranReq
+    ): Response<BaseResponse<SiagaKebakaranData>>
+
+    @PUT("siaga-kebakarans/{id}")
+    suspend fun putSiagaKebakaran(
+        @Header("Authorizatopn") token: String,
+        @Path("id") id: Int?,
+        @Body request: SiagaKebakaranReq
+    ): Response<BaseResponse<SiagaKebakaranData>>
+
+    @DELETE("siaga-kebakarans/{id}")
+    suspend fun deleteSiagaKebakaran(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int?,
+    ): Response<BaseResponse<Any>>
+
 
 }
