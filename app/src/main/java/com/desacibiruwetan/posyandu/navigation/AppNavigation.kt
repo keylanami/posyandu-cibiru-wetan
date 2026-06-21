@@ -97,7 +97,7 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao(), database.balitaDao(), database.bumilDao())) as T
+                AnggotaViewmodel(AnggotaRepository(apiService, database.anggotaDao(), database.balitaDao(), database.bumilDao(), database.wusPusDao())) as T
         }
     )
 
@@ -264,7 +264,6 @@ fun AppNavigation() {
             UpdateWusPusScreen(
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName,
                 anggotaViewModel = anggotaViewModel
             )
         }
