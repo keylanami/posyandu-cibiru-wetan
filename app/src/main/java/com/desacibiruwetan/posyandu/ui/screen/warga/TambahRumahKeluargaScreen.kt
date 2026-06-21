@@ -7,13 +7,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.Female
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
@@ -33,7 +27,6 @@ import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RumahKeluargaScreen(
     onBackClick: () -> Unit,
@@ -46,17 +39,13 @@ fun RumahKeluargaScreen(
     val sharedPreferences = remember { SessionManager.getPreferences(context) }
     val realToken = SessionManager.getAuthorizationHeader(context)
 
-    var namaWarga by remember { mutableStateOf("") }
     var noRumah by remember { mutableStateOf("") }
     var alamat by remember { mutableStateOf("") }
-
-    val keluargaOptions by keluargaViewModel.keluargaOptions.collectAsState()
 
     val rt = sharedPreferences.getString("USER_RT", "00") ?: "00"
     val rw = sharedPreferences.getString("USER_RW", "00") ?: "00"
 
     var noKk by remember { mutableStateOf("") }
-    var expandedKK by remember { mutableStateOf(false) }
 
     var isNgontrak by remember { mutableStateOf(false) }
     var isGakin by remember { mutableStateOf(false) }
@@ -65,7 +54,6 @@ fun RumahKeluargaScreen(
     LaunchedEffect(Unit) {
         rumahViewModel.syncDataRumah(realToken)
         keluargaViewModel.syncDataKeluarga(realToken)
-        keluargaViewModel.fetchKeluargaOptions(realToken)
     }
 
     Scaffold(
@@ -83,21 +71,20 @@ fun RumahKeluargaScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             UpdateHeaderCard(
-                title = "Update untuk Warga",
-                name = "Form Pendataan Rumah & Keluarga",
+                title = "Pendataan Baru",
+                name = "Rumah dan kartu keluarga",
                 icon = Icons.Default.Female
-            ) {
-                Spacer(modifier = Modifier.height(24.dp))
-                AppTextField(
-                    label = "Nama Pemilik/Perwakilan",
-                    value = namaWarga,
-                    onValueChange = { namaWarga = it })
-            }
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             FormSectionCard(title = "Data Rumah") {
-                AppTextField(label = "No Rumah", value = noRumah, onValueChange = { noRumah = it })
+                AppTextField(
+                    label = "No Rumah",
+                    value = noRumah,
+                    keyboardType = KeyboardType.Number,
+                    onValueChange = { if (it.all { char -> char.isDigit() }) noRumah = it }
+                )
                 AppTextField(
                     label = "Alamat Lengkap",
                     value = alamat,
@@ -126,63 +113,13 @@ fun RumahKeluargaScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             FormSectionCard(title = "Data Keluarga") {
-
-                Text(
-                    text = "Pilih Nomor Kartu Keluarga (KK)",
-                    style = MaterialTheme.typography.bodyMedium,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                AppTextField(
+                    label = "No KK Baru",
+                    value = noKk,
+                    placeholder = "Masukkan 16 digit nomor KK",
+                    keyboardType = KeyboardType.Number,
+                    onValueChange = { if (it.length <= 16 && it.all { char -> char.isDigit() }) noKk = it }
                 )
-
-
-                ExposedDropdownMenuBox(
-                    expanded = expandedKK,
-                    onExpandedChange = { expandedKK = !expandedKK },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-
-                    OutlinedTextField(
-                        value = noKk,
-                        onValueChange = { noKk = it },
-                        readOnly = false,
-                        label = { Text("No KK") },
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedKK)
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedContainerColor = BgMint,
-                            unfocusedContainerColor = BgMint
-                        ),
-                        modifier = Modifier
-                            .menuAnchor()
-                            .fillMaxWidth()
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = expandedKK,
-                        onDismissRequest = { expandedKK = false }
-                    ) {
-                        if (keluargaOptions.isEmpty()) {
-                            DropdownMenuItem(
-                                text = { Text("Opsi belum tersedia, isi manual") },
-                                onClick = { expandedKK = false }
-                            )
-                        } else {
-                            keluargaOptions.forEach { keluarga ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(
-                                            "${keluarga.noKk} - ${keluarga.kepalaKeluarga ?: "Tanpa Kepala"}"
-                                        )
-                                    },
-                                    onClick = {
-                                        noKk = keluarga.noKk
-                                        expandedKK = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
 
                 Column(
                     modifier = Modifier
@@ -229,8 +166,20 @@ fun RumahKeluargaScreen(
                         }
 
                         val rtInt = rt.toIntOrNull() ?: 0
-                        val noRumahInt = noRumah.toIntOrNull() ?: 0
+                        val noRumahInt = noRumah.toIntOrNull()
 
+                        if (noRumahInt == null || noRumahInt <= 0) {
+                            Toast.makeText(context, "No rumah wajib berupa angka lebih dari 0.", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (alamat.isBlank()) {
+                            Toast.makeText(context, "Alamat rumah wajib diisi.", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (noKk.length != 16) {
+                            Toast.makeText(context, "No KK harus 16 digit.", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
 
                         rumahViewModel.tambahRumah(
                             realToken,

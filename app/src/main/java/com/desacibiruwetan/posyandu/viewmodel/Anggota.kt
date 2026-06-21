@@ -297,5 +297,34 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         }
     }
 
+    fun createKb(
+        token: String,
+        wusPusId: Int,
+        jenisKb: String,
+        tanggalMulaiKb: String?,
+        statusAktif: Boolean,
+        keterangan: String?,
+        onResult: (Boolean, String) -> Unit = { _, _ -> }
+    ) {
+        viewModelScope.launch {
+            try {
+                val response = repository.createKb(
+                    token = token,
+                    wusPusId = wusPusId,
+                    jenisKb = jenisKb,
+                    tanggalMulaiKb = tanggalMulaiKb,
+                    statusAktif = statusAktif,
+                    keterangan = keterangan
+                )
+                if (response.isSuccessful) {
+                    onResult(true, response.body()?.message ?: "Data KB berhasil disimpan")
+                } else {
+                    onResult(false, "Gagal menyimpan data KB: ${response.message()}")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Gagal menyimpan data KB: ${e.localizedMessage}")
+            }
+        }
+    }
 
 }

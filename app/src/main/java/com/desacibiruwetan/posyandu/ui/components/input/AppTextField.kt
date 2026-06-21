@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -43,6 +44,7 @@ fun AppTextField(
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    trailingContent: (@Composable () -> Unit)? = null,
 ) {
     var isFocused by remember { mutableStateOf(false) }
     val borderColor =
@@ -69,7 +71,7 @@ fun AppTextField(
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) TextMuted else MaterialTheme.colorScheme.onSurface),
             modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
             decorationBox = { innerTextField ->
-                Box(
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(if (singleLine) 52.dp else 132.dp)
@@ -80,12 +82,15 @@ fun AppTextField(
                             shape = RoundedCornerShape(14.dp)
                         )
                         .padding(horizontal = 16.dp, vertical = if (singleLine) 0.dp else 14.dp),
-                    contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart
+                    verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top
                 ) {
-                    if (value.isEmpty()) {
-                        Text(text = placeholder, style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.36f)))
+                    Box(modifier = Modifier.weight(1f), contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart) {
+                        if (value.isEmpty()) {
+                            Text(text = placeholder, style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.36f)))
+                        }
+                        innerTextField()
                     }
-                    innerTextField()
+                    trailingContent?.invoke()
                 }
             }
         )

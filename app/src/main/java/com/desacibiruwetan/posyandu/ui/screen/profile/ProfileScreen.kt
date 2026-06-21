@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.ui.screen.profile
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +18,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.VerifiedUser
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -38,12 +36,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
-import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
@@ -72,8 +67,6 @@ fun ProfilScreen(
     var usernameDisplay by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var noTelepon by remember { mutableStateOf("") }
-    var passwordBaru by remember { mutableStateOf("") }
-    var passwordLama by remember { mutableStateOf("") }
 
     LaunchedEffect(Unit) {
         if (token.isNotEmpty()) authViewModel.getMe(token)
@@ -121,9 +114,9 @@ fun ProfilScreen(
                 AppTextField(
                     label = "Nomor Telepon",
                     value = noTelepon,
-                    placeholder = "Masukkan nomor telepon",
-                    keyboardType = KeyboardType.Phone,
-                    onValueChange = { noTelepon = it }
+                    readOnly = true,
+                    placeholder = "Belum ada nomor telepon",
+                    onValueChange = {}
                 )
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                     Box(modifier = Modifier.weight(1f)) {
@@ -134,31 +127,6 @@ fun ProfilScreen(
                     }
                 }
             }
-
-            ProfileSection(title = "Keamanan akun") {
-                AppTextField(
-                    label = "Password Baru",
-                    value = passwordBaru,
-                    placeholder = "Masukkan password baru",
-                    visualTransformation = PasswordVisualTransformation(),
-                    onValueChange = { passwordBaru = it }
-                )
-                AppTextField(
-                    label = "Password Lama",
-                    value = passwordLama,
-                    placeholder = "Konfirmasi password lama",
-                    visualTransformation = PasswordVisualTransformation(),
-                    onValueChange = { passwordLama = it }
-                )
-            }
-
-            PrimaryButton(
-                text = "Simpan Perubahan",
-                icon = Icons.Default.Save,
-                onClick = {
-                    Toast.makeText(context, "Perubahan profil tersimpan sebagai draf", Toast.LENGTH_SHORT).show()
-                }
-            )
 
             Button(
                 onClick = onLogoutClick,

@@ -16,26 +16,29 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
+import com.desacibiruwetan.posyandu.ui.components.input.AppDateField
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSwitch
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
-import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
@@ -46,6 +49,7 @@ fun UpdateKbScreen(
     anggotaViewModel: AnggotaViewmodel,
 ) {
     val context = LocalContext.current
+    val token = SessionManager.getAuthorizationHeader(context)
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -55,8 +59,16 @@ fun UpdateKbScreen(
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var statusAktif by remember { mutableStateOf(true) }
     var keterangan by remember { mutableStateOf("") }
+    var isSaving by remember { mutableStateOf(false) }
 
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
+    val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
+
+    LaunchedEffect(detailWusPus) {
+        if (detailWusPus is UiState.Error) {
+            Toast.makeText(context, "Warga ini belum punya data WUS/PUS", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     if (showDialog) {
         SearchWargaDialog(
@@ -64,6 +76,9 @@ fun UpdateKbScreen(
             onWargaSelected = { warga ->
                 selectedWarga = warga
                 namaWarga = warga.nama
+                if (warga.serverId != null) {
+                    anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
+                }
             },
             anggotaViewModel = anggotaViewModel
         )
@@ -106,8 +121,9 @@ fun UpdateKbScreen(
                         AppTextField(
                             label = "Nama Warga",
                             value = namaWarga,
-                            onValueChange = { namaWarga = it },
-                            placeholder = "Masukkan nama warga"
+                            onValueChange = {},
+                            readOnly = true,
+                            placeholder = "Pilih dari pencarian"
                         )
                     }
                 } else {
@@ -130,15 +146,10 @@ fun UpdateKbScreen(
                     onValueChange = { jenisKb = it }
                 )
 
-                AppTextField(
+                AppDateField(
                     label = "Tanggal Mulai KB",
                     value = tanggalMulaiKb,
-                    placeholder = "dd/mm/yyyy",
-                    keyboardType = KeyboardType.Number,
-                    visualTransformation = DateVisualTransformation(),
-                    onValueChange = {
-                        if (it.length <= 8 && it.all { char -> char.isDigit() }) tanggalMulaiKb = it
-                    }
+                    onValueChange = { tanggalMulaiKb = it }
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -163,10 +174,37 @@ fun UpdateKbScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 PrimaryButton(
-                    text = "Update Data KB",
+                    text = if (isSaving) "Menyimpan..." else "Simpan Data KB",
                     icon = Icons.Default.AddCircleOutline,
+                    enabled = !isSaving,
                     onClick = {
-                        Toast.makeText(context, "Data KB tersimpan sebagai draf", Toast.LENGTH_SHORT).show()
+                        if (selectedWarga == null) {
+                            Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        if (jenisKb.isBlank()) {
+                            Toast.makeText(context, "Pilih jenis KB terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+                        val wusPusId = (detailWusPus as? UiState.Success)?.data?.data?.id
+                        if (wusPusId == null) {
+                            Toast.makeText(context, "Pilih warga yang sudah terdaftar WUS/PUS", Toast.LENGTH_SHORT).show()
+                            return@PrimaryButton
+                        }
+
+                        isSaving = true
+                        anggotaViewModel.createKb(
+                            token = token,
+                            wusPusId = wusPusId,
+                            jenisKb = jenisKb,
+                            tanggalMulaiKb = tanggalMulaiKb.ifBlank { null },
+                            statusAktif = statusAktif,
+                            keterangan = keterangan.ifBlank { null }
+                        ) { success, message ->
+                            isSaving = false
+                            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+                            if (success) onBackClick()
+                        }
                     }
                 )
             }

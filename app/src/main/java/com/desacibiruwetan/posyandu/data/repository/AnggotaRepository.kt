@@ -14,6 +14,8 @@ import com.desacibiruwetan.posyandu.data.model.BalitaData
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilData
 import com.desacibiruwetan.posyandu.data.model.BumilReq
+import com.desacibiruwetan.posyandu.data.model.KbData
+import com.desacibiruwetan.posyandu.data.model.KbRequest
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
@@ -462,6 +464,26 @@ class AnggotaRepository(
 
     suspend fun getDataWusPusById(token: String, wusPusId: Int): Response<BaseResponse<WusPusData>>{
         return apiService.getWusPusById(token, wusPusId)
+    }
+
+    suspend fun createKb(
+        token: String,
+        wusPusId: Int,
+        jenisKb: String,
+        tanggalMulaiKb: String?,
+        statusAktif: Boolean,
+        keterangan: String?
+    ): Response<BaseResponse<KbData>> {
+        return apiService.postKb(
+            token = token,
+            wusPusId = wusPusId,
+            request = KbRequest(
+                jenisKb = jenisKb,
+                tanggalMulaiKb = tanggalMulaiKb,
+                statusAktif = statusAktif,
+                keterangan = keterangan
+            )
+        )
     }
 
 

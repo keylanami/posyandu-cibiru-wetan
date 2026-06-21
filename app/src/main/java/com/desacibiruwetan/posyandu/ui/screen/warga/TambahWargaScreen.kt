@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.components.input.AppDateField
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
@@ -35,34 +36,10 @@ import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
-import com.desacibiruwetan.posyandu.utils.DateVisualTransformation
+import com.desacibiruwetan.posyandu.utils.calculateAgeInfo
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
-import java.util.Calendar
-
-fun isValidDateInput(input: String): Boolean {
-    if (input.isEmpty()) return true
-    if (!input.all { it.isDigit() }) return false
-    if (input.length > 8) return false
-
-    if (input.length >= 1 && input[0] > '3') return false
-    if (input.length >= 2) {
-        val day = input.substring(0, 2).toIntOrNull() ?: 0
-        if (day !in 1..31) return false
-    }
-
-    if (input.length >= 3 && input[2] > '1') return false
-    if (input.length >= 4) {
-        val month = input.substring(2, 4).toIntOrNull() ?: 0
-        if (month !in 1..12) return false
-
-        val day = input.substring(0, 2).toIntOrNull() ?: 0
-        if (month == 2 && day > 29) return false
-        if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false
-    }
-    return true
-}
 
 @Composable
 fun TambahWargaScreen(
@@ -77,24 +54,20 @@ fun TambahWargaScreen(
     val userRt = sharedPreferences.getString("USER_RT", "04") ?: "04"
     val userRw = sharedPreferences.getString("USER_RW", "02") ?: "02"
 
-    var noRumah by remember { mutableStateOf("") }
-
     val listKeluargaOptions by keluargaViewModel.keluargaOptions.collectAsState()
     var selectedKeluargaDisplay by remember { mutableStateOf("") }
     var selectedKeluargaId by remember { mutableStateOf<Int?>(null) }
 
-    var noKk by remember { mutableStateOf("") }
     var namaLengkap by remember { mutableStateOf("") }
     var jenisKelamin by remember { mutableStateOf("Laki-laki") }
     var nik by remember { mutableStateOf("") }
-    var tanggalLahirRaw by remember { mutableStateOf("") }
+    var tanggalLahir by remember { mutableStateOf("") }
 
     var statusKeluarga by remember { mutableStateOf("") }
     var statusSipil by remember { mutableStateOf("") }
     var pendidikan by remember { mutableStateOf("") }
     var pekerjaan by remember { mutableStateOf("") }
     var noBpjs by remember { mutableStateOf("") }
-    var kategoriGakin by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
 
     val statusKeluargaOptions = listOf(
@@ -105,7 +78,6 @@ fun TambahWargaScreen(
         listOf("Belum Kawin", "Kawin Tercatat", "Kawin Belum Tercatat", "Cerai Hidup", "Cerai Mati")
     val pendidikanOptions =
         listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
-    val gakinOptions = listOf("Non GAKIN (Mampu)", "GAKIN (Keluarga Miskin)")
 
 
     LaunchedEffect(Unit) {
@@ -116,33 +88,6 @@ fun TambahWargaScreen(
 
     val dropdownKeluargaStrings = listKeluargaOptions.map {
         "${it.noKk} - ${it.kepalaKeluarga ?: "Tanpa Kepala"}"
-    }
-
-    fun prosesDataLahir(raw: String): Triple<String, String, String> {
-        if (raw.length != 8) return Triple("", "", "")
-
-        val day = raw.substring(0, 2)
-        val month = raw.substring(2, 4)
-        val year = raw.substring(4, 8)
-
-        val apiDate = "$day-$month-$year"
-
-        val birthDate = Calendar.getInstance().apply {
-            set(year.toInt(), month.toInt() - 1, day.toInt())
-        }
-        val today = Calendar.getInstance()
-        var age = today.get(Calendar.YEAR) - birthDate.get(Calendar.YEAR)
-        if (today.get(Calendar.DAY_OF_YEAR) < birthDate.get(Calendar.DAY_OF_YEAR)) age--
-
-        val kategori = when {
-            age < 5 -> "Balita"
-            age < 12 -> "Anak-anak"
-            age < 18 -> "Remaja"
-            age < 60 -> "Dewasa"
-            else -> "Lansia"
-        }
-
-        return Triple(apiDate, age.toString(), kategori)
     }
 
     Scaffold(
@@ -202,17 +147,9 @@ fun TambahWargaScreen(
                             val matched =
                                 listKeluargaOptions.find { "${it.noKk} - ${it.kepalaKeluarga ?: "Tanpa Kepala"}" == selectedStr }
                             selectedKeluargaId = matched?.id
-                            noKk = matched?.noKk
-                                ?: ""
                         }
                     )
 
-                    AppTextField(
-                        label = "No Kartu Keluarga",
-                        value = noKk,
-                        placeholder = "Pilih dari Dropdown Keluarga di atas",
-                        keyboardType = KeyboardType.Number,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) noKk = it })
                     AppTextField(
                         label = "Nama Lengkap",
                         value = namaLengkap,
@@ -237,7 +174,7 @@ fun TambahWargaScreen(
                     }
 
                     AppTextField(
-                        label = "Nomor Induk Keluarga",
+                        label = "NIK",
                         value = nik,
                         placeholder = "Masukkan 16 digit NIK",
                         keyboardType = KeyboardType.Number,
@@ -245,15 +182,10 @@ fun TambahWargaScreen(
                             if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
                         })
 
-                    AppTextField(
+                    AppDateField(
                         label = "Tanggal Lahir",
-                        value = tanggalLahirRaw,
-                        placeholder = "dd/mm/yyyy",
-                        keyboardType = KeyboardType.Number,
-                        visualTransformation = DateVisualTransformation(),
-                        onValueChange = { newValue ->
-                            if (isValidDateInput(newValue)) tanggalLahirRaw = newValue
-                        }
+                        value = tanggalLahir,
+                        onValueChange = { tanggalLahir = it }
                     )
 
                     AppDropdownField(
@@ -304,11 +236,6 @@ fun TambahWargaScreen(
                         placeholder = "Masukkan nomor BPJS",
                         keyboardType = KeyboardType.Number,
                         onValueChange = { if (it.all { char -> char.isDigit() }) noBpjs = it })
-                    AppDropdownField(
-                        label = "Kategori GAKIN",
-                        value = kategoriGakin,
-                        options = gakinOptions,
-                        onValueChange = { kategoriGakin = it })
                     AppTextField(
                         label = "Keterangan Tambahan",
                         value = keterangan,
@@ -337,34 +264,30 @@ fun TambahWargaScreen(
                         Toast.makeText(context, "NIK harus 16 digit!", Toast.LENGTH_SHORT).show()
                         return@PrimaryButton
                     }
-                    if (tanggalLahirRaw.length < 8) {
+                    if (namaLengkap.isBlank()) {
+                        Toast.makeText(context, "Nama lengkap wajib diisi!", Toast.LENGTH_SHORT).show()
+                        return@PrimaryButton
+                    }
+                    if (tanggalLahir.isBlank()) {
                         Toast.makeText(
                             context,
-                            "Lengkapi Tanggal Lahir (8 digit)!",
+                            "Pilih tanggal lahir!",
                             Toast.LENGTH_SHORT
                         ).show()
                         return@PrimaryButton
                     }
-
-                    val (apiDate, calculatedUsia, calculatedKategori) = prosesDataLahir(
-                        tanggalLahirRaw
-                    )
-
-                    if (apiDate.isEmpty()) {
-                        Toast.makeText(
-                            context,
-                            "Format tanggal lahir tidak sesuai kalender!",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    if (statusKeluarga.isBlank() || statusSipil.isBlank()) {
+                        Toast.makeText(context, "Status keluarga dan status sipil wajib dipilih!", Toast.LENGTH_SHORT).show()
                         return@PrimaryButton
                     }
+                    val (calculatedUsia, calculatedKategori) = calculateAgeInfo(tanggalLahir)
 
                     anggotaViewModel.tambahAnggota(
                         token = token,
                         keluargaId = finalKeluargaId,
                         nik = nik,
                         nama = namaLengkap,
-                        tanggalLahir = apiDate,
+                        tanggalLahir = tanggalLahir,
                         jenisKelamin = jenisKelamin,
                         pendidikanTerakhir = pendidikan,
                         pekerjaan = pekerjaan,

@@ -70,11 +70,6 @@ fun UpdateBalitaScreen(
     var tinggiBadan by remember { mutableStateOf("") }
     var beratBadan by remember { mutableStateOf("") }
 
-
-    var isAsiEksklusif by remember { mutableStateOf(true) }
-    var tanggalMulaiAsi by remember { mutableStateOf("") }
-    var tanggalSelesaiAsi by remember { mutableStateOf("") }
-
     val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
     if (showDialog) {
@@ -176,18 +171,18 @@ fun UpdateBalitaScreen(
                         AppTextField(
                             label = "Tinggi Badan (cm)",
                             value = tinggiBadan,
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.Decimal,
                             placeholder = "0.0",
-                            onValueChange = { tinggiBadan = it })
+                            onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) tinggiBadan = it })
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Box(Modifier.weight(1f)) {
                         AppTextField(
                             label = "Berat Badan (kg)",
                             value = beratBadan,
-                            keyboardType = KeyboardType.Number,
+                            keyboardType = KeyboardType.Decimal,
                             placeholder = "0.0",
-                            onValueChange = { beratBadan = it })
+                            onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) beratBadan = it })
                     }
                 }
 
@@ -207,8 +202,25 @@ fun UpdateBalitaScreen(
                             return@PrimaryButton
                         }
 
-                        val tb = tinggiBadan.toDoubleOrNull() ?: 0.0
-                        val bb = beratBadan.toDoubleOrNull() ?: 0.0
+                        if (namaAyah.isBlank() || namaIbu.isBlank()) {
+                            Toast.makeText(
+                                context,
+                                "Nama ayah dan ibu wajib diisi",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@PrimaryButton
+                        }
+
+                        val tb = tinggiBadan.toDoubleOrNull()
+                        val bb = beratBadan.toDoubleOrNull()
+                        if (tb == null || tb <= 0.0 || bb == null || bb <= 0.0) {
+                            Toast.makeText(
+                                context,
+                                "Tinggi dan berat badan harus lebih dari 0",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@PrimaryButton
+                        }
 
                         anggotaViewModel.updateDataBalita(
                             token = token,
