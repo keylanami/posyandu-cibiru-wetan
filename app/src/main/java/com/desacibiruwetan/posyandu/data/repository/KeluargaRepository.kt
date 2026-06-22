@@ -118,22 +118,34 @@ class KeluargaRepository(
         )
         keluargaDao.updateKeluargaLocal(keluargaUpdate)
 
-        try {
-            val request = KeluargaReq(
-                noKK = noKKBaru,
-                isNgontrak = isNgontrakBaru,
-                isGakin = isGakinBaru,
-                rumahId = keluargaUpdate.rumahId
-            )
-            val response = apiService.putKeluarga(token, keluargaUpdate.serverId, request)
+        if (keluargaUpdate.serverId != null) {
+            try {
+                val request = KeluargaReq(
+                    noKK = noKKBaru,
+                    isNgontrak = isNgontrakBaru,
+                    isGakin = isGakinBaru
+                )
+                val response = apiService.putKeluarga(token, keluargaUpdate.serverId, request)
 
-            if (response.isSuccessful){
-                keluargaDao.updateKeluargaLocal(keluargaUpdate.copy(isSynced = true))
+                if (response.isSuccessful) {
+                    val server = response.body()?.data
+                    keluargaDao.updateKeluargaLocal(
+                        keluargaUpdate.copy(
+                            serverId = server?.id ?: keluargaUpdate.serverId,
+                            noKK = server?.noKK ?: keluargaUpdate.noKK,
+                            isNgontrak = server?.isNgontrak ?: keluargaUpdate.isNgontrak,
+                            isGakin = server?.isGakin ?: keluargaUpdate.isGakin,
+                            createdAt = server?.createdAt ?: keluargaUpdate.createdAt,
+                            updatedAt = server?.updatedAt ?: keluargaUpdate.updatedAt,
+                            isSynced = true
+                        )
+                    )
+                }
+
+            } catch (e: Exception) {
+                println("Sedang offline, data keluarga disimpan di memori HP dulu.")
+
             }
-
-        } catch (e: Exception){
-            println("Sedang offline, data keluarga disimpan di memori HP dulu.")
-
         }
 
     }
