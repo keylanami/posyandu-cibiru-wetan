@@ -51,8 +51,7 @@ class OfflineSyncRepository(
     private suspend fun syncRumah(token: String) {
         rumahDao.getRumahBelumSinkron().forEach { rumah ->
             val request = RumahRequest(
-                alamat = rumah.alamat.orEmpty(),
-                nomorRumah = rumah.noRumah ?: return@forEach
+                alamat = rumah.alamat.orEmpty()
             )
 
             val response = if (rumah.serverId == null) {
@@ -67,6 +66,7 @@ class OfflineSyncRepository(
                     rumah.copy(
                         serverId = server?.id ?: rumah.serverId,
                         rtId = server?.rtId ?: rumah.rtId,
+                        noRumah = server?.nomorRumah ?: rumah.noRumah,
                         createdAt = server?.createdAt ?: rumah.createdAt,
                         updatedAt = server?.updateAt ?: rumah.updatedAt,
                         isSynced = true
@@ -79,7 +79,7 @@ class OfflineSyncRepository(
     private suspend fun syncKeluarga(token: String) {
         keluargaDao.getKeluargaBelumSinkron().forEach { keluarga ->
             val rumah = rumahDao.getRumahByLocalOrServerId(keluarga.rumahId)
-            val noRumah = rumah?.noRumah ?: return@forEach
+            val rumahServerId = rumah?.serverId ?: return@forEach
 
             val request = KeluargaReq(
                 noKK = keluarga.noKK,
@@ -88,7 +88,7 @@ class OfflineSyncRepository(
             )
 
             val response = if (keluarga.serverId == null) {
-                apiService.postDataKeluarga(token, noRumah, request)
+                apiService.postDataKeluarga(token, rumahServerId, request)
             } else {
                 apiService.putKeluarga(token, keluarga.serverId, request)
             }
@@ -141,7 +141,7 @@ class OfflineSyncRepository(
         balitaDao.getBalitaBelumSync().forEach { balita ->
             val anggota = findAnggotaForProgram(balita.anggotaLocalId, balita.anggotaServerId) ?: return@forEach
             val anggotaServerId = anggota.serverId ?: return@forEach
-            val request = BalitaReq(balita.namaAyah, balita.namaIbu, balita.tinggiBadan, balita.beratBadan)
+            val request = BalitaReq(balita.tinggiBadan, balita.beratBadan)
 
             val putResponse = apiService.putBalita(token, anggotaServerId, request)
             val success = putResponse.isSuccessful || apiService.postBalita(token, anggotaServerId, request).isSuccessful
@@ -227,7 +227,11 @@ class OfflineSyncRepository(
         return AnggotaReq(
             nik = nik,
             nama = nama,
+            tempatLahir = tempatLahir,
             tanggalLahir = tanggalLahir,
+            golonganDarah = golonganDarah,
+            suku = suku,
+            kewarganegaraan = kewarganegaraan ?: "WNI",
             jenisKelamin = jenisKelamin,
             pendidikanTerakhir = pendidikanTerakhir,
             noBpjs = noBpjs,

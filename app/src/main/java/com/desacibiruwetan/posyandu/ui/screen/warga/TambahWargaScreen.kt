@@ -70,7 +70,11 @@ fun TambahWargaScreen(
     var namaLengkap by remember { mutableStateOf("") }
     var jenisKelamin by remember { mutableStateOf("Laki-laki") }
     var nik by remember { mutableStateOf("") }
+    var tempatLahir by remember { mutableStateOf("") }
     var tanggalLahir by remember { mutableStateOf("") }
+    var golonganDarah by remember { mutableStateOf("") }
+    var suku by remember { mutableStateOf("") }
+    var kewarganegaraan by remember { mutableStateOf("WNI") }
 
     var statusKeluarga by remember { mutableStateOf("") }
     var statusSipil by remember { mutableStateOf("") }
@@ -87,6 +91,7 @@ fun TambahWargaScreen(
         listOf("Belum Kawin", "Kawin Tercatat", "Kawin Belum Tercatat", "Cerai Hidup", "Cerai Mati")
     val pendidikanOptions =
         listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
+    val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
 
 
     LaunchedEffect(Unit) {
@@ -236,11 +241,35 @@ fun TambahWargaScreen(
                             if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
                         })
 
+                    AppTextField(
+                        label = "Tempat Lahir",
+                        value = tempatLahir,
+                        placeholder = "Contoh: Bandung",
+                        onValueChange = { tempatLahir = it })
+
                     AppDateField(
                         label = "Tanggal Lahir",
                         value = tanggalLahir,
                         onValueChange = { tanggalLahir = it }
                     )
+
+                    AppDropdownField(
+                        label = "Golongan Darah",
+                        value = golonganDarah,
+                        options = golonganDarahOptions,
+                        onValueChange = { golonganDarah = it })
+
+                    AppTextField(
+                        label = "Suku",
+                        value = suku,
+                        placeholder = "Contoh: Sunda",
+                        onValueChange = { suku = it })
+
+                    AppTextField(
+                        label = "Kewarganegaraan",
+                        value = kewarganegaraan,
+                        placeholder = "WNI",
+                        onValueChange = { kewarganegaraan = it })
 
                     AppDropdownField(
                         label = "Status dalam Keluarga",
@@ -351,7 +380,11 @@ fun TambahWargaScreen(
                         statusWarga = "aktif",
                         keterangan = keterangan,
                         usia = calculatedUsia,
-                        kategoriUsia = calculatedKategori
+                        kategoriUsia = calculatedKategori,
+                        tempatLahir = tempatLahir.ifBlank { null },
+                        golonganDarah = golonganDarah.ifBlank { null },
+                        suku = suku.ifBlank { null },
+                        kewarganegaraan = kewarganegaraan.ifBlank { "WNI" }
                     )
                     Toast.makeText(context, "Anggota berhasil disimpan!", Toast.LENGTH_SHORT).show()
                     onBackClick()

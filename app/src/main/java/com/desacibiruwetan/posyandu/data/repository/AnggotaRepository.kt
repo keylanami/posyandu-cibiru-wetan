@@ -52,12 +52,17 @@ class AnggotaRepository(
                         keluargaId = anggotaServer.keluargaId,
                         nik = anggotaServer.nik,
                         nama = anggotaServer.nama,
+                        tempatLahir = anggotaServer.tempatLahir,
                         tanggalLahir = anggotaServer.tanggalLahir,
+                        golonganDarah = anggotaServer.golonganDarah,
+                        suku = anggotaServer.suku,
+                        kewarganegaraan = anggotaServer.kewarganegaraan,
                         jenisKelamin = anggotaServer.jenisKelamin,
                         pendidikanTerakhir = anggotaServer.pendidikanTerakhir,
                         noBpjs = anggotaServer.noBpjs,
                         statusKeluarga = anggotaServer.statusKeluarga,
                         statusSipil = anggotaServer.statusSipil,
+                        statusWarga = anggotaServer.statusWarga,
                         keterangan = anggotaServer.keterangan,
                         createdAt = anggotaServer.createdAt,
                         updatedAt = anggotaServer.updatedAt,
@@ -80,13 +85,21 @@ class AnggotaRepository(
         token: String, keluargaId: Int, nik: String, nama: String, tanggalLahir: String,
         jenisKelamin: String, pendidikanTerakhir: String, pekerjaan: String, noBpjs: String,
         keterangan: String, statusKeluarga: String, statusSipil: String, statusWarga: String,
-        usia: String, kategoriUsia: String
+        usia: String, kategoriUsia: String,
+        tempatLahir: String? = null,
+        golonganDarah: String? = null,
+        suku: String? = null,
+        kewarganegaraan: String = "WNI"
     ): Pair<Int, Int?> {
         val entitasBaru = AnggotaEntity(
             keluargaId = keluargaId,
             nik = nik,
             nama = nama,
+            tempatLahir = tempatLahir,
             tanggalLahir = tanggalLahir,
+            golonganDarah = golonganDarah,
+            suku = suku,
+            kewarganegaraan = kewarganegaraan,
             jenisKelamin = jenisKelamin,
             pendidikanTerakhir = pendidikanTerakhir,
             pekerjaan = pekerjaan,
@@ -106,7 +119,11 @@ class AnggotaRepository(
             val request = AnggotaReq(
                 nik = nik,
                 nama = nama,
+                tempatLahir = tempatLahir,
                 tanggalLahir = tanggalLahir,
+                golonganDarah = golonganDarah,
+                suku = suku,
+                kewarganegaraan = kewarganegaraan,
                 jenisKelamin = jenisKelamin,
                 pendidikanTerakhir = pendidikanTerakhir,
                 pekerjaan = pekerjaan,
@@ -150,11 +167,19 @@ class AnggotaRepository(
         statusWarga: String,
         usiaBaru: String,
         kategoriUsiaBaru: String,
+        tempatLahirBaru: String? = null,
+        golonganDarahBaru: String? = null,
+        sukuBaru: String? = null,
+        kewarganegaraanBaru: String? = null,
     ) {
         val anggotaUpdate = anggotaLokal.copy(
             nik = nikBaru,
             nama = namaBaru,
+            tempatLahir = tempatLahirBaru ?: anggotaLokal.tempatLahir,
             tanggalLahir = tanggalLahirBaru,
+            golonganDarah = golonganDarahBaru ?: anggotaLokal.golonganDarah,
+            suku = sukuBaru ?: anggotaLokal.suku,
+            kewarganegaraan = kewarganegaraanBaru ?: anggotaLokal.kewarganegaraan ?: "WNI",
             jenisKelamin = jenisKelaminBaru,
             pekerjaan = pekerjaanBaru,
             pendidikanTerakhir = pendidikanTerakhirBaru,
@@ -174,7 +199,11 @@ class AnggotaRepository(
                 val request = AnggotaReq(
                     nik = nikBaru,
                     nama = namaBaru,
+                    tempatLahir = tempatLahirBaru ?: anggotaLokal.tempatLahir,
                     tanggalLahir = tanggalLahirBaru,
+                    golonganDarah = golonganDarahBaru ?: anggotaLokal.golonganDarah,
+                    suku = sukuBaru ?: anggotaLokal.suku,
+                    kewarganegaraan = kewarganegaraanBaru ?: anggotaLokal.kewarganegaraan ?: "WNI",
                     jenisKelamin = jenisKelaminBaru,
                     pendidikanTerakhir = pendidikanTerakhirBaru,
                     pekerjaan = pekerjaanBaru,
@@ -196,13 +225,11 @@ class AnggotaRepository(
 
     suspend fun addDataBalita(
         token: String, anggotaLocalId: Int, anggotaServerId: Int?,
-        namaAyah: String, namaIbu: String, tb: Double, bb: Double
+        tb: Double, bb: Double
     ) {
         val entitasBalita = BalitaEntity(
             anggotaLocalId = anggotaLocalId,
             anggotaServerId = anggotaServerId,
-            namaAyah = namaAyah,
-            namaIbu = namaIbu,
             tinggiBadan = tb,
             beratBadan = bb,
             isSynced = false
@@ -211,7 +238,7 @@ class AnggotaRepository(
 
         if (anggotaServerId != null) {
             try {
-                val request = BalitaReq(namaAyah, namaIbu, tb, bb)
+                val request = BalitaReq(tb, bb)
                 val response = apiService.postBalita(token, anggotaServerId, request)
                 if (response.isSuccessful) {
                     balitaDao.updateBalitaLocal(entitasBalita.copy(isSynced = true))
@@ -226,23 +253,17 @@ class AnggotaRepository(
         token: String,
         anggotaLocalId: Int,
         anggotaServerId: Int?,
-        namaAyah: String,
-        namaIbu: String,
         tb: Double,
         bb: Double
     ) {
         val balitaLokal = balitaDao.getBalitaByAnggotaId(anggotaLocalId, anggotaServerId)
         val balitaUpdate = balitaLokal?.copy(
-            namaAyah = namaAyah,
-            namaIbu = namaIbu,
             tinggiBadan = tb,
             beratBadan = bb,
             isSynced = false
         ) ?: BalitaEntity(
             anggotaLocalId = anggotaLocalId,
             anggotaServerId = anggotaServerId,
-            namaAyah = namaAyah,
-            namaIbu = namaIbu,
             tinggiBadan = tb,
             beratBadan = bb,
             isSynced = false
@@ -256,7 +277,7 @@ class AnggotaRepository(
 
         if (anggotaServerId != null) {
             try {
-                val request = BalitaReq(namaAyah, namaIbu, tb, bb)
+                val request = BalitaReq(tb, bb)
                 val response = apiService.putBalita(token, anggotaServerId, request)
                 if (response.isSuccessful) {
                     balitaDao.updateBalitaLocal(balitaUpdate.copy(isSynced = true))

@@ -11,8 +11,6 @@ data class BalitaEntity(
     val anggotaLocalId: Int,
     val anggotaServerId: Int? = null,
 
-    val namaAyah: String,
-    val namaIbu: String,
     val tinggiBadan: Double,
     val beratBadan: Double,
     val isSynced: Boolean = false

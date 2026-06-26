@@ -257,8 +257,6 @@ private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
                         icon = Icons.Default.ChildCare,
                         color = PrimaryGreen,
                         rows = listOf(
-                            "Nama ayah" to it.namaAyah,
-                            "Nama ibu" to it.namaIbu,
                             "Tinggi badan" to "${it.tinggiBadan} cm",
                             "Berat badan" to "${it.beratBadan} kg"
                         )

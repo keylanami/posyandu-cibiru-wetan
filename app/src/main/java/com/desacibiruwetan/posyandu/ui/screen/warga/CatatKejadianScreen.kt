@@ -159,7 +159,7 @@ fun CatatKejadianScreen(
                         noBpjs = "",
                         statusKeluarga = "Anak",
                         statusSipil = "Belum Kawin",
-                        statusWarga = "aktif",
+                        statusWarga = "kelahiran",
                         keterangan = catatanKelahiran,
                         usia = "0",
                         kategoriUsia = "Balita",
@@ -169,8 +169,6 @@ fun CatatKejadianScreen(
                                     token,
                                     localId,
                                     serverId,
-                                    namaAyah,
-                                    namaIbu,
                                     tb,
                                     bb
                                 )
@@ -215,7 +213,7 @@ fun CatatKejadianScreen(
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
-                            statusWargaBaru = "diusir",
+                            statusWargaBaru = "pindah_keluar",
                             keteranganBaru = "Tgl Keluar: $apiDate. Tujuan: $tujuanAlamat. $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""
@@ -237,7 +235,7 @@ fun CatatKejadianScreen(
                             noBpjsBaru = warga.noBpjs ?: "",
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
-                            statusWargaBaru = "meninggal_dunia",
+                            statusWargaBaru = "meninggal",
                             keteranganBaru = "Wafat: $apiDate. Penyebab: $keterangan",
                             usiaBaru = warga.usia ?: "",
                             kategoriUsiaBaru = warga.kategoriUsia ?: ""

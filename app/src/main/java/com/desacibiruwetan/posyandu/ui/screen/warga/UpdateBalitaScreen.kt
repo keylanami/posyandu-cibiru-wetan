@@ -65,8 +65,6 @@ fun UpdateBalitaScreen(
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
 
     var namaBalita by remember { mutableStateOf("") }
-    var namaAyah by remember { mutableStateOf("") }
-    var namaIbu by remember { mutableStateOf("") }
     var tinggiBadan by remember { mutableStateOf("") }
     var beratBadan by remember { mutableStateOf("") }
 
@@ -82,8 +80,6 @@ fun UpdateBalitaScreen(
                 val ket = warga.keterangan ?: ""
                 if (ket.contains("Ayah:") && ket.contains("Ibu:")) {
                     try {
-                        namaAyah = ket.substringAfter("Ayah: ").substringBefore(", Ibu:").trim()
-                        namaIbu = ket.substringAfter("Ibu: ").substringBefore(", BB:").trim()
                         beratBadan = ket.substringAfter("BB: ").substringBefore(" kg").trim()
                         tinggiBadan = ket.substringAfter("TB: ").substringBefore(" cm").trim()
                     } catch (e: Exception) {
@@ -103,8 +99,6 @@ fun UpdateBalitaScreen(
         if (detailBalita is UiState.Success) {
             val dataServer = (detailBalita as UiState.Success).data.data
             if (dataServer != null) {
-                if (!dataServer.namaAyah.isNullOrBlank()) namaAyah = dataServer.namaAyah
-                if (!dataServer.namaIbu.isNullOrBlank()) namaIbu = dataServer.namaIbu
                 if (dataServer.tinggiBadan != null) tinggiBadan = dataServer.tinggiBadan.toString()
                 if (dataServer.beratBadan != null) beratBadan = dataServer.beratBadan.toString()
             }
@@ -152,19 +146,8 @@ fun UpdateBalitaScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            FormSectionCard(title = "Pertumbuhan & Identitas Ortu") {
+            FormSectionCard(title = "Pertumbuhan Balita") {
                 Spacer(modifier = Modifier.height(8.dp))
-
-                AppTextField(
-                    label = "Nama Ayah",
-                    value = namaAyah,
-                    placeholder = "Masukkan nama ayah",
-                    onValueChange = { namaAyah = it })
-                AppTextField(
-                    label = "Nama Ibu",
-                    value = namaIbu,
-                    placeholder = "Masukkan nama ibu",
-                    onValueChange = { namaIbu = it })
 
                 Row(Modifier.fillMaxWidth()) {
                     Box(Modifier.weight(1f)) {
@@ -202,15 +185,6 @@ fun UpdateBalitaScreen(
                             return@PrimaryButton
                         }
 
-                        if (namaAyah.isBlank() || namaIbu.isBlank()) {
-                            Toast.makeText(
-                                context,
-                                "Nama ayah dan ibu wajib diisi",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            return@PrimaryButton
-                        }
-
                         val tb = tinggiBadan.toDoubleOrNull()
                         val bb = beratBadan.toDoubleOrNull()
                         if (tb == null || tb <= 0.0 || bb == null || bb <= 0.0) {
@@ -226,8 +200,6 @@ fun UpdateBalitaScreen(
                             token = token,
                             anggotaLocalId = warga.localId,
                             anggotaServerId = warga.serverId,
-                            namaAyah = namaAyah,
-                            namaIbu = namaIbu,
                             tb = tb,
                             bb = bb
                         )

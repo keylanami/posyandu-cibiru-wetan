@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
-import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 @Composable
@@ -42,7 +42,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                 Icon(
                     imageVector = Icons.Default.Description,
                     contentDescription = null,
-                    tint = PrimaryGreen,
+                    tint = InfoIndigo,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -51,7 +51,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     fontFamily = Inter,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    color = PrimaryGreen
+                    color = InfoIndigo
                 )
             }
 
@@ -64,7 +64,11 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
 
             Row(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
+                    InfoItem(label = "Tempat Lahir", value = warga.tempatLahir ?: "-")
+                    Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Tanggal Lahir", value = warga.tanggalLahir)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    InfoItem(label = "Golongan Darah", value = warga.golonganDarah ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Status Keluarga", value = warga.statusKeluarga)
                     Spacer(modifier = Modifier.height(16.dp))
@@ -76,6 +80,10 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                 Spacer(modifier = Modifier.width(16.dp))
 
                 Column(modifier = Modifier.weight(1f)) {
+                    InfoItem(label = "Suku", value = warga.suku ?: "-")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    InfoItem(label = "Kewarganegaraan", value = warga.kewarganegaraan ?: "WNI")
+                    Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Status Sipil", value = warga.statusSipil)
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Status Warga", value = warga.statusWarga ?: "Aktif")

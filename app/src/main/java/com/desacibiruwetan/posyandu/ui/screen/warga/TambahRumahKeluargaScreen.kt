@@ -138,12 +138,12 @@ fun RumahKeluargaScreen(
                         rt = rt,
                         rw = rw,
                         onCancel = { showAddRumahForm = false },
-                        onSubmit = { noRumah, alamat ->
+                        onSubmit = { alamat ->
                             if (token.isBlank()) {
                                 Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
                                 return@RumahFormCard
                             }
-                            rumahViewModel.tambahRumah(token, alamat, noRumah, rt.toIntOrNull() ?: 0) {
+                            rumahViewModel.tambahRumah(token, alamat, rt.toIntOrNull() ?: 0) {
                                 Toast.makeText(context, "Rumah berhasil disimpan.", Toast.LENGTH_SHORT).show()
                                 showAddRumahForm = false
                             }
@@ -183,12 +183,12 @@ fun RumahKeluargaScreen(
                             editingKeluargaId = keluarga.localId
                         },
                         onCancel = { closeForms() },
-                        onSubmitRumah = { noRumah, alamat ->
+                        onSubmitRumah = { alamat ->
                             if (token.isBlank()) {
                                 Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
                                 return@RumahManagementCard
                             }
-                            rumahViewModel.updateRumah(token, rumah, alamat, noRumah)
+                            rumahViewModel.updateRumah(token, rumah, alamat)
                             Toast.makeText(context, "Perubahan rumah disimpan.", Toast.LENGTH_SHORT).show()
                             closeForms()
                         },
@@ -198,17 +198,13 @@ fun RumahKeluargaScreen(
                                 return@RumahManagementCard
                             }
                             if (keluarga == null) {
-                                val noRumahForApi = rumah.noRumah ?: run {
-                                    Toast.makeText(context, "No rumah belum valid.", Toast.LENGTH_SHORT).show()
-                                    return@RumahManagementCard
-                                }
                                 keluargaViewModel.tambahKeluarga(
                                     token = token,
                                     rumahId = rumah.localId,
+                                    rumahServerId = rumah.serverId,
                                     noKk = noKk,
                                     isNgontrak = isNgontrak,
-                                    isGakin = isGakin,
-                                    noRumahForApi = noRumahForApi
+                                    isGakin = isGakin
                                 ) {
                                     Toast.makeText(context, "KK berhasil ditambahkan ke rumah ini.", Toast.LENGTH_SHORT).show()
                                     closeForms()
@@ -295,7 +291,7 @@ private fun RumahManagementCard(
     onAddKeluarga: () -> Unit,
     onEditKeluarga: (KeluargaEntity) -> Unit,
     onCancel: () -> Unit,
-    onSubmitRumah: (Int, String) -> Unit,
+    onSubmitRumah: (String) -> Unit,
     onSubmitKeluarga: (KeluargaEntity?, String, Boolean, Boolean) -> Unit
 ) {
     Column(
@@ -422,18 +418,11 @@ private fun RumahFormCard(
     rt: String,
     rw: String,
     onCancel: () -> Unit,
-    onSubmit: (Int, String) -> Unit
+    onSubmit: (String) -> Unit
 ) {
-    var noRumah by remember(rumah?.localId) { mutableStateOf(rumah?.noRumah?.toString().orEmpty()) }
     var alamat by remember(rumah?.localId) { mutableStateOf(rumah?.alamat.orEmpty()) }
 
     FormPanel(title = title, subtitle = subtitle, icon = Icons.Default.Home, color = HealthBlue, onCancel = onCancel) {
-        AppTextField(
-            label = "No Rumah",
-            value = noRumah,
-            keyboardType = KeyboardType.Number,
-            onValueChange = { if (it.length <= 6 && it.all { char -> char.isDigit() }) noRumah = it }
-        )
         AppTextField(
             label = "Alamat Lengkap",
             value = alamat,
@@ -447,7 +436,6 @@ private fun RumahFormCard(
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier.weight(1f),
-                keyboardType = KeyboardType.Number
             )
             AppTextField(
                 label = "RW",
@@ -455,16 +443,19 @@ private fun RumahFormCard(
                 onValueChange = {},
                 readOnly = true,
                 modifier = Modifier.weight(1f),
-                keyboardType = KeyboardType.Number
             )
         }
+        Text(
+            text = if (rumah == null) "No rumah akan dibuat otomatis oleh server." else "No rumah ${rumah.noRumah ?: "-"} dibuat otomatis dan tidak dapat diubah dari mobile.",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted
+        )
         PrimaryButton(
             text = if (rumah == null) "Simpan rumah" else "Simpan perubahan rumah",
             icon = Icons.Default.Save,
-            enabled = noRumah.toIntOrNull()?.let { it > 0 } == true && alamat.isNotBlank(),
+            enabled = alamat.isNotBlank(),
             onClick = {
-                val parsedNoRumah = noRumah.toIntOrNull() ?: return@PrimaryButton
-                onSubmit(parsedNoRumah, alamat.trim())
+                onSubmit(alamat.trim())
             }
         )
     }

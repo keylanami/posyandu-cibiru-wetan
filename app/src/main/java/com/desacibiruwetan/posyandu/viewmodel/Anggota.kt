@@ -74,6 +74,10 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         jenisKelamin: String, pendidikanTerakhir: String, pekerjaan: String, noBpjs: String,
         statusKeluarga: String, statusSipil: String, statusWarga: String, keterangan: String,
         usia: String, kategoriUsia: String,
+        tempatLahir: String? = null,
+        golonganDarah: String? = null,
+        suku: String? = null,
+        kewarganegaraan: String = "WNI",
         onSuccess: (Int, Int?) -> Unit = { _, _ -> }
     ) {
         viewModelScope.launch {
@@ -92,7 +96,11 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 statusSipil = statusSipil,
                 statusWarga = statusWarga,
                 usia = usia,
-                kategoriUsia = kategoriUsia
+                kategoriUsia = kategoriUsia,
+                tempatLahir = tempatLahir,
+                golonganDarah = golonganDarah,
+                suku = suku,
+                kewarganegaraan = kewarganegaraan
             )
             onSuccess(localId, serverId)
         }
@@ -113,7 +121,11 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         statusSipilBaru: String,
         statusWargaBaru: String,
         usiaBaru: String,
-        kategoriUsiaBaru: String
+        kategoriUsiaBaru: String,
+        tempatLahirBaru: String? = null,
+        golonganDarahBaru: String? = null,
+        sukuBaru: String? = null,
+        kewarganegaraanBaru: String? = null
     ) {
         viewModelScope.launch {
             repository.updateAnggota(
@@ -132,6 +144,10 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 statusWarga = statusWargaBaru,
                 usiaBaru = usiaBaru,
                 kategoriUsiaBaru = kategoriUsiaBaru,
+                tempatLahirBaru = tempatLahirBaru,
+                golonganDarahBaru = golonganDarahBaru,
+                sukuBaru = sukuBaru,
+                kewarganegaraanBaru = kewarganegaraanBaru,
             )
         }
     }
@@ -140,8 +156,6 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         token: String,
         anggotaLocalId: Int,
         anggotaServerId: Int?,
-        namaAyah: String,
-        namaIbu: String,
         tb: Double,
         bb: Double
     ) {
@@ -150,8 +164,6 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 token,
                 anggotaLocalId,
                 anggotaServerId,
-                namaAyah,
-                namaIbu,
                 tb,
                 bb
             )
@@ -162,8 +174,6 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
         token: String,
         anggotaLocalId: Int,
         anggotaServerId: Int?,
-        namaAyah: String,
-        namaIbu: String,
         tb: Double,
         bb: Double
     ) {
@@ -172,8 +182,6 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 token,
                 anggotaLocalId,
                 anggotaServerId,
-                namaAyah,
-                namaIbu,
                 tb,
                 bb
             )

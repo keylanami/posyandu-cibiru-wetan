@@ -55,11 +55,10 @@ class RumahRepository(
 
 
     // to insert or save
-    suspend fun addNewRumah(token: String, alamat: String, noRumah: Int, rtId: Int): Long{
+    suspend fun addNewRumah(token: String, alamat: String, rtId: Int): Long{
 
         val entitasBaru = RumahEntity(
             rtId = rtId,
-            noRumah = noRumah,
             alamat = alamat,
             isSynced = false
         )
@@ -68,7 +67,6 @@ class RumahRepository(
 
         try {
             val request = RumahRequest(
-                nomorRumah = noRumah,
                 alamat = alamat
             )
 
@@ -81,6 +79,8 @@ class RumahRepository(
                     val rumahSukses = entitasBaru.copy(
                         localId = localIdBaru.toInt(),
                         serverId = dataServer.id,
+                        rtId = dataServer.rtId,
+                        noRumah = dataServer.nomorRumah,
                         isSynced = true,
                         createdAt = dataServer.createdAt,
                         updatedAt = dataServer.updateAt
@@ -103,9 +103,8 @@ class RumahRepository(
 
 
     // update
-    suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String, noRumahBaru: Int){
+    suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String){
         val rumahUpdate = rumahLokal.copy(
-            noRumah = noRumahBaru,
             alamat = alamatBaru,
             isSynced = false
         )
@@ -114,13 +113,22 @@ class RumahRepository(
         if (rumahUpdate.serverId != null) {
             try {
                 val request = RumahRequest(
-                    alamat = alamatBaru,
-                    nomorRumah = noRumahBaru
+                    alamat = alamatBaru
                 )
                 val response = apiService.putRumah(token, rumahUpdate.serverId, request)
 
                 if (response.isSuccessful) {
-                    rumahDao.updateRumahLocal(rumahUpdate.copy(isSynced = true))
+                    val server = response.body()?.data
+                    rumahDao.updateRumahLocal(
+                        rumahUpdate.copy(
+                            serverId = server?.id ?: rumahUpdate.serverId,
+                            rtId = server?.rtId ?: rumahUpdate.rtId,
+                            noRumah = server?.nomorRumah ?: rumahUpdate.noRumah,
+                            createdAt = server?.createdAt ?: rumahUpdate.createdAt,
+                            updatedAt = server?.updateAt ?: rumahUpdate.updatedAt,
+                            isSynced = true
+                        )
+                    )
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Update server gagal, tersimpan lokal")

@@ -74,7 +74,11 @@ fun EditWargaScreen(
     var namaLengkap by remember { mutableStateOf("") }
     var jenisKelamin by remember { mutableStateOf("Laki-laki") }
     var nik by remember { mutableStateOf("") }
+    var tempatLahir by remember { mutableStateOf("") }
     var tanggalLahir by remember { mutableStateOf("") }
+    var golonganDarah by remember { mutableStateOf("") }
+    var suku by remember { mutableStateOf("") }
+    var kewarganegaraan by remember { mutableStateOf("WNI") }
 
     var statusKeluarga by remember { mutableStateOf("") }
     var statusSipil by remember { mutableStateOf("") }
@@ -92,14 +96,19 @@ fun EditWargaScreen(
         listOf("Belum Kawin", "Kawin Tercatat", "Kawin Belum Tercatat", "Cerai Hidup", "Cerai Mati")
     val pendidikanOptions =
         listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
+    val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
 
     LaunchedEffect(anggotaLokal) {
         anggotaLokal?.let {
             namaLengkap = it.nama
             jenisKelamin = it.jenisKelamin
             nik = it.nik
+            tempatLahir = it.tempatLahir.orEmpty()
 
             tanggalLahir = normalizeDateForForm(it.tanggalLahir)
+            golonganDarah = it.golonganDarah.orEmpty()
+            suku = it.suku.orEmpty()
+            kewarganegaraan = it.kewarganegaraan ?: "WNI"
 
             statusKeluarga = it.statusKeluarga
             statusSipil = it.statusSipil
@@ -172,11 +181,32 @@ fun EditWargaScreen(
                             if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
                         })
 
+                    AppTextField(
+                        label = "Tempat Lahir",
+                        value = tempatLahir,
+                        onValueChange = { tempatLahir = it })
+
                     AppDateField(
                         label = "Tanggal Lahir",
                         value = tanggalLahir,
                         onValueChange = { tanggalLahir = it }
                     )
+
+                    AppDropdownField(
+                        label = "Golongan Darah",
+                        value = golonganDarah,
+                        options = golonganDarahOptions,
+                        onValueChange = { golonganDarah = it })
+
+                    AppTextField(
+                        label = "Suku",
+                        value = suku,
+                        onValueChange = { suku = it })
+
+                    AppTextField(
+                        label = "Kewarganegaraan",
+                        value = kewarganegaraan,
+                        onValueChange = { kewarganegaraan = it })
 
                     AppDropdownField(
                         label = "Status dalam Keluarga",
@@ -277,7 +307,11 @@ fun EditWargaScreen(
                         statusSipilBaru = statusSipil,
                         statusWargaBaru = statusWarga,
                         usiaBaru = calculatedUsia,
-                        kategoriUsiaBaru = calculatedKategori
+                        kategoriUsiaBaru = calculatedKategori,
+                        tempatLahirBaru = tempatLahir.ifBlank { null },
+                        golonganDarahBaru = golonganDarah.ifBlank { null },
+                        sukuBaru = suku.ifBlank { null },
+                        kewarganegaraanBaru = kewarganegaraan.ifBlank { "WNI" }
                     )
                     Toast.makeText(context, "Perubahan berhasil disimpan!", Toast.LENGTH_SHORT)
                         .show()

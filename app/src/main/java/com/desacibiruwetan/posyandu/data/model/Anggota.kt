@@ -9,8 +9,18 @@ data class AnggotaReq(
     val nik: String,
     val nama: String,
 
+    @Json(name = "tempat_lahir")
+    val tempatLahir: String? = null,
+
     @Json(name = "tanggal_lahir")
     val tanggalLahir: String,
+
+    @Json(name = "golongan_darah")
+    val golonganDarah: String? = null,
+
+    val suku: String? = null,
+
+    val kewarganegaraan: String = "WNI",
 
     @Json(name = "jenis_kelamin")
     val jenisKelamin: String,
@@ -43,8 +53,18 @@ data class AnggotaData(
     val nik: String,
     val nama: String,
 
+    @Json(name = "tempat_lahir")
+    val tempatLahir: String? = null,
+
     @Json(name = "tanggal_lahir")
     val tanggalLahir: String,
+
+    @Json(name = "golongan_darah")
+    val golonganDarah: String? = null,
+
+    val suku: String? = null,
+
+    val kewarganegaraan: String? = "WNI",
 
     @Json(name = "jenis_kelamin")
     val jenisKelamin: String,

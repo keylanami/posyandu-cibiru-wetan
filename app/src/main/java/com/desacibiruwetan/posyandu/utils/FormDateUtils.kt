@@ -7,8 +7,8 @@ import java.util.TimeZone
 
 private val indonesiaLocale = Locale("id", "ID")
 
-private fun parser(pattern: String, utc: Boolean = false): SimpleDateFormat =
-    SimpleDateFormat(pattern, Locale.US).apply {
+private fun parser(pattern: String, locale: Locale = Locale.US, utc: Boolean = false): SimpleDateFormat =
+    SimpleDateFormat(pattern, locale).apply {
         isLenient = false
         if (utc) timeZone = TimeZone.getTimeZone("UTC")
     }
@@ -23,10 +23,17 @@ fun normalizeDateForForm(value: String?): String {
     }
 
     val datePart = source.substringBefore("T")
-    val patterns = listOf("dd-MM-yyyy", "yyyy-MM-dd", "dd/MM/yyyy", "yyyy/MM/dd")
-    patterns.forEach { pattern ->
+    val patterns = listOf(
+        "dd-MM-yyyy" to Locale.US,
+        "yyyy-MM-dd" to Locale.US,
+        "dd/MM/yyyy" to Locale.US,
+        "yyyy/MM/dd" to Locale.US,
+        "d MMMM yyyy" to indonesiaLocale,
+        "dd MMMM yyyy" to indonesiaLocale
+    )
+    patterns.forEach { (pattern, locale) ->
         runCatching {
-            val parsed = parser(pattern).parse(datePart)
+            val parsed = parser(pattern, locale).parse(datePart)
             SimpleDateFormat("dd-MM-yyyy", indonesiaLocale).format(parsed!!)
         }.getOrNull()?.let { return it }
     }
