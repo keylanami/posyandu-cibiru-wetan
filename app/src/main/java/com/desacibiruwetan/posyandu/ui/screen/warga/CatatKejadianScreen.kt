@@ -58,6 +58,8 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppDateField
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.Inter
@@ -298,7 +300,7 @@ fun CatatKejadianScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -324,65 +326,68 @@ fun CatatKejadianScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            ResponsiveTwoColumn(
+                first = { itemModifier ->
                 CategoryCard(
                     "Kelahiran",
                     Icons.Default.ChildCare,
                     selectedCategory == "Kelahiran",
                     { selectedCategory = "Kelahiran" },
-                    Modifier.weight(1f)
+                    itemModifier
                 )
+                },
+                second = { itemModifier ->
                 CategoryCard(
                     "Pindah Keluar",
                     Icons.Default.Output,
                     selectedCategory == "Pindah Keluar",
                     { selectedCategory = "Pindah Keluar" },
-                    Modifier.weight(1f)
+                    itemModifier
                 )
-            }
+                }
+            )
             Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            ResponsiveTwoColumn(
+                first = { itemModifier ->
                 CategoryCard(
                     "Pindah Masuk",
                     Icons.AutoMirrored.Default.Input,
                     selectedCategory == "Pindah Masuk",
                     { selectedCategory = "Pindah Masuk" },
-                    Modifier.weight(1f)
+                    itemModifier
                 )
+                },
+                second = { itemModifier ->
                 CategoryCard(
                     "Nikah",
                     Icons.Default.Favorite,
                     selectedCategory == "Nikah",
                     { selectedCategory = "Nikah" },
-                    Modifier.weight(1f)
+                    itemModifier
                 )
-            }
+                }
+            )
             Spacer(modifier = Modifier.height(16.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
+            ResponsiveTwoColumn(
+                first = { itemModifier ->
                 CategoryCard(
                     "Cerai",
                     Icons.Default.HeartBroken,
                     selectedCategory == "Cerai",
                     { selectedCategory = "Cerai" },
-                    Modifier.weight(1f)
+                    itemModifier
                 )
+                },
+                second = { itemModifier ->
                 CategoryCard(
                     "Meninggal",
                     Icons.Default.CoPresent,
                     selectedCategory == "Meninggal",
                     { selectedCategory = "Meninggal" },
-                    Modifier.weight(1f)
+                    itemModifier
                 )
-            }
+                }
+            )
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -423,19 +428,17 @@ fun CatatKejadianScreen(
                                     fieldErrors = fieldErrors - "nama_bayi"
                                 })
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                                AppTextField(
-                                    label = "NIK",
-                                    value = nik,
-                                    keyboardType = KeyboardType.Number,
-                                    maxLength = 16,
-                                    counterLabel = "NIK",
-                                    error = fieldErrors["nik"],
-                                    onValueChange = {
-                                        nik = it.filter(Char::isDigit).take(16)
-                                        fieldErrors = fieldErrors - "nik"
-                                    })
-                            }
+                            AppTextField(
+                                label = "NIK",
+                                value = nik,
+                                keyboardType = KeyboardType.Number,
+                                maxLength = 16,
+                                counterLabel = "NIK",
+                                error = fieldErrors["nik"],
+                                onValueChange = {
+                                    nik = it.filter(Char::isDigit).take(16)
+                                    fieldErrors = fieldErrors - "nik"
+                                })
 
                             Column(
                                 modifier = Modifier
@@ -447,22 +450,31 @@ fun CatatKejadianScreen(
                                     style = MaterialTheme.typography.bodyMedium
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
-                                Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
-                                    AppRadioButton(
-                                        "Laki-laki",
-                                        jenisKelaminBayi == "Laki-laki"
-                                    ) { jenisKelaminBayi = "Laki-laki" }
-                                    AppRadioButton(
-                                        "Perempuan",
-                                        jenisKelaminBayi == "Perempuan"
-                                    ) { jenisKelaminBayi = "Perempuan" }
-                                }
+                                ResponsiveTwoColumn(
+                                    first = { fieldModifier ->
+                                        AppRadioButton(
+                                            text = "Laki-laki",
+                                            isSelected = jenisKelaminBayi == "Laki-laki",
+                                            onClick = { jenisKelaminBayi = "Laki-laki" },
+                                            modifier = fieldModifier
+                                        )
+                                    },
+                                    second = { fieldModifier ->
+                                        AppRadioButton(
+                                            text = "Perempuan",
+                                            isSelected = jenisKelaminBayi == "Perempuan",
+                                            onClick = { jenisKelaminBayi = "Perempuan" },
+                                            modifier = fieldModifier
+                                        )
+                                    }
+                                )
                                 fieldErrors["jenis_kelamin"]?.let {
                                     Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                                 }
                             }
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ResponsiveTwoColumn(
+                                first = { fieldModifier ->
                                 AppTextField(
                                     label = "Nama Ayah",
                                     value = namaAyah,
@@ -471,8 +483,10 @@ fun CatatKejadianScreen(
                                         namaAyah = it
                                         fieldErrors = fieldErrors - "nama_ayah"
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = fieldModifier
                                 )
+                                },
+                                second = { fieldModifier ->
                                 AppTextField(
                                     label = "Nama Ibu",
                                     value = namaIbu,
@@ -481,11 +495,13 @@ fun CatatKejadianScreen(
                                         namaIbu = it
                                         fieldErrors = fieldErrors - "nama_ibu"
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = fieldModifier
                                 )
-                            }
+                                }
+                            )
 
-                            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                            ResponsiveTwoColumn(
+                                first = { fieldModifier ->
                                 AppTextField(
                                     label = "BB Lahir (kg)",
                                     value = bbLahir,
@@ -497,8 +513,10 @@ fun CatatKejadianScreen(
                                             fieldErrors = fieldErrors - "bb_lahir"
                                         }
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = fieldModifier
                                 )
+                                },
+                                second = { fieldModifier ->
                                 AppTextField(
                                     label = "TB Lahir (cm)",
                                     value = tbLahir,
@@ -510,9 +528,10 @@ fun CatatKejadianScreen(
                                             fieldErrors = fieldErrors - "tb_lahir"
                                         }
                                     },
-                                    modifier = Modifier.weight(1f)
+                                    modifier = fieldModifier
                                 )
-                            }
+                                }
+                            )
                         }
 
                         "Pindah Masuk" -> {

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenuItem
@@ -66,7 +67,7 @@ fun AppDropdownField(
                 modifier = Modifier
                     .menuAnchor()
                     .fillMaxWidth()
-                    .height(52.dp)
+                    .heightIn(min = 52.dp)
                     .background(color = SurfaceLightGray, shape = RoundedCornerShape(14.dp))
                     .border(width = if (expanded) 2.dp else 1.dp, color = borderColor, shape = RoundedCornerShape(14.dp))
                     .padding(horizontal = 16.dp),

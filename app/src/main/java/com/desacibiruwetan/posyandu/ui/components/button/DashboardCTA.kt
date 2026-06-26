@@ -6,7 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,10 +39,11 @@ fun LargeActionCard(
 ) {
     Column(
         modifier = modifier
-            .height(104.dp)
+            .heightIn(min = 104.dp)
             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
             .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .padding(vertical = 14.dp, horizontal = 8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -82,10 +83,11 @@ fun SmallActionCard(
 ) {
     Column(
         modifier = modifier
-            .height(104.dp)
+            .heightIn(min = 104.dp)
             .background(SurfaceMuted, RoundedCornerShape(18.dp))
             .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
-            .clickable { onClick() },
+            .clickable { onClick() }
+            .padding(vertical = 14.dp, horizontal = 8.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {

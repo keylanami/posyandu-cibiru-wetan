@@ -48,6 +48,8 @@ import com.desacibiruwetan.posyandu.ui.components.dialog.SearchWargaDialog
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.utils.SessionManager
@@ -118,7 +120,7 @@ fun UpdateBalitaScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -156,8 +158,9 @@ fun UpdateBalitaScreen(
             FormSectionCard(title = "Pertumbuhan Balita") {
                 Spacer(modifier = Modifier.height(8.dp))
 
-                Row(Modifier.fillMaxWidth()) {
-                    Box(Modifier.weight(1f)) {
+                ResponsiveTwoColumn(
+                    first = { fieldModifier ->
+                    Box(fieldModifier) {
                         AppTextField(
                             label = "Tinggi Badan (cm)",
                             value = tinggiBadan,
@@ -171,8 +174,9 @@ fun UpdateBalitaScreen(
                                 }
                             })
                     }
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Box(Modifier.weight(1f)) {
+                    },
+                    second = { fieldModifier ->
+                    Box(fieldModifier) {
                         AppTextField(
                             label = "Berat Badan (kg)",
                             value = beratBadan,
@@ -186,7 +190,8 @@ fun UpdateBalitaScreen(
                                 }
                             })
                     }
-                }
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 

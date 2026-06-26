@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,7 +51,7 @@ fun AppSearchBar(
             Row(
                 modifier = modifier
                     .fillMaxWidth()
-                    .height(54.dp)
+                    .heightIn(min = 54.dp)
                     .background(color = SurfaceWhite, shape = RoundedCornerShape(16.dp))
                     .border(
                         width = 1.dp,

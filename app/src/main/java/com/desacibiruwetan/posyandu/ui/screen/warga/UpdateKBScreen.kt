@@ -39,6 +39,7 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppSwitch
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
@@ -107,7 +108,7 @@ fun UpdateKbScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState())
         ) {
 

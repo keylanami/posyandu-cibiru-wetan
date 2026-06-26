@@ -56,6 +56,8 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
@@ -133,7 +135,7 @@ fun RumahKeluargaScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 18.dp),
+                .responsiveScreenPadding(),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item { Spacer(modifier = Modifier.height(4.dp)) }
@@ -290,10 +292,10 @@ private fun RumahKeluargaHero(
             }
             SmallIconButton(icon = Icons.Default.Add, label = "Tambah rumah", color = ActionAmber, onClick = onAddRumah)
         }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            HeroMetric("Rumah", rumahCount.toString(), Modifier.weight(1f))
-            HeroMetric("KK", keluargaCount.toString(), Modifier.weight(1f))
-        }
+        ResponsiveTwoColumn(
+            first = { itemModifier -> HeroMetric("Rumah", rumahCount.toString(), itemModifier) },
+            second = { itemModifier -> HeroMetric("KK", keluargaCount.toString(), itemModifier) }
+        )
     }
 }
 
@@ -393,10 +395,10 @@ private fun RumahManagementCard(
             }
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            CompactAction("Edit rumah", Icons.Default.Edit, HealthBlue, onEditRumah, Modifier.weight(1f))
-            CompactAction("Tambah KK", Icons.Default.Groups, PrimaryGreen, onAddKeluarga, Modifier.weight(1f))
-        }
+        ResponsiveTwoColumn(
+            first = { itemModifier -> CompactAction("Edit rumah", Icons.Default.Edit, HealthBlue, onEditRumah, itemModifier) },
+            second = { itemModifier -> CompactAction("Tambah KK", Icons.Default.Groups, PrimaryGreen, onAddKeluarga, itemModifier) }
+        )
 
         if (isEditingRumah) {
             RumahFormCard(
@@ -528,18 +530,22 @@ private fun KeluargaDetailPanel(
             CompactAction("Edit KK", Icons.Default.Edit, PrimaryGreen, onEdit)
         }
 
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            DetailPill(
-                label = "Tempat tinggal",
-                value = if (keluarga.isNgontrak) "Ngontrak" else "Milik sendiri",
-                modifier = Modifier.weight(1f)
-            )
-            DetailPill(
-                label = "Gakin",
-                value = if (keluarga.isGakin == true) "Ya" else "Tidak",
-                modifier = Modifier.weight(1f)
-            )
-        }
+        ResponsiveTwoColumn(
+            first = { itemModifier ->
+                DetailPill(
+                    label = "Tempat tinggal",
+                    value = if (keluarga.isNgontrak) "Ngontrak" else "Milik sendiri",
+                    modifier = itemModifier
+                )
+            },
+            second = { itemModifier ->
+                DetailPill(
+                    label = "Gakin",
+                    value = if (keluarga.isGakin == true) "Ya" else "Tidak",
+                    modifier = itemModifier
+                )
+            }
+        )
 
         if (anggotaList.isEmpty()) {
             Text("Belum ada anggota pada KK ini.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
@@ -624,22 +630,26 @@ private fun RumahFormCard(
                 alamatError = null
             }
         )
-        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        ResponsiveTwoColumn(
+            first = { fieldModifier ->
             AppTextField(
                 label = "RT",
                 value = rt,
                 onValueChange = {},
                 readOnly = true,
-                modifier = Modifier.weight(1f),
+                modifier = fieldModifier,
             )
+            },
+            second = { fieldModifier ->
             AppTextField(
                 label = "RW",
                 value = rw,
                 onValueChange = {},
                 readOnly = true,
-                modifier = Modifier.weight(1f),
+                modifier = fieldModifier,
             )
-        }
+            }
+        )
         Text(
             text = if (rumah == null) "No rumah akan dibuat otomatis oleh server." else "No rumah ${rumah.noRumah ?: "-"} dibuat otomatis dan tidak dapat diubah dari mobile.",
             style = MaterialTheme.typography.bodySmall,
@@ -761,10 +771,10 @@ private fun ChoiceGroup(
     Column(modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp)) {
         Text(title, style = MaterialTheme.typography.bodyMedium, color = TextMuted)
         Spacer(modifier = Modifier.height(8.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            AppRadioButton(first, !selectedSecond, onFirst)
-            AppRadioButton(second, selectedSecond, onSecond)
-        }
+        ResponsiveTwoColumn(
+            first = { itemModifier -> AppRadioButton(first, !selectedSecond, onFirst, itemModifier) },
+            second = { itemModifier -> AppRadioButton(second, selectedSecond, onSecond, itemModifier) }
+        )
     }
 }
 

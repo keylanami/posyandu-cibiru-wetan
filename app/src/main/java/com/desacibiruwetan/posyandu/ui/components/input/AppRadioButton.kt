@@ -28,11 +28,12 @@ import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 fun AppRadioButton(
     text: String,
     isSelected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .background(if (isSelected) FreshTeal else Color.Transparent, RoundedCornerShape(100.dp))
             .clickable { onClick() }
             .padding(horizontal = 10.dp, vertical = 8.dp)

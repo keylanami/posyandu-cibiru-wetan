@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
 import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
@@ -62,8 +63,9 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                 .background(BorderGray))
             Spacer(modifier = Modifier.height(16.dp))
 
-            Row(modifier = Modifier.fillMaxWidth()) {
-                Column(modifier = Modifier.weight(1f)) {
+            ResponsiveTwoColumn(
+                first = { columnModifier ->
+                Column(modifier = columnModifier) {
                     InfoItem(label = "Tempat Lahir", value = warga.tempatLahir ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Tanggal Lahir", value = warga.tanggalLahir)
@@ -76,10 +78,9 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "No BPJS", value = warga.noBpjs ?: "-")
                 }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column(modifier = Modifier.weight(1f)) {
+                },
+                second = { columnModifier ->
+                Column(modifier = columnModifier) {
                     InfoItem(label = "Suku", value = warga.suku ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Kewarganegaraan", value = warga.kewarganegaraan ?: "WNI")
@@ -92,7 +93,8 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "ID Keluarga", value = warga.keluargaId.toString())
                 }
-            }
+                }
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

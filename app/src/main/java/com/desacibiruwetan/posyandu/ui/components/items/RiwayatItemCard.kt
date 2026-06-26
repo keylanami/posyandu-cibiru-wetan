@@ -23,8 +23,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
 import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
@@ -67,12 +69,11 @@ fun RiwayatItemCard(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            ResponsiveTwoColumn(
+                horizontalSpacing = 12.dp,
+                verticalSpacing = 8.dp,
+                first = { itemModifier ->
+                Row(modifier = itemModifier, verticalAlignment = Alignment.CenterVertically) {
                     Icon(
                         imageVector = Icons.Outlined.LocationOn,
                         contentDescription = "Location",
@@ -85,19 +86,24 @@ fun RiwayatItemCard(
                         fontFamily = Inter,
                         fontWeight = FontWeight.Medium,
                         fontSize = 13.sp,
-                        color = TextMuted
+                        color = TextMuted,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
-
+                } },
+                second = { itemModifier ->
                 Text(
                     text = timestamp,
                     fontFamily = Inter,
                     fontWeight = FontWeight.Medium,
                     fontSize = 13.sp,
                     color = TextMuted,
-                    textAlign = TextAlign.Right
-                )
-            }
+                    textAlign = TextAlign.Right,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = itemModifier
+                ) }
+            )
         }
     }
 }

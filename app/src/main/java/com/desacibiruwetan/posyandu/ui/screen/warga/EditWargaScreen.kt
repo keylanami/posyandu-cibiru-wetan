@@ -47,6 +47,8 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppDateField
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.Inter
@@ -130,7 +132,7 @@ fun EditWargaScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -167,16 +169,22 @@ fun EditWargaScreen(
                         .padding(bottom = 12.dp)) {
                         Text(text = "Jenis Kelamin", style = MaterialTheme.typography.bodyMedium)
                         Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                        ResponsiveTwoColumn(
+                            first = { fieldModifier ->
                             EditRadioButtonItem(
                                 "Laki-laki",
-                                jenisKelamin == "Laki-laki"
+                                jenisKelamin == "Laki-laki",
+                                modifier = fieldModifier
                             ) { jenisKelamin = "Laki-laki" }
+                            },
+                            second = { fieldModifier ->
                             EditRadioButtonItem(
                                 "Perempuan",
-                                jenisKelamin == "Perempuan"
+                                jenisKelamin == "Perempuan",
+                                modifier = fieldModifier
                             ) { jenisKelamin = "Perempuan" }
-                        }
+                            }
+                        )
                     }
 
                     AppTextField(
@@ -346,10 +354,10 @@ fun EditWargaScreen(
 }
 
 @Composable
-private fun EditRadioButtonItem(text: String, isSelected: Boolean, onClick: () -> Unit) {
+private fun EditRadioButtonItem(text: String, isSelected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.clickable { onClick() }) {
+        modifier = modifier.clickable { onClick() }) {
         Icon(
             imageVector = if (isSelected) Icons.Default.RadioButtonChecked else Icons.Default.RadioButtonUnchecked,
             contentDescription = null,

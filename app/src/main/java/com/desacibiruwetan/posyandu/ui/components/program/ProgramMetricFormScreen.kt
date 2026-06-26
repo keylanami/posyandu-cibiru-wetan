@@ -22,6 +22,7 @@ import com.desacibiruwetan.posyandu.ui.components.feedback.AppSnackbarHost
 import com.desacibiruwetan.posyandu.ui.components.input.MetricNumberField
 import com.desacibiruwetan.posyandu.ui.components.items.FormActionBar
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import kotlinx.coroutines.launch
 
@@ -56,7 +57,7 @@ fun ProgramMetricFormScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 20.dp),
+                .responsiveScreenPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item { Spacer(modifier = Modifier.height(4.dp)) }

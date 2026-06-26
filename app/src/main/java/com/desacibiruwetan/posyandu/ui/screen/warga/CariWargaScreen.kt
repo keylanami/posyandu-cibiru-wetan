@@ -68,6 +68,8 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryFab
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveThreeColumn
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.AgeElderly
 import com.desacibiruwetan.posyandu.ui.theme.AgeElderlyContainer
@@ -412,11 +414,11 @@ private fun DataHero(wargaCount: Int, rumahCount: Int, keluargaCount: Int) {
                     Text("Browse dulu, update setelah jelas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = SurfaceWhite)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                HeroMetric("Warga", wargaCount.toString(), Modifier.weight(1f))
-                HeroMetric("Rumah", rumahCount.toString(), Modifier.weight(1f))
-                HeroMetric("KK", keluargaCount.toString(), Modifier.weight(1f))
-            }
+            ResponsiveThreeColumn(
+                first = { HeroMetric("Warga", wargaCount.toString(), it) },
+                second = { HeroMetric("Rumah", rumahCount.toString(), it) },
+                third = { HeroMetric("KK", keluargaCount.toString(), it) }
+            )
         }
     }
 }
@@ -446,7 +448,7 @@ private fun SectionIntro(title: String, subtitle: String, icon: ImageVector, col
         Box(modifier = Modifier.size(42.dp).background(color.copy(alpha = 0.12f), RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
             Icon(icon, contentDescription = null, tint = color)
         }
-        Column(modifier = Modifier.padding(start = 12.dp)) {
+        Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
@@ -557,28 +559,28 @@ private fun HealthActionGrid(
     kb: () -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("Balita", Icons.Default.ChildCare, ProgramPurple, balita, Modifier.weight(1f))
-            MiniAction("Bumil", Icons.Default.PregnantWoman, HealthBlue, bumil, Modifier.weight(1f))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("WUS/PUS", Icons.Default.Favorite, ActionAmber, wuspus, Modifier.weight(1f))
-            MiniAction("KB", Icons.Default.FamilyRestroom, PrimaryGreen, kb, Modifier.weight(1f))
-        }
+        ResponsiveTwoColumn(
+            first = { itemModifier -> MiniAction("Balita", Icons.Default.ChildCare, ProgramPurple, balita, itemModifier) },
+            second = { itemModifier -> MiniAction("Bumil", Icons.Default.PregnantWoman, HealthBlue, bumil, itemModifier) }
+        )
+        ResponsiveTwoColumn(
+            first = { itemModifier -> MiniAction("WUS/PUS", Icons.Default.Favorite, ActionAmber, wuspus, itemModifier) },
+            second = { itemModifier -> MiniAction("KB", Icons.Default.FamilyRestroom, PrimaryGreen, kb, itemModifier) }
+        )
     }
 }
 
 @Composable
 private fun ProgramActionGrid(onNavigateToProgram: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("PHBS", Icons.Default.HealthAndSafety, PrimaryGreen, { onNavigateToProgram("pilot_phbs") }, Modifier.weight(1f))
-            MiniAction("Stunting", Icons.Default.ChildCare, ProgramPurple, { onNavigateToProgram("pilot_stunting") }, Modifier.weight(1f))
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("KIA", Icons.Default.PregnantWoman, HealthBlue, { onNavigateToProgram("pilot_kia") }, Modifier.weight(1f))
-            MiniAction("Kebakaran", Icons.Default.LocalFireDepartment, ActionAmber, { onNavigateToProgram("pilot_kebakaran") }, Modifier.weight(1f))
-        }
+        ResponsiveTwoColumn(
+            first = { itemModifier -> MiniAction("PHBS", Icons.Default.HealthAndSafety, PrimaryGreen, { onNavigateToProgram("pilot_phbs") }, itemModifier) },
+            second = { itemModifier -> MiniAction("Stunting", Icons.Default.ChildCare, ProgramPurple, { onNavigateToProgram("pilot_stunting") }, itemModifier) }
+        )
+        ResponsiveTwoColumn(
+            first = { itemModifier -> MiniAction("KIA", Icons.Default.PregnantWoman, HealthBlue, { onNavigateToProgram("pilot_kia") }, itemModifier) },
+            second = { itemModifier -> MiniAction("Kebakaran", Icons.Default.LocalFireDepartment, ActionAmber, { onNavigateToProgram("pilot_kebakaran") }, itemModifier) }
+        )
     }
 }
 

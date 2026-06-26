@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -40,6 +41,9 @@ import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveThreeColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
@@ -94,7 +98,7 @@ fun ProfilScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 16.dp),
+                .responsiveScreenPadding(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             ProfileHero(
@@ -118,19 +122,21 @@ fun ProfilScreen(
                     placeholder = "Belum ada nomor telepon",
                     onValueChange = {}
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    Box(modifier = Modifier.weight(1f)) {
+                ResponsiveTwoColumn(
+                    first = { itemModifier ->
+                    Box(modifier = itemModifier) {
                         AppTextField(label = "RT", value = rt, readOnly = true, onValueChange = {})
-                    }
-                    Box(modifier = Modifier.weight(1f)) {
+                    } },
+                    second = { itemModifier ->
+                    Box(modifier = itemModifier) {
                         AppTextField(label = "RW", value = rw, readOnly = true, onValueChange = {})
-                    }
-                }
+                    } }
+                )
             }
 
             Button(
                 onClick = onLogoutClick,
-                modifier = Modifier.fillMaxWidth().height(52.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = ErrorDark),
                 shape = RoundedCornerShape(16.dp)
             ) {
@@ -165,11 +171,11 @@ private fun ProfileHero(name: String, email: String, rt: String, rw: String) {
                     Text(email, style = MaterialTheme.typography.bodyMedium, color = SurfaceWhite.copy(alpha = 0.76f))
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                AreaPill("RT", rt, Modifier.weight(1f))
-                AreaPill("RW", rw, Modifier.weight(1f))
-                AreaPill("Role", "Kader", Modifier.weight(1f))
-            }
+            ResponsiveThreeColumn(
+                first = { AreaPill("RT", rt, it) },
+                second = { AreaPill("RW", rw, it) },
+                third = { AreaPill("Role", "Kader", it) }
+            )
         }
     }
 }

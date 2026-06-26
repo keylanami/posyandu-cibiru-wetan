@@ -59,6 +59,9 @@ import com.desacibiruwetan.posyandu.navigation.Screen
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.dialog.PilotSelectionDialog
 import com.desacibiruwetan.posyandu.ui.components.items.SyncStatusBadge
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveThreeColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
@@ -124,14 +127,14 @@ fun DashboardScreen(
             WorkHeader(userName = userName, isOnline = isOnline)
 
             Column(
-                modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+                modifier = Modifier.responsiveScreenPadding(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricTile("Warga", "Cari cepat", Icons.Default.People, HealthBlue, Modifier.weight(1f))
-                    MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, Modifier.weight(1f))
-                    MetricTile("Sync", if (isOnline) "Aktif" else "Offline", Icons.Default.HealthAndSafety, ActionAmber, Modifier.weight(1f))
-                }
+                ResponsiveThreeColumn(
+                    first = { itemModifier -> MetricTile("Warga", "Cari cepat", Icons.Default.People, HealthBlue, itemModifier) },
+                    second = { itemModifier -> MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, itemModifier) },
+                    third = { itemModifier -> MetricTile("Sync", if (isOnline) "Aktif" else "Offline", Icons.Default.HealthAndSafety, ActionAmber, itemModifier) }
+                )
 
                 PrimaryWorkflow(
                     onSearch = onNavigateToCariWarga,
@@ -148,11 +151,11 @@ fun DashboardScreen(
                 }
 
                 SectionHeader("Wilayah & program", "Data rumah, keluarga, administrasi, dan indikator")
-                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    CompactWorkCard("Rumah & KK", Icons.Default.Home, HealthBlue, onNavigateToRumahKeluarga, Modifier.weight(1f))
-                    CompactWorkCard("Administrasi", Icons.Default.Groups, ActionAmber, onNavigateToAdministrasiRt, Modifier.weight(1f))
-                    CompactWorkCard("Program", Icons.Default.HealthAndSafety, ProgramPurple, { showPilotDialog = true }, Modifier.weight(1f))
-                }
+                ResponsiveThreeColumn(
+                    first = { itemModifier -> CompactWorkCard("Rumah & KK", Icons.Default.Home, HealthBlue, onNavigateToRumahKeluarga, itemModifier) },
+                    second = { itemModifier -> CompactWorkCard("Administrasi", Icons.Default.Groups, ActionAmber, onNavigateToAdministrasiRt, itemModifier) },
+                    third = { itemModifier -> CompactWorkCard("Program", Icons.Default.HealthAndSafety, ProgramPurple, { showPilotDialog = true }, itemModifier) }
+                )
 
                 SectionHeader("Aktivitas terakhir", "Ringkas untuk membantu kader melanjutkan pekerjaan")
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -175,7 +178,7 @@ private fun WorkHeader(userName: String, isOnline: Boolean) {
                 DeepGreen,
                 RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
             )
-            .padding(horizontal = 18.dp, vertical = 20.dp)
+            .responsiveScreenPadding(vertical = 20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -194,10 +197,10 @@ private fun WorkHeader(userName: String, isOnline: Boolean) {
                 }
                 SyncStatusBadge(isOnline = isOnline)
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                HeaderPill("RT/RW aktif", "Sesuai akun", Modifier.weight(1f))
-                HeaderPill("Mode kerja", "Input cepat", Modifier.weight(1f))
-            }
+            ResponsiveTwoColumn(
+                first = { itemModifier -> HeaderPill("RT/RW aktif", "Sesuai akun", itemModifier) },
+                second = { itemModifier -> HeaderPill("Mode kerja", "Input cepat", itemModifier) }
+            )
         }
     }
 }
@@ -245,11 +248,11 @@ private fun PrimaryWorkflow(onSearch: () -> Unit, onAdd: () -> Unit, onEvent: ()
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text("Alur cepat kader", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            WorkflowButton("Baca", "data", Icons.Default.Search, PrimaryGreen, onSearch, Modifier.weight(1f))
-            WorkflowButton("Tambah", "rumah/KK", Icons.Default.Add, HealthBlue, onAdd, Modifier.weight(1f))
-            WorkflowButton("Catat", "kejadian", Icons.Default.EditNote, ActionAmber, onEvent, Modifier.weight(1f))
-        }
+        ResponsiveThreeColumn(
+            first = { itemModifier -> WorkflowButton("Baca", "data", Icons.Default.Search, PrimaryGreen, onSearch, itemModifier) },
+            second = { itemModifier -> WorkflowButton("Tambah", "rumah/KK", Icons.Default.Add, HealthBlue, onAdd, itemModifier) },
+            third = { itemModifier -> WorkflowButton("Catat", "kejadian", Icons.Default.EditNote, ActionAmber, onEvent, itemModifier) }
+        )
     }
 }
 

@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.screen.warga.CircularIconBox
@@ -40,20 +41,24 @@ fun UpdateHeaderCard(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 CircularIconBox(icon = icon)
                 Spacer(modifier = Modifier.width(16.dp))
-                Column {
+                Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = title,
                         fontFamily = Inter,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
-                        color = HealthBlue
+                        color = HealthBlue,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = name,
                         fontFamily = Inter,
                         fontWeight = FontWeight.Bold,
                         fontSize = 17.sp,
-                        color = Color(0xFF272727)
+                        color = Color(0xFF272727),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }

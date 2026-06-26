@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -38,6 +39,7 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppPasswordField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
@@ -139,7 +141,7 @@ fun RegisterScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(230.dp)
+                .heightIn(min = 230.dp)
                 .background(DeepGreen)
         )
 
@@ -147,7 +149,7 @@ fun RegisterScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 20.dp)
+                .responsiveScreenPadding()
         ) {
             Spacer(modifier = Modifier.height(56.dp))
 

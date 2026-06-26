@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,10 +33,10 @@ fun StatusChip(
 ) {
     Row(
         modifier = Modifier
-            .height(43.dp)
+            .heightIn(min = 43.dp)
             .background(color = containerColor, shape = RoundedCornerShape(12.dp))
             .border(width = 1.dp, color = borderColor, shape = RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp),
+            .padding(horizontal = 12.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {

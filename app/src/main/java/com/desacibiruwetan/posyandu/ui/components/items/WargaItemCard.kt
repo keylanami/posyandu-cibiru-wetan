@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.AgeElderly
 import com.desacibiruwetan.posyandu.ui.theme.AgeElderlyContainer
@@ -76,13 +77,17 @@ fun WargaItemCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                WargaBadge(text = rtRw, color = residentColor, container = SurfaceWhite.copy(alpha = 0.72f))
-                kategoriUsia?.takeIf { it.isNotBlank() }?.let { label ->
+            kategoriUsia?.takeIf { it.isNotBlank() }?.let { label ->
+                ResponsiveTwoColumn(
+                    horizontalSpacing = 8.dp,
+                    verticalSpacing = 8.dp,
+                    first = { WargaBadge(text = rtRw, color = residentColor, container = SurfaceWhite.copy(alpha = 0.72f), modifier = it) },
+                    second = {
                     val ageColor = ageAccent(label)
-                    WargaBadge(text = label, color = ageColor, container = ageContainer(label))
-                }
-            }
+                    WargaBadge(text = label, color = ageColor, container = ageContainer(label), modifier = it)
+                    }
+                )
+            } ?: WargaBadge(text = rtRw, color = residentColor, container = SurfaceWhite.copy(alpha = 0.72f))
         }
 
         Icon(
@@ -95,9 +100,9 @@ fun WargaItemCard(
 }
 
 @Composable
-private fun WargaBadge(text: String, color: Color, container: Color) {
+private fun WargaBadge(text: String, color: Color, container: Color, modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .background(color = container, shape = RoundedCornerShape(100.dp))
             .border(1.dp, color.copy(alpha = 0.24f), RoundedCornerShape(100.dp))
             .padding(horizontal = 12.dp, vertical = 6.dp),

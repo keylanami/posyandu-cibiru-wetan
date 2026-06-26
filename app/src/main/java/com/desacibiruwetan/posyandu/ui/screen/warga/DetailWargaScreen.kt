@@ -42,6 +42,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.BumilData
@@ -50,6 +51,9 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.items.InfoKependudukanCard
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveThreeColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
@@ -102,7 +106,7 @@ fun DetailWargaScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 18.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
@@ -153,11 +157,11 @@ private fun IdentityHero(warga: AnggotaEntity) {
                     )
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                SummaryPill("Usia", warga.usia ?: "-", Modifier.weight(1f))
-                SummaryPill("Relasi", warga.statusKeluarga, Modifier.weight(1f))
-                SummaryPill("Status", warga.statusWarga ?: "Aktif", Modifier.weight(1f))
-            }
+            ResponsiveThreeColumn(
+                first = { SummaryPill("Usia", warga.usia ?: "-", it) },
+                second = { SummaryPill("Relasi", warga.statusKeluarga, it) },
+                third = { SummaryPill("Status", warga.statusWarga ?: "Aktif", it) }
+            )
         }
     }
 }
@@ -195,27 +199,40 @@ private fun ProgramChips(warga: AnggotaEntity, summary: WargaProgramSummary?) {
     ) {
         Text("Konteks program", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
         programItems.chunked(2).forEach { rowItems ->
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                rowItems.forEach { item ->
-                    val icon = when (item) {
-                        "Balita" -> Icons.Default.ChildCare
-                        "Bumil" -> Icons.Default.PregnantWoman
-                        "WUS/PUS", "KB" -> Icons.Default.FamilyRestroom
-                        "Laki-laki" -> Icons.Default.Male
-                        "Perempuan" -> Icons.Default.Female
-                        else -> Icons.Default.Home
-                    }
-                    val color = when (item) {
-                        "KB", "WUS/PUS" -> HealthBlue
-                        "Bumil" -> ActionAmber
-                        else -> PrimaryGreen
-                    }
-                    ProgramBadge(item, icon, color, Modifier.weight(1f))
-                }
-                if (rowItems.size == 1) Spacer(modifier = Modifier.weight(1f))
+            val first = rowItems.first()
+            if (rowItems.size == 1) {
+                ProgramBadge(
+                    text = first,
+                    icon = programIcon(first),
+                    color = programColor(first),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            } else {
+                val second = rowItems[1]
+                ResponsiveTwoColumn(
+                    horizontalSpacing = 8.dp,
+                    verticalSpacing = 8.dp,
+                    first = { ProgramBadge(first, programIcon(first), programColor(first), it) },
+                    second = { ProgramBadge(second, programIcon(second), programColor(second), it) }
+                )
             }
         }
     }
+}
+
+private fun programIcon(item: String): ImageVector = when (item) {
+    "Balita" -> Icons.Default.ChildCare
+    "Bumil" -> Icons.Default.PregnantWoman
+    "WUS/PUS", "KB" -> Icons.Default.FamilyRestroom
+    "Laki-laki" -> Icons.Default.Male
+    "Perempuan" -> Icons.Default.Female
+    else -> Icons.Default.Home
+}
+
+private fun programColor(item: String): Color = when (item) {
+    "KB", "WUS/PUS" -> HealthBlue
+    "Bumil" -> ActionAmber
+    else -> PrimaryGreen
 }
 
 @Composable
@@ -228,7 +245,14 @@ private fun ProgramBadge(text: String, icon: ImageVector, color: Color, modifier
     ) {
         Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(18.dp))
         Spacer(modifier = Modifier.width(7.dp))
-        Text(text, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
     }
 }
 
@@ -338,7 +362,7 @@ private fun ProgramInfoCard(title: String, icon: ImageVector, color: Color, rows
             )
         }
         rows.forEach { (label, value) ->
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Column(modifier = Modifier.fillMaxWidth()) {
                 Text(label, style = MaterialTheme.typography.bodySmall, color = TextMuted)
                 Text(value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
             }

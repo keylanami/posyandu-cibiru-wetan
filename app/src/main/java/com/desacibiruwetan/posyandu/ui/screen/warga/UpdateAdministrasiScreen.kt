@@ -1,9 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.widget.Toast
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
@@ -29,6 +27,8 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 
 @Composable
@@ -59,7 +59,7 @@ fun AdministrasiRtScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -72,24 +72,28 @@ fun AdministrasiRtScreen(
                     modifier = Modifier.padding(bottom = 12.dp)
                 )
 
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                    AppTextField(
-                        label = "Bulan",
-                        value = bulan,
-                        placeholder = "mm",
-                        keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
-                        onValueChange = { if (it.length <= 2 && it.all { char -> char.isDigit() }) bulan = it }
-                    )
-                    AppTextField(
-                        label = "Tahun",
-                        value = tahun,
-                        placeholder = "yyyy",
-                        keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
-                        onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) tahun = it }
-                    )
-                }
+                ResponsiveTwoColumn(
+                    first = { fieldModifier ->
+                        AppTextField(
+                            label = "Bulan",
+                            value = bulan,
+                            placeholder = "mm",
+                            keyboardType = KeyboardType.Number,
+                            modifier = fieldModifier,
+                            onValueChange = { if (it.length <= 2 && it.all { char -> char.isDigit() }) bulan = it }
+                        )
+                    },
+                    second = { fieldModifier ->
+                        AppTextField(
+                            label = "Tahun",
+                            value = tahun,
+                            placeholder = "yyyy",
+                            keyboardType = KeyboardType.Number,
+                            modifier = fieldModifier,
+                            onValueChange = { if (it.length <= 4 && it.all { char -> char.isDigit() }) tahun = it }
+                        )
+                    }
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -98,66 +102,78 @@ fun AdministrasiRtScreen(
 
 
             FormSectionCard(title = "Status & Catatan") {
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                ResponsiveTwoColumn(
+                    first = { fieldModifier ->
                     AppTextField(
                         label = "Anggota PKK",
                         value = anggotaPkk,
                         placeholder = "Jumlah Anggota",
                         keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
+                        modifier = fieldModifier,
                         onValueChange = { if (it.all { char -> char.isDigit() }) anggotaPkk = it }
                     )
+                    },
+                    second = { fieldModifier ->
                     AppTextField(
                         label = "Data Wisma",
                         value = dataWisma,
                         placeholder = "Jumlah Wisma",
                         keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
+                        modifier = fieldModifier,
                         onValueChange = { if (it.all { char -> char.isDigit() }) dataWisma = it }
                     )
-                }
+                    }
+                )
 
 
 
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                ResponsiveTwoColumn(
+                    first = { fieldModifier ->
                     AppTextField(
                         label = "Bank Sampah",
                         value = bankSampah,
                         placeholder = "Jumlah Bank",
                         keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
+                        modifier = fieldModifier,
                         onValueChange = { if (it.all { char -> char.isDigit() }) bankSampah = it }
                     )
+                    },
+                    second = { fieldModifier ->
                     AppTextField(
                         label = "Kegiatan Posyandu",
                         value = kegiatanPosyandu,
                         placeholder = "Jumlah Kegiatan",
                         keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
+                        modifier = fieldModifier,
                         onValueChange = { if (it.all { char -> char.isDigit() }) kegiatanPosyandu = it }
                     )
-                }
+                    }
+                )
 
 
 
-                Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                ResponsiveTwoColumn(
+                    first = { fieldModifier ->
                     AppTextField(
                         label = "Kunjungan Rumah",
                         value = kunjunganRumah,
                         placeholder = "Jumlah Kunjungan",
                         keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
+                        modifier = fieldModifier,
                         onValueChange = { if (it.all { char -> char.isDigit() }) kunjunganRumah = it }
                     )
+                    },
+                    second = { fieldModifier ->
                     AppTextField(
                         label = "Pertemuan Rutin",
                         value = pertemuanRutin,
                         placeholder = "Jumlah Pertemuan",
                         keyboardType = KeyboardType.Number,
-                        modifier = Modifier.weight(1f),
+                        modifier = fieldModifier,
                         onValueChange = { if (it.all { char -> char.isDigit() }) pertemuanRutin = it }
                     )
-                }
+                    }
+                )
 
                 Spacer(modifier = Modifier.height(24.dp))
 

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -48,6 +49,7 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppPasswordField
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.Inter
@@ -174,7 +176,7 @@ fun LoginScreen(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(278.dp)
+                .heightIn(min = 278.dp)
                 .background(DeepGreen)
         )
 
@@ -194,7 +196,7 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp)
+                .responsiveScreenPadding()
         ) {
             Spacer(modifier = Modifier.height(64.dp))
 

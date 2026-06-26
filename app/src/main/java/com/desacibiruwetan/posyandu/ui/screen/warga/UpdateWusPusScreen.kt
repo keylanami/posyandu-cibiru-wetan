@@ -28,6 +28,8 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.items.FormSectionCard
 import com.desacibiruwetan.posyandu.ui.components.items.UpdateHeaderCard
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.utils.normalizeDateForForm
@@ -94,7 +96,7 @@ fun UpdateWusPusScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 24.dp)
+                .responsiveScreenPadding()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -126,18 +128,24 @@ fun UpdateWusPusScreen(
                 Column(modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
                     Text(text = "Kategori Status (Wus/Pus)", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(24.dp)) {
+                    ResponsiveTwoColumn(
+                        first = { fieldModifier ->
                         AppRadioButton(
                             text = "WUS",
                             isSelected = kategoriStatus == "WUS",
-                            onClick = { kategoriStatus = "WUS" }
+                            onClick = { kategoriStatus = "WUS" },
+                            modifier = fieldModifier
                         )
+                        },
+                        second = { fieldModifier ->
                         AppRadioButton(
                             text = "PUS",
                             isSelected = kategoriStatus == "PUS",
-                            onClick = { kategoriStatus = "PUS" }
+                            onClick = { kategoriStatus = "PUS" },
+                            modifier = fieldModifier
                         )
-                    }
+                        }
+                    )
                 }
 
                 AppDateField(
