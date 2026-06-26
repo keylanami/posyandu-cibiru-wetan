@@ -99,12 +99,14 @@ fun CatatKejadianScreen(
     var asalAlamat by remember { mutableStateOf("") }
     var tujuanAlamat by remember { mutableStateOf("") }
     var namaPasangan by remember { mutableStateOf("") }
+    var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     LaunchedEffect(initialNik, listWarga) {
         if (!initialNik.isNullOrEmpty() && listWarga.isNotEmpty()) {
             val found = listWarga.find { it.nik == initialNik }
             if (found != null) {
                 selectedWarga = found
+                fieldErrors = fieldErrors - "warga_id"
                 if (found.jenisKelamin == "Perempuan") {
                     namaIbu = found.nama
                 }
@@ -114,10 +116,9 @@ fun CatatKejadianScreen(
 
     val simpanKejadian = save@{
         if (selectedWarga == null) {
-            Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
+            fieldErrors = mapOf("warga_id" to "Warga wajib dipilih.")
         } else if (tanggalKejadian.isBlank()) {
-            Toast.makeText(context, "Pilih tanggal kejadian", Toast.LENGTH_SHORT)
-                .show()
+            fieldErrors = mapOf("tanggal_kejadian" to "Tanggal kejadian wajib dipilih.")
         } else {
             val apiDate = tanggalKejadian
 
@@ -125,24 +126,22 @@ fun CatatKejadianScreen(
                 "Kelahiran" -> {
                     val tb = tbLahir.toDoubleOrNull()
                     val bb = bbLahir.toDoubleOrNull()
-                    if (
-                        namaBayi.isBlank() ||
-                        nik.length != 16 ||
-                        jenisKelaminBayi.isBlank() ||
-                        namaAyah.isBlank() ||
-                        namaIbu.isBlank() ||
-                        tb == null ||
-                        tb <= 0.0 ||
-                        bb == null ||
-                        bb <= 0.0
-                    ) {
-                        Toast.makeText(
-                            context,
-                            "Lengkapi nama bayi, NIK 16 digit, gender, orang tua, BB, dan TB.",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                    val errors = buildMap {
+                        if (namaBayi.isBlank()) put("nama_bayi", "Nama bayi wajib diisi.")
+                        if (nik.isBlank()) put("nik", "NIK bayi wajib diisi.")
+                        else if (nik.length != 16) put("nik", "NIK harus 16 digit.")
+                        if (jenisKelaminBayi.isBlank()) put("jenis_kelamin", "Jenis kelamin wajib dipilih.")
+                        if (namaAyah.isBlank()) put("nama_ayah", "Nama ayah wajib diisi.")
+                        if (namaIbu.isBlank()) put("nama_ibu", "Nama ibu wajib diisi.")
+                        if (bb == null || bb <= 0.0) put("bb_lahir", "BB lahir harus lebih dari 0.")
+                        if (tb == null || tb <= 0.0) put("tb_lahir", "TB lahir harus lebih dari 0.")
+                    }
+                    if (errors.isNotEmpty()) {
+                        fieldErrors = errors
                         return@save
                     }
+                    val validatedTb = tb ?: return@save
+                    val validatedBb = bb ?: return@save
 
                     val catatanKelahiran =
                         "Bayi: $namaBayi, Ayah: $namaAyah, Ibu: $namaIbu, BB: $bbLahir kg, TB: $tbLahir cm. $keterangan"
@@ -169,8 +168,8 @@ fun CatatKejadianScreen(
                                     token,
                                     localId,
                                     serverId,
-                                    tb,
-                                    bb
+                                    validatedTb,
+                                    validatedBb
                                 )
                             }
                         }
@@ -277,6 +276,7 @@ fun CatatKejadianScreen(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
                 selectedWarga = warga
+                fieldErrors = fieldErrors - "warga_id"
                 if (warga.jenisKelamin == "Perempuan") {
                     namaIbu = warga.nama
                     namaAyah = ""
@@ -317,6 +317,9 @@ fun CatatKejadianScreen(
                         icon = Icons.Default.Search
                     )
                 }
+            }
+            fieldErrors["warga_id"]?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -414,15 +417,23 @@ fun CatatKejadianScreen(
                             AppTextField(
                                 label = "Nama Bayi",
                                 value = namaBayi,
-                                onValueChange = { namaBayi = it })
+                                error = fieldErrors["nama_bayi"],
+                                onValueChange = {
+                                    namaBayi = it
+                                    fieldErrors = fieldErrors - "nama_bayi"
+                                })
 
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 AppTextField(
                                     label = "NIK",
                                     value = nik,
                                     keyboardType = KeyboardType.Number,
+                                    maxLength = 16,
+                                    counterLabel = "NIK",
+                                    error = fieldErrors["nik"],
                                     onValueChange = {
-                                        if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
+                                        nik = it.filter(Char::isDigit).take(16)
+                                        fieldErrors = fieldErrors - "nik"
                                     })
                             }
 
@@ -446,19 +457,30 @@ fun CatatKejadianScreen(
                                         jenisKelaminBayi == "Perempuan"
                                     ) { jenisKelaminBayi = "Perempuan" }
                                 }
+                                fieldErrors["jenis_kelamin"]?.let {
+                                    Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                                }
                             }
 
                             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                                 AppTextField(
                                     label = "Nama Ayah",
                                     value = namaAyah,
-                                    onValueChange = { namaAyah = it },
+                                    error = fieldErrors["nama_ayah"],
+                                    onValueChange = {
+                                        namaAyah = it
+                                        fieldErrors = fieldErrors - "nama_ayah"
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                                 AppTextField(
                                     label = "Nama Ibu",
                                     value = namaIbu,
-                                    onValueChange = { namaIbu = it },
+                                    error = fieldErrors["nama_ibu"],
+                                    onValueChange = {
+                                        namaIbu = it
+                                        fieldErrors = fieldErrors - "nama_ibu"
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -468,14 +490,26 @@ fun CatatKejadianScreen(
                                     label = "BB Lahir (kg)",
                                     value = bbLahir,
                                     keyboardType = KeyboardType.Decimal,
-                                    onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) bbLahir = it },
+                                    error = fieldErrors["bb_lahir"],
+                                    onValueChange = {
+                                        if (it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                                            bbLahir = it
+                                            fieldErrors = fieldErrors - "bb_lahir"
+                                        }
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                                 AppTextField(
                                     label = "TB Lahir (cm)",
                                     value = tbLahir,
                                     keyboardType = KeyboardType.Decimal,
-                                    onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) tbLahir = it },
+                                    error = fieldErrors["tb_lahir"],
+                                    onValueChange = {
+                                        if (it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                                            tbLahir = it
+                                            fieldErrors = fieldErrors - "tb_lahir"
+                                        }
+                                    },
                                     modifier = Modifier.weight(1f)
                                 )
                             }
@@ -516,7 +550,11 @@ fun CatatKejadianScreen(
                     AppDateField(
                         label = labelTanggal,
                         value = tanggalKejadian,
-                        onValueChange = { tanggalKejadian = it }
+                        error = fieldErrors["tanggal_kejadian"],
+                        onValueChange = {
+                            tanggalKejadian = it
+                            fieldErrors = fieldErrors - "tanggal_kejadian"
+                        }
                     )
 
                     AppTextField(

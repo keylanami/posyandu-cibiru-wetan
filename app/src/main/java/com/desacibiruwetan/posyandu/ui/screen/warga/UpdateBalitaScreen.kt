@@ -21,7 +21,9 @@ import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -67,6 +69,7 @@ fun UpdateBalitaScreen(
     var namaBalita by remember { mutableStateOf("") }
     var tinggiBadan by remember { mutableStateOf("") }
     var beratBadan by remember { mutableStateOf("") }
+    var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
@@ -76,6 +79,7 @@ fun UpdateBalitaScreen(
             onWargaSelected = { warga ->
                 selectedWarga = warga
                 namaBalita = warga.nama
+                fieldErrors = fieldErrors - "warga_id"
 
                 val ket = warga.keterangan ?: ""
                 if (ket.contains("Ayah:") && ket.contains("Ibu:")) {
@@ -143,6 +147,9 @@ fun UpdateBalitaScreen(
                     )
                 }
             }
+            fieldErrors["warga_id"]?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -156,7 +163,13 @@ fun UpdateBalitaScreen(
                             value = tinggiBadan,
                             keyboardType = KeyboardType.Decimal,
                             placeholder = "0.0",
-                            onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) tinggiBadan = it })
+                            error = fieldErrors["tinggi_badan"],
+                            onValueChange = {
+                                if (it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                                    tinggiBadan = it
+                                    fieldErrors = fieldErrors - "tinggi_badan"
+                                }
+                            })
                     }
                     Spacer(modifier = Modifier.width(16.dp))
                     Box(Modifier.weight(1f)) {
@@ -165,7 +178,13 @@ fun UpdateBalitaScreen(
                             value = beratBadan,
                             keyboardType = KeyboardType.Decimal,
                             placeholder = "0.0",
-                            onValueChange = { if (it.matches(Regex("^\\d*\\.?\\d*$"))) beratBadan = it })
+                            error = fieldErrors["berat_badan"],
+                            onValueChange = {
+                                if (it.matches(Regex("^\\d*\\.?\\d*$"))) {
+                                    beratBadan = it
+                                    fieldErrors = fieldErrors - "berat_badan"
+                                }
+                            })
                     }
                 }
 
@@ -177,31 +196,29 @@ fun UpdateBalitaScreen(
                     onClick = {
                         val warga = selectedWarga
                         if (warga == null) {
-                            Toast.makeText(
-                                context,
-                                "Pilih Balita terlebih dahulu",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            fieldErrors = mapOf("warga_id" to "Balita wajib dipilih.")
                             return@PrimaryButton
                         }
 
                         val tb = tinggiBadan.toDoubleOrNull()
                         val bb = beratBadan.toDoubleOrNull()
-                        if (tb == null || tb <= 0.0 || bb == null || bb <= 0.0) {
-                            Toast.makeText(
-                                context,
-                                "Tinggi dan berat badan harus lebih dari 0",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        val errors = buildMap {
+                            if (tb == null || tb <= 0.0) put("tinggi_badan", "Tinggi badan harus lebih dari 0.")
+                            if (bb == null || bb <= 0.0) put("berat_badan", "Berat badan harus lebih dari 0.")
+                        }
+                        if (errors.isNotEmpty()) {
+                            fieldErrors = errors
                             return@PrimaryButton
                         }
+                        val validatedTb = tb ?: return@PrimaryButton
+                        val validatedBb = bb ?: return@PrimaryButton
 
                         anggotaViewModel.updateDataBalita(
                             token = token,
                             anggotaLocalId = warga.localId,
                             anggotaServerId = warga.serverId,
-                            tb = tb,
-                            bb = bb
+                            tb = validatedTb,
+                            bb = validatedBb
                         )
 
                         Toast.makeText(

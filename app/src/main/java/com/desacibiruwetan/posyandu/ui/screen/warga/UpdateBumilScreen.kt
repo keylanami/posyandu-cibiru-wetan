@@ -9,7 +9,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.PregnantWoman
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -49,6 +51,7 @@ fun UpdateBumilScreen(
     var asiEksklusif by remember { mutableStateOf(false) }
     var tanggalMulaiAsi by remember { mutableStateOf("") }
     var tanggalSelesaiAsi by remember { mutableStateOf("") }
+    var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     val detailBumil by anggotaViewModel.detailBumilState.collectAsState()
 
@@ -74,6 +77,7 @@ fun UpdateBumilScreen(
                 } else {
                     selectedWarga = warga
                     namaBumil = warga.nama
+                    fieldErrors = fieldErrors - "warga_id"
                     if (warga.serverId != null) {
                         anggotaViewModel.getDetailBumilByAnggotaFromServer(token, warga.serverId)
                     }
@@ -121,6 +125,9 @@ fun UpdateBumilScreen(
                     )
                 }
             }
+            fieldErrors["warga_id"]?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -130,7 +137,13 @@ fun UpdateBumilScreen(
                     value = hamilKe,
                     placeholder = "Contoh: 1",
                     keyboardType = KeyboardType.Number,
-                    onValueChange = { if (it.all { char -> char.isDigit() }) hamilKe = it }
+                    error = fieldErrors["hamil_ke"],
+                    onValueChange = {
+                        if (it.all { char -> char.isDigit() }) {
+                            hamilKe = it
+                            fieldErrors = fieldErrors - "hamil_ke"
+                        }
+                    }
                 )
             }
 
@@ -155,7 +168,11 @@ fun UpdateBumilScreen(
                 AppDateField(
                     label = "Tanggal Selesai ASI (Opsional)",
                     value = tanggalSelesaiAsi,
-                    onValueChange = { tanggalSelesaiAsi = it }
+                    error = fieldErrors["tanggal_selesai_asi"],
+                    onValueChange = {
+                        tanggalSelesaiAsi = it
+                        fieldErrors = fieldErrors - "tanggal_selesai_asi"
+                    }
                 )
 
                 Spacer(modifier = Modifier.height(24.dp))
@@ -166,30 +183,18 @@ fun UpdateBumilScreen(
                     onClick = {
                         val warga = selectedWarga
                         if (warga == null) {
-                            Toast.makeText(
-                                context,
-                                "Pilih Ibu Hamil terlebih dahulu",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            fieldErrors = mapOf("warga_id" to "Ibu hamil wajib dipilih.")
                             return@PrimaryButton
                         }
 
                         val hKe = hamilKe.toIntOrNull()
                         if (hKe == null || hKe < 1) {
-                            Toast.makeText(
-                                context,
-                                "Hamil ke- harus diisi minimal 1",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            fieldErrors = mapOf("hamil_ke" to "Hamil ke- harus diisi minimal 1.")
                             return@PrimaryButton
                         }
 
                         if (!isSameOrAfter(tanggalMulaiAsi, tanggalSelesaiAsi)) {
-                            Toast.makeText(
-                                context,
-                                "Tanggal selesai ASI tidak boleh sebelum tanggal mulai",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                            fieldErrors = mapOf("tanggal_selesai_asi" to "Tanggal selesai ASI tidak boleh sebelum tanggal mulai.")
                             return@PrimaryButton
                         }
 

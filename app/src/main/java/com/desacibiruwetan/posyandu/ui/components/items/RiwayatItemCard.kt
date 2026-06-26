@@ -41,8 +41,8 @@ fun RiwayatItemCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .background(color = SurfaceWhite, shape = RoundedCornerShape(18.dp))
-            .border(1.dp, HistorySlate.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
+            .background(color = HistorySlate.copy(alpha = 0.08f), shape = RoundedCornerShape(18.dp))
+            .border(1.dp, HistorySlate.copy(alpha = 0.30f), RoundedCornerShape(18.dp))
             .padding(20.dp)
     ) {
         Column {

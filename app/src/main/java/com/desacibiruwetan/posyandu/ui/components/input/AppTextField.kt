@@ -4,11 +4,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,11 +24,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
+import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 
@@ -44,6 +48,8 @@ fun AppTextField(
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    maxLength: Int? = null,
+    counterLabel: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
     var isFocused by remember { mutableStateOf(false) }
@@ -63,7 +69,9 @@ fun AppTextField(
 
         BasicTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { newValue ->
+                onValueChange(maxLength?.let { newValue.take(it) } ?: newValue)
+            },
             readOnly = readOnly,
             singleLine = singleLine,
             keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
@@ -90,6 +98,15 @@ fun AppTextField(
                         }
                         innerTextField()
                     }
+                    if (counterLabel != null && maxLength != null) {
+                        Spacer(modifier = Modifier.width(10.dp))
+                        RemainingCounter(
+                            label = counterLabel,
+                            remaining = (maxLength - value.length).coerceAtLeast(0),
+                            isComplete = value.length >= maxLength,
+                            isError = error != null
+                        )
+                    }
                     trailingContent?.invoke()
                 }
             }
@@ -103,4 +120,29 @@ fun AppTextField(
             )
         }
     }
+}
+
+@Composable
+private fun RemainingCounter(
+    label: String,
+    remaining: Int,
+    isComplete: Boolean,
+    isError: Boolean
+) {
+    val color = when {
+        isError -> MaterialTheme.colorScheme.error
+        isComplete -> PrimaryGreen
+        else -> TextMuted
+    }
+    val text = if (isComplete) "$label lengkap" else "$label $remaining lagi"
+
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelSmall,
+        color = color,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier
+            .background(SurfaceWhite.copy(alpha = 0.72f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 9.dp, vertical = 5.dp)
+    )
 }

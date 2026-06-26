@@ -18,16 +18,19 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -40,7 +43,8 @@ import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
-import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
+import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
+import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
@@ -50,6 +54,7 @@ import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
 import com.desacibiruwetan.posyandu.viewmodel.ReadCollection
 import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RiwayatScreen(
     onBackClick: () -> Unit,
@@ -60,9 +65,22 @@ fun RiwayatScreen(
     val context = LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
     val readState by dataReadViewModel.readState.collectAsState()
+    var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(token) {
         if (token.isNotBlank()) dataReadViewModel.refresh(token)
+    }
+    LaunchedEffect(readState) {
+        if (readState !is UiState.Loading) isRefreshing = false
+    }
+
+    fun refresh() {
+        if (token.isBlank()) {
+            isRefreshing = false
+            return
+        }
+        isRefreshing = true
+        dataReadViewModel.refresh(token)
     }
 
     val logs = when (readState) {
@@ -75,42 +93,46 @@ fun RiwayatScreen(
         bottomBar = { AppNavBar(selectedIndex = 2, onItemSelected = onNavItemSelected) },
         containerColor = BgMint
     ) { paddingValues ->
-        Column(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = ::refresh,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            Spacer(modifier = Modifier.height(6.dp))
-            ActivityHeader(
-                userName = userName,
-                total = logs?.count ?: 0,
-                onRefresh = { if (token.isNotBlank()) dataReadViewModel.refresh(token) }
-            )
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                Spacer(modifier = Modifier.height(6.dp))
+                ActivityHeader(
+                    userName = userName,
+                    total = logs?.count ?: 0
+                )
 
-            when (readState) {
-                UiState.Idle, UiState.Loading -> {
-                    LoadingCard()
-                }
+                when (readState) {
+                    UiState.Idle, UiState.Loading -> {
+                        LoadingCard()
+                    }
 
-                is UiState.Error -> {
-                    InfoCard("Riwayat belum bisa dimuat", (readState as UiState.Error).message)
-                }
+                    is UiState.Error -> {
+                        InfoCard("Riwayat belum bisa dimuat", (readState as UiState.Error).message)
+                    }
 
-                is UiState.Success -> {
-                    val records = logs?.records.orEmpty()
-                    if (records.isEmpty()) {
-                        EmptyState(icon = Icons.Default.History, message = "Belum ada riwayat aktivitas")
-                    } else {
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
-                            items(records) { item ->
-                                ActivityCard(item)
+                    is UiState.Success -> {
+                        val records = logs?.records.orEmpty()
+                        if (records.isEmpty()) {
+                            EmptyState(icon = Icons.Default.History, message = "Belum ada riwayat aktivitas")
+                        } else {
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(records) { item ->
+                                    ActivityCard(item)
+                                }
+                                item { Spacer(modifier = Modifier.height(82.dp)) }
                             }
-                            item { Spacer(modifier = Modifier.height(82.dp)) }
                         }
                     }
                 }
@@ -120,7 +142,7 @@ fun RiwayatScreen(
 }
 
 @Composable
-private fun ActivityHeader(userName: String, total: Int, onRefresh: () -> Unit) {
+private fun ActivityHeader(userName: String, total: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -140,9 +162,6 @@ private fun ActivityHeader(userName: String, total: Int, onRefresh: () -> Unit) 
                 Text("Log aktivitas", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = SurfaceWhite)
                 Text("$userName - $total catatan", style = MaterialTheme.typography.bodySmall, color = SurfaceWhite.copy(alpha = 0.76f))
             }
-            IconButton(onClick = onRefresh) {
-                Icon(Icons.Default.Refresh, contentDescription = "Sinkronisasi", tint = SurfaceWhite)
-            }
         }
     }
 }
@@ -152,18 +171,18 @@ private fun ActivityCard(item: ReadRecord) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SurfaceWhite, RoundedCornerShape(20.dp))
-            .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
+            .background(HistorySlate.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
+            .border(1.dp, HistorySlate.copy(alpha = 0.30f), RoundedCornerShape(20.dp))
             .padding(14.dp),
         verticalAlignment = Alignment.Top
     ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .background(FreshTeal, RoundedCornerShape(14.dp)),
+                .background(HistorySlate, RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.History, contentDescription = null, tint = PrimaryGreen)
+            Icon(Icons.Default.History, contentDescription = null, tint = SurfaceWhite)
         }
         Column(modifier = Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text(item.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
@@ -174,7 +193,8 @@ private fun ActivityCard(item: ReadRecord) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 6.dp)
-                        .background(SurfaceMuted, RoundedCornerShape(14.dp))
+                        .background(SurfaceWhite.copy(alpha = 0.74f), RoundedCornerShape(14.dp))
+                        .border(1.dp, HistorySlate.copy(alpha = 0.16f), RoundedCornerShape(14.dp))
                         .padding(10.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {

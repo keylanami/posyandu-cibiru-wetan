@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
-import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
+import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 @Composable
@@ -42,7 +42,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                 Icon(
                     imageVector = Icons.Default.Description,
                     contentDescription = null,
-                    tint = InfoIndigo,
+                    tint = HealthBlue,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
@@ -51,7 +51,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     fontFamily = Inter,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
-                    color = InfoIndigo
+                    color = HealthBlue
                 )
             }
 

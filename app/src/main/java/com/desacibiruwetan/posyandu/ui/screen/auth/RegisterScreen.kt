@@ -52,6 +52,7 @@ fun RegisterScreenWrapper(
 ) {
     val context = LocalContext.current
     val registerState by viewmodel.registerState.collectAsState()
+    var serverError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(registerState) {
         when (registerState) {
@@ -62,7 +63,7 @@ fun RegisterScreenWrapper(
             }
 
             is UiState.Error -> {
-                Toast.makeText(context, (registerState as UiState.Error).message, Toast.LENGTH_LONG).show()
+                serverError = (registerState as UiState.Error).message
                 viewmodel.resetRegisterState()
             }
 
@@ -73,8 +74,12 @@ fun RegisterScreenWrapper(
     Box(modifier = Modifier.fillMaxSize()) {
         RegisterScreen(
             isLoading = registerState is UiState.Loading,
+            serverError = serverError,
             onNavigateToLogin = onNavigateToLogin,
-            onRegisterSubmit = { request -> viewmodel.register(request) }
+            onRegisterSubmit = { request ->
+                serverError = null
+                viewmodel.register(request)
+            }
         )
 
         if (registerState is UiState.Loading) {
@@ -93,6 +98,7 @@ fun RegisterScreenWrapper(
 @Composable
 fun RegisterScreen(
     isLoading: Boolean,
+    serverError: String?,
     onNavigateToLogin: () -> Unit,
     onRegisterSubmit: (RegisterRequest) -> Unit
 ) {
@@ -194,8 +200,10 @@ fun RegisterScreen(
                 AppTextField(
                     label = "NIK",
                     value = nik,
-                    onValueChange = { if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it },
+                    onValueChange = { nik = it.filter(Char::isDigit).take(16) },
                     error = errors["nik"],
+                    maxLength = 16,
+                    counterLabel = "NIK",
                     keyboardType = KeyboardType.Number
                 )
 
@@ -229,6 +237,15 @@ fun RegisterScreen(
                     placeholder = "Konfirmasi Password",
                     error = errors["confirm"]
                 )
+
+                serverError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 

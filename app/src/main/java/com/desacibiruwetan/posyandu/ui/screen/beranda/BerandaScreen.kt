@@ -65,7 +65,6 @@ import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
 import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
-import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.ProgramPurple
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
@@ -129,7 +128,7 @@ fun DashboardScreen(
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                    MetricTile("Warga", "Cari cepat", Icons.Default.People, InfoIndigo, Modifier.weight(1f))
+                    MetricTile("Warga", "Cari cepat", Icons.Default.People, HealthBlue, Modifier.weight(1f))
                     MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, Modifier.weight(1f))
                     MetricTile("Sync", if (isOnline) "Aktif" else "Offline", Icons.Default.HealthAndSafety, ActionAmber, Modifier.weight(1f))
                 }

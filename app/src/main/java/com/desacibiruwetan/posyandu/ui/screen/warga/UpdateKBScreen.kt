@@ -14,7 +14,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -60,6 +62,7 @@ fun UpdateKbScreen(
     var statusAktif by remember { mutableStateOf(true) }
     var keterangan by remember { mutableStateOf("") }
     var isSaving by remember { mutableStateOf(false) }
+    var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
     val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
@@ -76,6 +79,7 @@ fun UpdateKbScreen(
             onWargaSelected = { warga ->
                 selectedWarga = warga
                 namaWarga = warga.nama
+                fieldErrors = fieldErrors - "warga_id"
                 if (warga.serverId != null) {
                     anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
                 }
@@ -134,6 +138,9 @@ fun UpdateKbScreen(
                     )
                 }
             }
+            fieldErrors["warga_id"]?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -143,7 +150,11 @@ fun UpdateKbScreen(
                     label = "Jenis KB",
                     value = jenisKb,
                     options = jenisKbOptions,
-                    onValueChange = { jenisKb = it }
+                    error = fieldErrors["jenis_kb"],
+                    onValueChange = {
+                        jenisKb = it
+                        fieldErrors = fieldErrors - "jenis_kb"
+                    }
                 )
 
                 AppDateField(
@@ -179,16 +190,16 @@ fun UpdateKbScreen(
                     enabled = !isSaving,
                     onClick = {
                         if (selectedWarga == null) {
-                            Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            fieldErrors = mapOf("warga_id" to "Warga wajib dipilih.")
                             return@PrimaryButton
                         }
                         if (jenisKb.isBlank()) {
-                            Toast.makeText(context, "Pilih jenis KB terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            fieldErrors = mapOf("jenis_kb" to "Jenis KB wajib dipilih.")
                             return@PrimaryButton
                         }
                         val wusPusId = (detailWusPus as? UiState.Success)?.data?.data?.id
                         if (wusPusId == null) {
-                            Toast.makeText(context, "Pilih warga yang sudah terdaftar WUS/PUS", Toast.LENGTH_SHORT).show()
+                            fieldErrors = mapOf("warga_id" to "Pilih warga yang sudah terdaftar WUS/PUS.")
                             return@PrimaryButton
                         }
 

@@ -87,6 +87,7 @@ fun EditWargaScreen(
     var noBpjs by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
     var statusWarga by remember { mutableStateOf("aktif") }
+    var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     val statusKeluargaOptions = listOf(
         "Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu",
@@ -154,7 +155,12 @@ fun EditWargaScreen(
                     AppTextField(
                         label = "Nama Lengkap",
                         value = namaLengkap,
-                        onValueChange = { if (it.length <= 100) namaLengkap = it })
+                        error = fieldErrors["nama"],
+                        maxLength = 100,
+                        onValueChange = {
+                            namaLengkap = it
+                            fieldErrors = fieldErrors - "nama"
+                        })
 
                     Column(modifier = Modifier
                         .fillMaxWidth()
@@ -177,8 +183,12 @@ fun EditWargaScreen(
                         label = "NIK",
                         value = nik,
                         keyboardType = KeyboardType.Number,
+                        maxLength = 16,
+                        counterLabel = "NIK",
+                        error = fieldErrors["nik"],
                         onValueChange = {
-                            if (it.length <= 16 && it.all { char -> char.isDigit() }) nik = it
+                            nik = it.filter(Char::isDigit).take(16)
+                            fieldErrors = fieldErrors - "nik"
                         })
 
                     AppTextField(
@@ -189,7 +199,11 @@ fun EditWargaScreen(
                     AppDateField(
                         label = "Tanggal Lahir",
                         value = tanggalLahir,
-                        onValueChange = { tanggalLahir = it }
+                        error = fieldErrors["tanggal_lahir"],
+                        onValueChange = {
+                            tanggalLahir = it
+                            fieldErrors = fieldErrors - "tanggal_lahir"
+                        }
                     )
 
                     AppDropdownField(
@@ -212,12 +226,20 @@ fun EditWargaScreen(
                         label = "Status dalam Keluarga",
                         value = statusKeluarga,
                         options = statusKeluargaOptions,
-                        onValueChange = { statusKeluarga = it })
+                        error = fieldErrors["status_keluarga"],
+                        onValueChange = {
+                            statusKeluarga = it
+                            fieldErrors = fieldErrors - "status_keluarga"
+                        })
                     AppDropdownField(
                         label = "Status Sipil",
                         value = statusSipil,
                         options = statusSipilOptions,
-                        onValueChange = { statusSipil = it })
+                        error = fieldErrors["status_sipil"],
+                        onValueChange = {
+                            statusSipil = it
+                            fieldErrors = fieldErrors - "status_sipil"
+                        })
                 }
             }
 
@@ -253,7 +275,13 @@ fun EditWargaScreen(
                         label = "No BPJS",
                         value = noBpjs,
                         keyboardType = KeyboardType.Number,
-                        onValueChange = { if (it.all { char -> char.isDigit() }) noBpjs = it })
+                        maxLength = 16,
+                        counterLabel = "NO BPJS",
+                        error = fieldErrors["no_bpjs"],
+                        onValueChange = {
+                            noBpjs = it.filter(Char::isDigit).take(16)
+                            fieldErrors = fieldErrors - "no_bpjs"
+                        })
                     AppTextField(
                         label = "Keterangan Tambahan",
                         value = keterangan,
@@ -270,24 +298,17 @@ fun EditWargaScreen(
                 onClick = {
                     if (anggotaLokal == null) return@PrimaryButton
 
-                    if (nik.length < 16) {
-                        Toast.makeText(context, "NIK harus 16 digit!", Toast.LENGTH_SHORT).show()
-                        return@PrimaryButton
+                    val errors = buildMap {
+                        if (namaLengkap.isBlank()) put("nama", "Nama lengkap wajib diisi.")
+                        if (nik.isBlank()) put("nik", "NIK wajib diisi.")
+                        else if (nik.length != 16) put("nik", "NIK harus 16 digit.")
+                        if (tanggalLahir.isBlank()) put("tanggal_lahir", "Tanggal lahir wajib dipilih.")
+                        if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
+                        if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
+                        if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
                     }
-                    if (namaLengkap.isBlank()) {
-                        Toast.makeText(context, "Nama lengkap wajib diisi!", Toast.LENGTH_SHORT).show()
-                        return@PrimaryButton
-                    }
-                    if (tanggalLahir.isBlank()) {
-                        Toast.makeText(
-                            context,
-                            "Pilih tanggal lahir!",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        return@PrimaryButton
-                    }
-                    if (statusKeluarga.isBlank() || statusSipil.isBlank()) {
-                        Toast.makeText(context, "Status keluarga dan status sipil wajib dipilih!", Toast.LENGTH_SHORT).show()
+                    if (errors.isNotEmpty()) {
+                        fieldErrors = errors
                         return@PrimaryButton
                     }
                     val (calculatedUsia, calculatedKategori) = calculateAgeInfo(tanggalLahir)

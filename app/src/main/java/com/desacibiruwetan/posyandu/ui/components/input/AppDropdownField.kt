@@ -22,9 +22,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
+import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
+import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextDark
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.ui.theme.TextPlaceholder
 
@@ -36,9 +42,15 @@ fun AppDropdownField(
     value: String,
     options: List<String>,
     onValueChange: (String) -> Unit,
-    placeholder: String = "Pilih $label"
+    placeholder: String = "Pilih $label",
+    error: String? = null
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val borderColor = when {
+        error != null -> MaterialTheme.colorScheme.error
+        expanded -> PrimaryGreen
+        else -> BorderGray
+    }
 
     Column(modifier = modifier
         .fillMaxWidth()
@@ -56,7 +68,7 @@ fun AppDropdownField(
                     .fillMaxWidth()
                     .height(52.dp)
                     .background(color = SurfaceLightGray, shape = RoundedCornerShape(14.dp))
-                    .border(width = 1.dp, color = BorderGray, shape = RoundedCornerShape(14.dp))
+                    .border(width = if (expanded) 2.dp else 1.dp, color = borderColor, shape = RoundedCornerShape(14.dp))
                     .padding(horizontal = 16.dp),
                 contentAlignment = Alignment.CenterStart
             ) {
@@ -77,11 +89,23 @@ fun AppDropdownField(
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .background(SurfaceWhite, RoundedCornerShape(16.dp))
+                    .border(1.dp, BorderGray.copy(alpha = 0.55f), RoundedCornerShape(16.dp))
             ) {
                 options.forEach { selectionOption ->
+                    val selected = selectionOption == value
                     DropdownMenuItem(
-                        text = { Text(selectionOption) },
+                        modifier = Modifier.background(if (selected) FreshTeal else SurfaceWhite),
+                        text = {
+                            Text(
+                                selectionOption,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = if (selected) PrimaryGreen else TextDark,
+                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                            )
+                        },
                         onClick = {
                             onValueChange(selectionOption)
                             expanded = false
@@ -89,6 +113,14 @@ fun AppDropdownField(
                     )
                 }
             }
+        }
+        if (error != null) {
+            Text(
+                text = error,
+                color = MaterialTheme.colorScheme.error,
+                fontSize = 11.sp,
+                modifier = Modifier.padding(top = 6.dp)
+            )
         }
     }
 }

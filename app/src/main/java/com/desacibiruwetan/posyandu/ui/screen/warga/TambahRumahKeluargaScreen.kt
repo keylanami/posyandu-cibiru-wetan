@@ -24,6 +24,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Save
@@ -46,12 +47,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
+import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
@@ -64,6 +67,7 @@ import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
+import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
 import java.text.SimpleDateFormat
@@ -75,7 +79,8 @@ fun RumahKeluargaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     rumahViewModel: RumahViewmodel,
-    keluargaViewModel: KeluargaViewmodel
+    keluargaViewModel: KeluargaViewmodel,
+    anggotaViewModel: AnggotaViewmodel
 ) {
     val context = LocalContext.current
     val preferences = remember { SessionManager.getPreferences(context) }
@@ -85,11 +90,14 @@ fun RumahKeluargaScreen(
 
     val rumahList by rumahViewModel.listRumahLocal.collectAsState()
     val keluargaList by keluargaViewModel.listKeluargaLocal.collectAsState()
+    val anggotaList by anggotaViewModel.listAnggotaLocal.collectAsState()
 
+    var searchQuery by remember { mutableStateOf("") }
     var showAddRumahForm by remember { mutableStateOf(false) }
     var editingRumahId by remember { mutableStateOf<Int?>(null) }
     var addingKeluargaRumahId by remember { mutableStateOf<Int?>(null) }
     var editingKeluargaId by remember { mutableStateOf<Int?>(null) }
+    var selectedKeluargaDetailId by remember { mutableStateOf<Int?>(null) }
 
     fun closeForms() {
         showAddRumahForm = false
@@ -102,6 +110,17 @@ fun RumahKeluargaScreen(
         if (token.isNotBlank()) {
             rumahViewModel.syncDataRumah(token)
             keluargaViewModel.syncDataKeluarga(token)
+            anggotaViewModel.syncDataAnggotaDariServer(token)
+        }
+    }
+
+    val filteredRumahList = remember(searchQuery, rumahList, keluargaList, anggotaList) {
+        rumahList.filter { rumah ->
+            rumah.matchesRumahKeluargaSearch(
+                query = searchQuery,
+                keluargaList = keluargaList,
+                anggotaList = anggotaList
+            )
         }
     }
 
@@ -127,6 +146,22 @@ fun RumahKeluargaScreen(
                         showAddRumahForm = true
                     }
                 )
+            }
+            item {
+                AppSearchBar(
+                    query = searchQuery,
+                    onQueryChange = { searchQuery = it },
+                    placeholder = "Cari no rumah, alamat, no KK, atau nama anggota"
+                )
+            }
+            if (searchQuery.isNotBlank() && rumahList.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "${filteredRumahList.size} rumah cocok untuk \"$searchQuery\"",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextMuted
+                    )
+                }
             }
 
             if (showAddRumahForm) {
@@ -159,12 +194,18 @@ fun RumahKeluargaScreen(
                         showAddRumahForm = true
                     })
                 }
+            } else if (filteredRumahList.isEmpty()) {
+                item {
+                    EmptySearchCard(query = searchQuery)
+                }
             } else {
-                items(rumahList, key = { it.localId }) { rumah ->
+                items(filteredRumahList, key = { it.localId }) { rumah ->
                     val keluargaRumah = keluargaList.filter { it.belongsToRumah(rumah) }
                     RumahManagementCard(
                         rumah = rumah,
                         keluargaList = keluargaRumah,
+                        anggotaList = anggotaList,
+                        selectedKeluargaDetailId = selectedKeluargaDetailId,
                         isEditingRumah = editingRumahId == rumah.localId,
                         isAddingKeluarga = addingKeluargaRumahId == rumah.localId,
                         editingKeluargaId = editingKeluargaId,
@@ -178,8 +219,14 @@ fun RumahKeluargaScreen(
                             closeForms()
                             addingKeluargaRumahId = rumah.localId
                         },
+                        onToggleKeluargaDetail = { keluarga ->
+                            closeForms()
+                            selectedKeluargaDetailId =
+                                if (selectedKeluargaDetailId == keluarga.localId) null else keluarga.localId
+                        },
                         onEditKeluarga = { keluarga ->
                             closeForms()
+                            selectedKeluargaDetailId = keluarga.localId
                             editingKeluargaId = keluarga.localId
                         },
                         onCancel = { closeForms() },
@@ -279,9 +326,38 @@ private fun EmptyRumahCard(onAddRumah: () -> Unit) {
 }
 
 @Composable
+private fun EmptySearchCard(query: String) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceWhite, RoundedCornerShape(22.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(22.dp))
+            .padding(18.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(HealthBlue.copy(alpha = 0.12f), RoundedCornerShape(14.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.SearchOff, contentDescription = null, tint = HealthBlue)
+        }
+        Text("Tidak ada hasil", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            "Tidak ditemukan rumah, alamat, KK, atau anggota yang cocok dengan \"$query\".",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextMuted
+        )
+    }
+}
+
+@Composable
 private fun RumahManagementCard(
     rumah: RumahEntity,
     keluargaList: List<KeluargaEntity>,
+    anggotaList: List<AnggotaEntity>,
+    selectedKeluargaDetailId: Int?,
     isEditingRumah: Boolean,
     isAddingKeluarga: Boolean,
     editingKeluargaId: Int?,
@@ -289,6 +365,7 @@ private fun RumahManagementCard(
     rw: String,
     onEditRumah: () -> Unit,
     onAddKeluarga: () -> Unit,
+    onToggleKeluargaDetail: (KeluargaEntity) -> Unit,
     onEditKeluarga: (KeluargaEntity) -> Unit,
     onCancel: () -> Unit,
     onSubmitRumah: (String) -> Unit,
@@ -347,9 +424,13 @@ private fun RumahManagementCard(
             Text("Belum ada KK di rumah ini.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
         } else {
             keluargaList.forEach { keluarga ->
+                val anggotaKeluarga = anggotaList.filter { it.belongsToKeluarga(keluarga) }
                 KeluargaRow(
                     keluarga = keluarga,
+                    anggotaList = anggotaKeluarga,
+                    isExpanded = selectedKeluargaDetailId == keluarga.localId,
                     isEditing = editingKeluargaId == keluarga.localId,
+                    onToggleDetail = { onToggleKeluargaDetail(keluarga) },
                     onEdit = { onEditKeluarga(keluarga) },
                     onCancel = onCancel,
                     onSubmit = { noKk, isNgontrak, isGakin -> onSubmitKeluarga(keluarga, noKk, isNgontrak, isGakin) }
@@ -362,7 +443,10 @@ private fun RumahManagementCard(
 @Composable
 private fun KeluargaRow(
     keluarga: KeluargaEntity,
+    anggotaList: List<AnggotaEntity>,
+    isExpanded: Boolean,
     isEditing: Boolean,
+    onToggleDetail: () -> Unit,
     onEdit: () -> Unit,
     onCancel: () -> Unit,
     onSubmit: (String, Boolean, Boolean) -> Unit
@@ -372,7 +456,7 @@ private fun KeluargaRow(
             modifier = Modifier
                 .fillMaxWidth()
                 .background(BgMint, RoundedCornerShape(16.dp))
-                .clickable(onClick = onEdit)
+                .clickable(onClick = onToggleDetail)
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -398,6 +482,14 @@ private fun KeluargaRow(
             Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextMuted)
         }
 
+        if (isExpanded) {
+            KeluargaDetailPanel(
+                keluarga = keluarga,
+                anggotaList = anggotaList,
+                onEdit = onEdit
+            )
+        }
+
         if (isEditing) {
             KeluargaFormCard(
                 title = "Edit KK ${keluarga.noKK}",
@@ -407,6 +499,104 @@ private fun KeluargaRow(
                 onSubmit = onSubmit
             )
         }
+    }
+}
+
+@Composable
+private fun KeluargaDetailPanel(
+    keluarga: KeluargaEntity,
+    anggotaList: List<AnggotaEntity>,
+    onEdit: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceMuted, RoundedCornerShape(18.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Detail KK ${keluarga.noKK}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                Text(
+                    "${anggotaList.size} anggota keluarga",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = TextMuted
+                )
+            }
+            CompactAction("Edit KK", Icons.Default.Edit, PrimaryGreen, onEdit)
+        }
+
+        Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+            DetailPill(
+                label = "Tempat tinggal",
+                value = if (keluarga.isNgontrak) "Ngontrak" else "Milik sendiri",
+                modifier = Modifier.weight(1f)
+            )
+            DetailPill(
+                label = "Gakin",
+                value = if (keluarga.isGakin == true) "Ya" else "Tidak",
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        if (anggotaList.isEmpty()) {
+            Text("Belum ada anggota pada KK ini.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
+        } else {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                anggotaList.forEach { anggota ->
+                    AnggotaKeluargaRow(anggota)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun DetailPill(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .background(SurfaceWhite, RoundedCornerShape(14.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(14.dp))
+            .padding(12.dp)
+    ) {
+        Text(label, style = MaterialTheme.typography.labelSmall, color = TextMuted)
+        Text(value, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
+    }
+}
+
+@Composable
+private fun AnggotaKeluargaRow(anggota: AnggotaEntity) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceWhite, RoundedCornerShape(14.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(14.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .background(HealthBlue.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(Icons.Default.Groups, contentDescription = null, tint = HealthBlue, modifier = Modifier.size(20.dp))
+        }
+        Column(modifier = Modifier.weight(1f).padding(start = 10.dp)) {
+            Text(anggota.nama, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            Text(
+                listOfNotNull(
+                    anggota.statusKeluarga,
+                    anggota.kategoriUsia,
+                    anggota.statusWarga
+                ).joinToString(" - "),
+                style = MaterialTheme.typography.labelSmall,
+                color = TextMuted
+            )
+        }
+        Text(anggota.nik, style = MaterialTheme.typography.labelSmall, color = TextMuted)
     }
 }
 
@@ -421,13 +611,18 @@ private fun RumahFormCard(
     onSubmit: (String) -> Unit
 ) {
     var alamat by remember(rumah?.localId) { mutableStateOf(rumah?.alamat.orEmpty()) }
+    var alamatError by remember(rumah?.localId) { mutableStateOf<String?>(null) }
 
     FormPanel(title = title, subtitle = subtitle, icon = Icons.Default.Home, color = HealthBlue, onCancel = onCancel) {
         AppTextField(
             label = "Alamat Lengkap",
             value = alamat,
             singleLine = false,
-            onValueChange = { alamat = it }
+            error = alamatError,
+            onValueChange = {
+                alamat = it
+                alamatError = null
+            }
         )
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             AppTextField(
@@ -453,8 +648,11 @@ private fun RumahFormCard(
         PrimaryButton(
             text = if (rumah == null) "Simpan rumah" else "Simpan perubahan rumah",
             icon = Icons.Default.Save,
-            enabled = alamat.isNotBlank(),
             onClick = {
+                if (alamat.isBlank()) {
+                    alamatError = "Alamat wajib diisi."
+                    return@PrimaryButton
+                }
                 onSubmit(alamat.trim())
             }
         )
@@ -472,6 +670,7 @@ private fun KeluargaFormCard(
     var noKk by remember(keluarga?.localId) { mutableStateOf(keluarga?.noKK.orEmpty()) }
     var isNgontrak by remember(keluarga?.localId) { mutableStateOf(keluarga?.isNgontrak ?: false) }
     var isGakin by remember(keluarga?.localId) { mutableStateOf(keluarga?.isGakin ?: false) }
+    var noKkError by remember(keluarga?.localId) { mutableStateOf<String?>(null) }
 
     FormPanel(title = title, subtitle = subtitle, icon = Icons.Default.Groups, color = PrimaryGreen, onCancel = onCancel) {
         AppTextField(
@@ -479,7 +678,13 @@ private fun KeluargaFormCard(
             value = noKk,
             placeholder = "16 digit nomor KK",
             keyboardType = KeyboardType.Number,
-            onValueChange = { if (it.length <= 16 && it.all { char -> char.isDigit() }) noKk = it }
+            maxLength = 16,
+            counterLabel = "NO KK",
+            error = noKkError,
+            onValueChange = {
+                noKk = it.filter(Char::isDigit).take(16)
+                noKkError = null
+            }
         )
         ChoiceGroup(
             title = "Status tempat tinggal",
@@ -500,8 +705,15 @@ private fun KeluargaFormCard(
         PrimaryButton(
             text = if (keluarga == null) "Simpan KK" else "Simpan perubahan KK",
             icon = Icons.Default.Save,
-            enabled = noKk.length == 16,
-            onClick = { onSubmit(noKk, isNgontrak, isGakin) }
+            onClick = {
+                noKkError = when {
+                    noKk.isBlank() -> "No kk wajib diisi."
+                    noKk.length != 16 -> "No kk harus 16 digit."
+                    else -> null
+                }
+                if (noKkError != null) return@PrimaryButton
+                onSubmit(noKk, isNgontrak, isGakin)
+            }
         )
     }
 }
@@ -595,6 +807,30 @@ private fun SmallIconButton(icon: ImageVector, label: String, color: Color, onCl
 private fun KeluargaEntity.belongsToRumah(rumah: RumahEntity): Boolean {
     val possibleIds = setOfNotNull(rumah.localId, rumah.serverId)
     return rumahId in possibleIds
+}
+
+private fun AnggotaEntity.belongsToKeluarga(keluarga: KeluargaEntity): Boolean {
+    val possibleIds = setOfNotNull(keluarga.localId, keluarga.serverId)
+    return keluargaId in possibleIds
+}
+
+private fun RumahEntity.matchesRumahKeluargaSearch(
+    query: String,
+    keluargaList: List<KeluargaEntity>,
+    anggotaList: List<AnggotaEntity>
+): Boolean {
+    val keyword = query.trim()
+    if (keyword.isBlank()) return true
+
+    val keluargaRumah = keluargaList.filter { it.belongsToRumah(this) }
+    val anggotaRumah = anggotaList.filter { anggota ->
+        keluargaRumah.any { keluarga -> anggota.belongsToKeluarga(keluarga) }
+    }
+
+    return noRumah?.toString().orEmpty().contains(keyword, ignoreCase = true) ||
+        alamat.orEmpty().contains(keyword, ignoreCase = true) ||
+        keluargaRumah.any { it.noKK.contains(keyword, ignoreCase = true) } ||
+        anggotaRumah.any { it.nama.contains(keyword, ignoreCase = true) }
 }
 
 private fun formatIndonesianDate(value: String?): String {

@@ -371,7 +371,8 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 rumahViewModel = rumahViewModel,
-                keluargaViewModel = keluargaViewModel
+                keluargaViewModel = keluargaViewModel,
+                anggotaViewModel = anggotaViewModel
             )
         }
         composable(Screen.UpdateBumil.route) {

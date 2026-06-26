@@ -50,6 +50,7 @@ fun UpdateWusPusScreen(
     var kategoriStatus by remember { mutableStateOf("WUS") }
     var tanggalMulaiKb by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
+    var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
     val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
 
@@ -74,6 +75,7 @@ fun UpdateWusPusScreen(
                 } else {
                     selectedWarga = warga
                     namaWarga = warga.nama
+                    fieldErrors = fieldErrors - "warga_id"
                     if (warga.serverId != null) {
                         anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
                     }
@@ -106,6 +108,9 @@ fun UpdateWusPusScreen(
                 } else {
                     UpdateHeaderCard(title = "Pilih Warga", name = "Ketuk untuk mencari data", icon = Icons.Default.Search)
                 }
+            }
+            fieldErrors["warga_id"]?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -157,7 +162,7 @@ fun UpdateWusPusScreen(
                     onClick = {
                         val warga = selectedWarga
                         if (warga == null) {
-                            Toast.makeText(context, "Pilih warga terlebih dahulu", Toast.LENGTH_SHORT).show()
+                            fieldErrors = mapOf("warga_id" to "Warga wajib dipilih.")
                             return@PrimaryButton
                         }
 

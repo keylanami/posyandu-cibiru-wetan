@@ -67,6 +67,7 @@ fun LoginScreenWrapper(
     val context = LocalContext.current
     val loginState by viewmodel.loginState.collectAsState()
     var isDarkTheme by remember { mutableStateOf(false) }
+    var serverError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(loginState) {
         when (loginState) {
@@ -81,7 +82,7 @@ fun LoginScreenWrapper(
             }
 
             is UiState.Error -> {
-                Toast.makeText(context, (loginState as UiState.Error).message, Toast.LENGTH_LONG).show()
+                serverError = (loginState as UiState.Error).message
                 viewmodel.resetLoginState()
             }
 
@@ -102,9 +103,11 @@ fun LoginScreenWrapper(
                 LoginScreen(
                     isDarkTheme = targetTheme,
                     isLoading = loginState is UiState.Loading,
+                    serverError = serverError,
                     onThemeToggle = { isDarkTheme = !isDarkTheme },
                     onNavigateToRegister = onNavigateToRegister,
                     onLoginSubmit = { email, password ->
+                        serverError = null
                         viewmodel.login(email, password, "Android Device")
                     }
                 )
@@ -128,6 +131,7 @@ fun LoginScreenWrapper(
 fun LoginScreen(
     isDarkTheme: Boolean,
     isLoading: Boolean,
+    serverError: String?,
     onThemeToggle: () -> Unit,
     onNavigateToRegister: () -> Unit,
     onLoginSubmit: (String, String) -> Unit
@@ -257,6 +261,15 @@ fun LoginScreen(
                     error = passwordError,
                     isDarkTheme = isDarkTheme
                 )
+
+                serverError?.let {
+                    Text(
+                        text = it,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 10.dp)
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(10.dp))
 

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.screen.warga.CircularIconBox
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
-import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
+import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
 
@@ -46,7 +46,7 @@ fun UpdateHeaderCard(
                         fontFamily = Inter,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
-                        color = InfoIndigo
+                        color = HealthBlue
                     )
                     Text(
                         text = name,

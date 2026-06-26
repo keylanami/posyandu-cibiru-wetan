@@ -38,11 +38,13 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -79,7 +81,6 @@ import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
 import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
-import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.ProgramPurple
 import com.desacibiruwetan.posyandu.ui.theme.ResidentFemale
@@ -112,6 +113,7 @@ private data class DataAddAction(
     val onClick: () -> Unit
 )
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CariWargaScreen(
     onBackClick: () -> Unit,
@@ -132,6 +134,7 @@ fun CariWargaScreen(
     var query by remember { mutableStateOf("") }
     var section by remember { mutableStateOf("Warga") }
     var selectedDetail by remember { mutableStateOf<DetailInfo?>(null) }
+    var isRefreshing by remember { mutableStateOf(false) }
     val sections = listOf("Warga", "Rumah", "Keluarga", "Kesehatan", "Program", "Log")
 
     val context = LocalContext.current
@@ -161,6 +164,21 @@ fun CariWargaScreen(
             dataReadViewModel.refresh(token)
         }
     }
+    LaunchedEffect(readState) {
+        if (readState !is UiState.Loading) isRefreshing = false
+    }
+
+    fun refreshAll() {
+        if (rawToken.isBlank()) {
+            isRefreshing = false
+            return
+        }
+        isRefreshing = true
+        anggotaViewModel.syncDataAnggotaDariServer(token)
+        rumahViewModel.syncDataRumah(token)
+        keluargaViewModel.syncDataKeluarga(token)
+        dataReadViewModel.refresh(token)
+    }
 
     Scaffold(
         topBar = { AppTopBar(title = "Pusat Data", onBackClick = onBackClick) },
@@ -172,56 +190,60 @@ fun CariWargaScreen(
         },
         containerColor = BgMint
     ) { paddingValues ->
-        LazyColumn(
+        PullToRefreshBox(
+            isRefreshing = isRefreshing,
+            onRefresh = ::refreshAll,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .padding(horizontal = 18.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            item { Spacer(modifier = Modifier.height(4.dp)) }
-            item {
-                DataHero(
-                    wargaCount = warga.size,
-                    rumahCount = rumah.size,
-                    keluargaCount = keluarga.size,
-                    onRefresh = { dataReadViewModel.refresh(token) }
-                )
-            }
-            item {
-                AppSearchBar(
-                    query = query,
-                    onQueryChange = { query = it },
-                    placeholder = "Cari warga, rumah, KK, atau data program"
-                )
-            }
-            item {
-                Row(
-                    modifier = Modifier.horizontalScroll(rememberScrollState()),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    sections.forEach { item ->
-                        FilterChip(
-                            selected = section == item,
-                            onClick = { section = item },
-                            label = { Text(item) },
-                            leadingIcon = if (section == item) {
-                                { Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp)) }
-                            } else null,
-                            colors = FilterChipDefaults.filterChipColors(
-                                selectedContainerColor = FreshTeal,
-                                selectedLabelColor = PrimaryGreen
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                item { Spacer(modifier = Modifier.height(4.dp)) }
+                item {
+                    DataHero(
+                        wargaCount = warga.size,
+                        rumahCount = rumah.size,
+                        keluargaCount = keluarga.size
+                    )
+                }
+                item {
+                    AppSearchBar(
+                        query = query,
+                        onQueryChange = { query = it },
+                        placeholder = "Cari warga, rumah, KK, atau data program",
+                        modifier = Modifier.padding(horizontal = 14.dp)
+                    )
+                }
+                item {
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()).padding(horizontal = 14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        sections.forEach { item ->
+                            FilterChip(
+                                selected = section == item,
+                                onClick = { section = item },
+                                label = { Text(item) },
+                                leadingIcon = if (section == item) {
+                                    { Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(16.dp)) }
+                                } else null,
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = FreshTeal,
+                                    selectedLabelColor = PrimaryGreen
+                                )
                             )
-                        )
+                        }
                     }
                 }
-            }
-            when (section) {
+                when (section) {
                 "Warga" -> {
                     val filtered = warga.filter {
                         query.isBlank() || it.nama.contains(query, true) || it.nik.contains(query)
                     }
-                    item { SectionIntro("Registry warga", "${filtered.size} data cocok", Icons.Default.People, InfoIndigo) }
+                    item { SectionIntro("Registry warga", "${filtered.size} data cocok", Icons.Default.People, HealthBlue) }
                     if (filtered.isEmpty()) {
                         item { EmptyState(icon = Icons.Default.People, message = "Tidak ada warga ditemukan") }
                     } else {
@@ -333,7 +355,8 @@ fun CariWargaScreen(
                     }
                 }
             }
-            item { Spacer(modifier = Modifier.height(88.dp)) }
+                item { Spacer(modifier = Modifier.height(88.dp)) }
+            }
         }
     }
 }
@@ -375,7 +398,7 @@ private fun androidx.compose.foundation.lazy.LazyListScope.readCollections(
 }
 
 @Composable
-private fun DataHero(wargaCount: Int, rumahCount: Int, keluargaCount: Int, onRefresh: () -> Unit) {
+private fun DataHero(wargaCount: Int, rumahCount: Int, keluargaCount: Int) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -387,9 +410,6 @@ private fun DataHero(wargaCount: Int, rumahCount: Int, keluargaCount: Int, onRef
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Pusat data posyandu", style = MaterialTheme.typography.labelLarge, color = SurfaceWhite.copy(alpha = 0.72f))
                     Text("Browse dulu, update setelah jelas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = SurfaceWhite)
-                }
-                IconButton(onClick = onRefresh) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Refresh", tint = SurfaceWhite)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
@@ -598,8 +618,8 @@ private fun CollectionCard(
                 Text(collection.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(collection.description, style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
-            Box(modifier = Modifier.background(InfoIndigo.copy(alpha = 0.10f), RoundedCornerShape(999.dp)).padding(horizontal = 12.dp, vertical = 7.dp)) {
-                Text("${collection.count}", style = MaterialTheme.typography.labelLarge, color = InfoIndigo, fontWeight = FontWeight.Bold)
+            Box(modifier = Modifier.background(HealthBlue.copy(alpha = 0.10f), RoundedCornerShape(999.dp)).padding(horizontal = 12.dp, vertical = 7.dp)) {
+                Text("${collection.count}", style = MaterialTheme.typography.labelLarge, color = HealthBlue, fontWeight = FontWeight.Bold)
             }
         }
         if (collection.records.isEmpty()) {
