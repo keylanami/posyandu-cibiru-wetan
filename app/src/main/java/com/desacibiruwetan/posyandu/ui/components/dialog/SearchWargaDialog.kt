@@ -113,6 +113,8 @@ fun SearchWargaDialog(
                             name = warga.nama,
                             nik = warga.nik,
                             rtRw = displayRtRw,
+                            jenisKelamin = warga.jenisKelamin,
+                            kategoriUsia = warga.kategoriUsia,
                             onClick = {
                                 onWargaSelected(warga)
                                 onDismiss()

@@ -25,9 +25,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.theme.Inter
-import com.desacibiruwetan.posyandu.ui.theme.BorderGray
-import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
-import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.AgeElderly
+import com.desacibiruwetan.posyandu.ui.theme.AgeElderlyContainer
+import com.desacibiruwetan.posyandu.ui.theme.AgeProductive
+import com.desacibiruwetan.posyandu.ui.theme.AgeProductiveContainer
+import com.desacibiruwetan.posyandu.ui.theme.AgeToddler
+import com.desacibiruwetan.posyandu.ui.theme.AgeToddlerContainer
+import com.desacibiruwetan.posyandu.ui.theme.ResidentFemale
+import com.desacibiruwetan.posyandu.ui.theme.ResidentFemaleContainer
+import com.desacibiruwetan.posyandu.ui.theme.ResidentMale
+import com.desacibiruwetan.posyandu.ui.theme.ResidentMaleContainer
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 @Composable
@@ -35,13 +42,17 @@ fun WargaItemCard(
     name: String,
     nik: String,
     rtRw: String,
+    jenisKelamin: String? = null,
+    kategoriUsia: String? = null,
     onClick: () -> Unit
 ) {
+    val residentColor = residentAccent(jenisKelamin)
+    val residentContainer = residentContainer(jenisKelamin)
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = SurfaceWhite, shape = RoundedCornerShape(16.dp))
-            .border(1.dp, BorderGray.copy(alpha = 0.7f), RoundedCornerShape(16.dp))
+            .background(color = residentContainer, shape = RoundedCornerShape(16.dp))
+            .border(1.dp, residentColor.copy(alpha = 0.24f), RoundedCornerShape(16.dp))
             .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -65,29 +76,61 @@ fun WargaItemCard(
             )
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Badge RT/RW
-            Box(
-                modifier = Modifier
-                    .background(color = FreshTeal, shape = RoundedCornerShape(100.dp))
-                    .border(1.dp, PrimaryGreen.copy(alpha = 0.18f), RoundedCornerShape(100.dp))
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = rtRw,
-                    fontFamily = Inter,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 10.sp,
-                    color = PrimaryGreen
-                )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                WargaBadge(text = rtRw, color = residentColor, container = SurfaceWhite.copy(alpha = 0.72f))
+                kategoriUsia?.takeIf { it.isNotBlank() }?.let { label ->
+                    val ageColor = ageAccent(label)
+                    WargaBadge(text = label, color = ageColor, container = ageContainer(label))
+                }
             }
         }
 
         Icon(
             imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
             contentDescription = "Detail",
-            tint = PrimaryGreen,
+            tint = residentColor,
             modifier = Modifier.size(24.dp)
         )
     }
 }
+
+@Composable
+private fun WargaBadge(text: String, color: Color, container: Color) {
+    Box(
+        modifier = Modifier
+            .background(color = container, shape = RoundedCornerShape(100.dp))
+            .border(1.dp, color.copy(alpha = 0.24f), RoundedCornerShape(100.dp))
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            fontFamily = Inter,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 10.sp,
+            color = color
+        )
+    }
+}
+
+private fun residentAccent(jenisKelamin: String?): Color =
+    if (jenisKelamin.equals("Perempuan", ignoreCase = true)) ResidentFemale else ResidentMale
+
+private fun residentContainer(jenisKelamin: String?): Color =
+    if (jenisKelamin.equals("Perempuan", ignoreCase = true)) ResidentFemaleContainer else ResidentMaleContainer
+
+private fun ageAccent(label: String): Color =
+    when (label.lowercase()) {
+        "balita" -> AgeToddler
+        "lansia" -> AgeElderly
+        "produktif" -> AgeProductive
+        else -> Color(0xFF64748B)
+    }
+
+private fun ageContainer(label: String): Color =
+    when (label.lowercase()) {
+        "balita" -> AgeToddlerContainer
+        "lansia" -> AgeElderlyContainer
+        "produktif" -> AgeProductiveContainer
+        else -> SurfaceWhite.copy(alpha = 0.72f)
+    }

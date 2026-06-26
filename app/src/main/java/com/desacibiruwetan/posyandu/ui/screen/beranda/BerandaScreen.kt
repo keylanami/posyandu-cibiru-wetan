@@ -1,5 +1,12 @@
 package com.desacibiruwetan.posyandu.ui.screen.beranda
 
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
+import android.os.Handler
+import android.os.Looper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.navigation.Screen
@@ -54,10 +63,11 @@ import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
-import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
+import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
 import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
+import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
+import com.desacibiruwetan.posyandu.ui.theme.ProgramPurple
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
@@ -78,6 +88,7 @@ fun DashboardScreen(
     userName: String
 ) {
     var showPilotDialog by remember { mutableStateOf(false) }
+    val isOnline = rememberOnlineStatus()
 
     if (showPilotDialog) {
         PilotSelectionDialog(
@@ -110,56 +121,62 @@ fun DashboardScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
-                .padding(horizontal = 18.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
-            WorkHeader(userName = userName)
+            WorkHeader(userName = userName, isOnline = isOnline)
 
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                MetricTile("Warga", "Cari cepat", Icons.Default.People, PrimaryGreen, Modifier.weight(1f))
-                MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, Modifier.weight(1f))
-                MetricTile("Sync", "Aktif", Icons.Default.HealthAndSafety, ActionAmber, Modifier.weight(1f))
+            Column(
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(18.dp)
+            ) {
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    MetricTile("Warga", "Cari cepat", Icons.Default.People, InfoIndigo, Modifier.weight(1f))
+                    MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, Modifier.weight(1f))
+                    MetricTile("Sync", if (isOnline) "Aktif" else "Offline", Icons.Default.HealthAndSafety, ActionAmber, Modifier.weight(1f))
+                }
+
+                PrimaryWorkflow(
+                    onSearch = onNavigateToCariWarga,
+                    onAdd = onNavigateToRumahKeluarga,
+                    onEvent = onNavigateToCatatKejadian
+                )
+
+                SectionHeader("Update data kesehatan", "Pilih program yang paling sering dicatat")
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    WorkRow("Balita", "BB/TB, orang tua, dan pertumbuhan", Icons.Default.ChildCare, ProgramPurple, onNavigateToUpdateBalita)
+                    WorkRow("Bumil", "Kehamilan, menyusui, dan catatan risiko", Icons.Default.PregnantWoman, HealthBlue, onNavigateToBumil)
+                    WorkRow("WUS/PUS", "Status sasaran perempuan dan pasangan usia subur", Icons.Default.Favorite, ActionAmber, onNavigateToUpdateWusPus)
+                    WorkRow("KB", "Metode kontrasepsi dan status penggunaan", Icons.Default.FamilyRestroom, PrimaryGreen, onNavigateToUpdateKb)
+                }
+
+                SectionHeader("Wilayah & program", "Data rumah, keluarga, administrasi, dan indikator")
+                Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    CompactWorkCard("Rumah & KK", Icons.Default.Home, HealthBlue, onNavigateToRumahKeluarga, Modifier.weight(1f))
+                    CompactWorkCard("Administrasi", Icons.Default.Groups, ActionAmber, onNavigateToAdministrasiRt, Modifier.weight(1f))
+                    CompactWorkCard("Program", Icons.Default.HealthAndSafety, ProgramPurple, { showPilotDialog = true }, Modifier.weight(1f))
+                }
+
+                SectionHeader("Aktivitas terakhir", "Ringkas untuk membantu kader melanjutkan pekerjaan")
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    ActivityRow("Kejadian warga", "Kelahiran - Sumarsih", "10 Mei")
+                    ActivityRow("Data warga", "Pembaruan status keluarga", "Kemarin")
+                }
+
+                Spacer(modifier = Modifier.height(54.dp))
             }
-
-            PrimaryWorkflow(
-                onSearch = onNavigateToCariWarga,
-                onAdd = onNavigateToRumahKeluarga,
-                onEvent = onNavigateToCatatKejadian
-            )
-
-            SectionHeader("Update data kesehatan", "Pilih program yang paling sering dicatat")
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                WorkRow("Balita", "BB/TB, orang tua, dan pertumbuhan", Icons.Default.ChildCare, onNavigateToUpdateBalita)
-                WorkRow("Bumil", "Kehamilan, menyusui, dan catatan risiko", Icons.Default.PregnantWoman, onNavigateToBumil)
-                WorkRow("WUS/PUS", "Status sasaran perempuan dan pasangan usia subur", Icons.Default.Favorite, onNavigateToUpdateWusPus)
-                WorkRow("KB", "Metode kontrasepsi dan status penggunaan", Icons.Default.FamilyRestroom, onNavigateToUpdateKb)
-            }
-
-            SectionHeader("Wilayah & program", "Data rumah, keluarga, administrasi, dan indikator")
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-                CompactWorkCard("Rumah & KK", Icons.Default.Home, onNavigateToRumahKeluarga, Modifier.weight(1f))
-                CompactWorkCard("Administrasi", Icons.Default.Groups, onNavigateToAdministrasiRt, Modifier.weight(1f))
-                CompactWorkCard("Program", Icons.Default.HealthAndSafety, { showPilotDialog = true }, Modifier.weight(1f))
-            }
-
-            SectionHeader("Aktivitas terakhir", "Ringkas untuk membantu kader melanjutkan pekerjaan")
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                ActivityRow("Kejadian warga", "Kelahiran - Sumarsih", "10 Mei")
-                ActivityRow("Data warga", "Pembaruan status keluarga", "Kemarin")
-            }
-
-            Spacer(modifier = Modifier.height(54.dp))
         }
     }
 }
 
 @Composable
-private fun WorkHeader(userName: String) {
+private fun WorkHeader(userName: String, isOnline: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(DeepGreen, RoundedCornerShape(28.dp))
-            .padding(20.dp)
+            .background(
+                DeepGreen,
+                RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
+            )
+            .padding(horizontal = 18.dp, vertical = 20.dp)
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -172,11 +189,11 @@ private fun WorkHeader(userName: String) {
                     Text(
                         text = "Selamat bertugas, $userName",
                         style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold,
+                        fontWeight = FontWeight.SemiBold,
                         color = SurfaceWhite
                     )
                 }
-                SyncStatusBadge(text = "Online", isOnline = true)
+                SyncStatusBadge(isOnline = isOnline)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 HeaderPill("RT/RW aktif", "Sesuai akun", Modifier.weight(1f))
@@ -248,7 +265,8 @@ private fun WorkflowButton(
 ) {
     Column(
         modifier = modifier
-            .background(color.copy(alpha = 0.1f), RoundedCornerShape(18.dp))
+            .background(color.copy(alpha = 0.14f), RoundedCornerShape(18.dp))
+            .border(1.dp, color.copy(alpha = 0.22f), RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
             .padding(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -269,7 +287,7 @@ private fun SectionHeader(title: String, subtitle: String) {
 }
 
 @Composable
-private fun WorkRow(title: String, subtitle: String, icon: ImageVector, onClick: () -> Unit) {
+private fun WorkRow(title: String, subtitle: String, icon: ImageVector, color: Color, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -280,10 +298,10 @@ private fun WorkRow(title: String, subtitle: String, icon: ImageVector, onClick:
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(44.dp).background(FreshTeal, RoundedCornerShape(14.dp)),
+            modifier = Modifier.size(44.dp).background(color.copy(alpha = 0.12f), RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(23.dp))
+            Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(23.dp))
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -295,16 +313,16 @@ private fun WorkRow(title: String, subtitle: String, icon: ImageVector, onClick:
 }
 
 @Composable
-private fun CompactWorkCard(title: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun CompactWorkCard(title: String, icon: ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier
-            .background(SurfaceMuted, RoundedCornerShape(18.dp))
-            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+            .background(color.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
+            .border(1.dp, color.copy(alpha = 0.20f), RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Icon(icon, contentDescription = null, tint = PrimaryGreen)
+        Icon(icon, contentDescription = null, tint = color)
         Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
     }
 }
@@ -320,10 +338,10 @@ private fun ActivityRow(type: String, description: String, date: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(38.dp).background(FreshTeal, RoundedCornerShape(12.dp)),
+            modifier = Modifier.size(38.dp).background(HistorySlate.copy(alpha = 0.12f), RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = PrimaryGreen)
+            Icon(Icons.AutoMirrored.Filled.Assignment, contentDescription = null, tint = HistorySlate)
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
@@ -332,4 +350,56 @@ private fun ActivityRow(type: String, description: String, date: String) {
         }
         Text(date, style = MaterialTheme.typography.labelSmall, color = TextMuted)
     }
+}
+
+@Composable
+private fun rememberOnlineStatus(): Boolean {
+    val context = LocalContext.current
+    val connectivityManager = remember(context) {
+        context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+    }
+    var isOnline by remember {
+        mutableStateOf(connectivityManager.isConnectedToInternet())
+    }
+    val mainHandler = remember { Handler(Looper.getMainLooper()) }
+
+    DisposableEffect(connectivityManager) {
+        fun updateOnline(value: Boolean) {
+            mainHandler.post { isOnline = value }
+        }
+
+        val callback = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) {
+                updateOnline(connectivityManager.isConnectedToInternet())
+            }
+
+            override fun onLost(network: Network) {
+                updateOnline(connectivityManager.isConnectedToInternet())
+            }
+
+            override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
+                updateOnline(
+                    networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                        networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+                )
+            }
+        }
+
+        val request = NetworkRequest.Builder()
+            .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+            .build()
+        connectivityManager.registerNetworkCallback(request, callback)
+        onDispose {
+            runCatching { connectivityManager.unregisterNetworkCallback(callback) }
+        }
+    }
+
+    return isOnline
+}
+
+private fun ConnectivityManager.isConnectedToInternet(): Boolean {
+    val network = activeNetwork ?: return false
+    val capabilities = getNetworkCapabilities(network) ?: return false
+    return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+        capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
 }

@@ -21,8 +21,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.desacibiruwetan.posyandu.ui.screen.warga.CircularIconBox
 import com.desacibiruwetan.posyandu.ui.theme.BorderGray
+import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
 import com.desacibiruwetan.posyandu.ui.theme.Inter
-import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.SurfaceLightGray
 
 @Composable
 fun UpdateHeaderCard(
@@ -31,7 +32,7 @@ fun UpdateHeaderCard(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(SurfaceWhite, RoundedCornerShape(18.dp))
+            .background(SurfaceLightGray, RoundedCornerShape(18.dp))
             .border(1.dp, BorderGray.copy(alpha = 0.65f), RoundedCornerShape(18.dp))
             .padding(20.dp)
     ) {
@@ -45,7 +46,7 @@ fun UpdateHeaderCard(
                         fontFamily = Inter,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 12.sp,
-                        color = Color(0xFF8B8B8B)
+                        color = InfoIndigo
                     )
                     Text(
                         text = name,

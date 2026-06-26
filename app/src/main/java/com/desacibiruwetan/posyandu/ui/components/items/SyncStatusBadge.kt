@@ -15,22 +15,26 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.ui.theme.SyncOffline
+import com.desacibiruwetan.posyandu.ui.theme.SyncOfflineContainer
+import com.desacibiruwetan.posyandu.ui.theme.SyncOnline
+import com.desacibiruwetan.posyandu.ui.theme.SyncOnlineContainer
 
 @Composable
 fun SyncStatusBadge(
-    text: String,
     isOnline: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val color = if (isOnline) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+    val color = if (isOnline) SyncOnline else SyncOffline
+    val container = if (isOnline) SyncOnlineContainer else SyncOfflineContainer
+    val text = if (isOnline) "Online" else "Offline"
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(100.dp))
-            .background(color.copy(alpha = 0.10f))
-            .border(1.dp, color.copy(alpha = 0.22f), RoundedCornerShape(100.dp))
+            .background(container)
+            .border(1.dp, color.copy(alpha = 0.36f), RoundedCornerShape(100.dp))
             .padding(horizontal = 10.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

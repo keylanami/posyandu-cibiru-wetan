@@ -25,8 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.desacibiruwetan.posyandu.ui.theme.BorderLight
-import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
+import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
 import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
@@ -43,7 +42,7 @@ fun RiwayatItemCard(
         modifier = modifier
             .fillMaxWidth()
             .background(color = SurfaceWhite, shape = RoundedCornerShape(18.dp))
-            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+            .border(1.dp, HistorySlate.copy(alpha = 0.18f), RoundedCornerShape(18.dp))
             .padding(20.dp)
     ) {
         Column {
@@ -77,7 +76,7 @@ fun RiwayatItemCard(
                     Icon(
                         imageVector = Icons.Outlined.LocationOn,
                         contentDescription = "Location",
-                        tint = PrimaryGreen,
+                        tint = HistorySlate,
                         modifier = Modifier.size(18.dp)
                     )
                     Spacer(modifier = Modifier.width(6.dp))

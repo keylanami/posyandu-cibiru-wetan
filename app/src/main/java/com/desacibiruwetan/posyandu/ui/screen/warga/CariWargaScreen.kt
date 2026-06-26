@@ -67,13 +67,25 @@ import com.desacibiruwetan.posyandu.ui.components.button.PrimaryFab
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
+import com.desacibiruwetan.posyandu.ui.theme.AgeElderly
+import com.desacibiruwetan.posyandu.ui.theme.AgeElderlyContainer
+import com.desacibiruwetan.posyandu.ui.theme.AgeProductive
+import com.desacibiruwetan.posyandu.ui.theme.AgeProductiveContainer
+import com.desacibiruwetan.posyandu.ui.theme.AgeToddler
+import com.desacibiruwetan.posyandu.ui.theme.AgeToddlerContainer
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
+import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
+import com.desacibiruwetan.posyandu.ui.theme.InfoIndigo
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
-import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
+import com.desacibiruwetan.posyandu.ui.theme.ProgramPurple
+import com.desacibiruwetan.posyandu.ui.theme.ResidentFemale
+import com.desacibiruwetan.posyandu.ui.theme.ResidentFemaleContainer
+import com.desacibiruwetan.posyandu.ui.theme.ResidentMale
+import com.desacibiruwetan.posyandu.ui.theme.ResidentMaleContainer
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
@@ -209,7 +221,7 @@ fun CariWargaScreen(
                     val filtered = warga.filter {
                         query.isBlank() || it.nama.contains(query, true) || it.nik.contains(query)
                     }
-                    item { SectionIntro("Registry warga", "${filtered.size} data cocok", Icons.Default.People, PrimaryGreen) }
+                    item { SectionIntro("Registry warga", "${filtered.size} data cocok", Icons.Default.People, InfoIndigo) }
                     if (filtered.isEmpty()) {
                         item { EmptyState(icon = Icons.Default.People, message = "Tidak ada warga ditemukan") }
                     } else {
@@ -305,7 +317,7 @@ fun CariWargaScreen(
                 }
 
                 "Program" -> {
-                    item { SectionIntro("Program dan pilot", "Baca indikator, lalu input periode baru", Icons.Default.HealthAndSafety, HealthBlue) }
+                    item { SectionIntro("Program dan pilot", "Baca indikator, lalu input periode baru", Icons.Default.HealthAndSafety, ProgramPurple) }
                     item {
                         ProgramActionGrid(onNavigateToProgram)
                     }
@@ -315,7 +327,7 @@ fun CariWargaScreen(
                 }
 
                 "Log" -> {
-                    item { SectionIntro("Log aktivitas", "Riwayat aktivitas sistem dan kader", Icons.Default.Refresh, TextMuted) }
+                    item { SectionIntro("Log aktivitas", "Riwayat aktivitas sistem dan kader", Icons.Default.Refresh, HistorySlate) }
                     readCollections(readState, query, setOf("logs"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
                         selectedDetail = record.toDetail(collection.title, detailKey)
                     }
@@ -423,14 +435,31 @@ private fun SectionIntro(title: String, subtitle: String, icon: ImageVector, col
 
 @Composable
 private fun ResidentReadRow(item: AnggotaEntity, onClick: () -> Unit) {
-    ReadRow(
-        title = item.nama,
-        subtitle = item.nik,
-        meta = "${item.jenisKelamin} - ${item.kategoriUsia ?: "Umum"}",
-        icon = Icons.Default.People,
-        color = PrimaryGreen,
-        onClick = onClick
-    )
+    val accent = residentAccent(item.jenisKelamin)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(residentContainer(item.jenisKelamin), RoundedCornerShape(18.dp))
+            .border(1.dp, accent.copy(alpha = 0.24f), RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick)
+            .padding(14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(modifier = Modifier.size(42.dp).background(SurfaceWhite.copy(alpha = 0.72f), RoundedCornerShape(14.dp)), contentAlignment = Alignment.Center) {
+            Icon(Icons.Default.People, contentDescription = null, tint = accent)
+        }
+        Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
+            Text(item.nama, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(item.nik, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 6.dp)) {
+                LabelBadge(text = item.jenisKelamin, color = accent, container = SurfaceWhite.copy(alpha = 0.72f))
+                item.kategoriUsia?.takeIf { it.isNotBlank() }?.let { label ->
+                    LabelBadge(text = label, color = ageAccent(label), container = ageContainer(label))
+                }
+            }
+        }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = accent)
+    }
 }
 
 @Composable
@@ -485,17 +514,18 @@ private fun CommandBanner(title: String, subtitle: String, icon: ImageVector, on
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(FreshTeal, RoundedCornerShape(18.dp))
+            .background(ActionAmber.copy(alpha = 0.14f), RoundedCornerShape(18.dp))
+            .border(1.dp, ActionAmber.copy(alpha = 0.24f), RoundedCornerShape(18.dp))
             .clickable(onClick = onClick)
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = PrimaryGreen)
+        Icon(icon, contentDescription = null, tint = ActionAmber)
         Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = PrimaryGreen)
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = ActionAmber)
     }
 }
 
@@ -508,12 +538,12 @@ private fun HealthActionGrid(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("Balita", Icons.Default.ChildCare, balita, Modifier.weight(1f))
-            MiniAction("Bumil", Icons.Default.PregnantWoman, bumil, Modifier.weight(1f))
+            MiniAction("Balita", Icons.Default.ChildCare, ProgramPurple, balita, Modifier.weight(1f))
+            MiniAction("Bumil", Icons.Default.PregnantWoman, HealthBlue, bumil, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("WUS/PUS", Icons.Default.Favorite, wuspus, Modifier.weight(1f))
-            MiniAction("KB", Icons.Default.FamilyRestroom, kb, Modifier.weight(1f))
+            MiniAction("WUS/PUS", Icons.Default.Favorite, ActionAmber, wuspus, Modifier.weight(1f))
+            MiniAction("KB", Icons.Default.FamilyRestroom, PrimaryGreen, kb, Modifier.weight(1f))
         }
     }
 }
@@ -522,27 +552,27 @@ private fun HealthActionGrid(
 private fun ProgramActionGrid(onNavigateToProgram: (String) -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("PHBS", Icons.Default.HealthAndSafety, { onNavigateToProgram("pilot_phbs") }, Modifier.weight(1f))
-            MiniAction("Stunting", Icons.Default.ChildCare, { onNavigateToProgram("pilot_stunting") }, Modifier.weight(1f))
+            MiniAction("PHBS", Icons.Default.HealthAndSafety, PrimaryGreen, { onNavigateToProgram("pilot_phbs") }, Modifier.weight(1f))
+            MiniAction("Stunting", Icons.Default.ChildCare, ProgramPurple, { onNavigateToProgram("pilot_stunting") }, Modifier.weight(1f))
         }
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-            MiniAction("KIA", Icons.Default.PregnantWoman, { onNavigateToProgram("pilot_kia") }, Modifier.weight(1f))
-            MiniAction("Kebakaran", Icons.Default.LocalFireDepartment, { onNavigateToProgram("pilot_kebakaran") }, Modifier.weight(1f))
+            MiniAction("KIA", Icons.Default.PregnantWoman, HealthBlue, { onNavigateToProgram("pilot_kia") }, Modifier.weight(1f))
+            MiniAction("Kebakaran", Icons.Default.LocalFireDepartment, ActionAmber, { onNavigateToProgram("pilot_kebakaran") }, Modifier.weight(1f))
         }
     }
 }
 
 @Composable
-private fun MiniAction(title: String, icon: ImageVector, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun MiniAction(title: String, icon: ImageVector, color: Color, onClick: () -> Unit, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier
-            .background(SurfaceMuted, RoundedCornerShape(16.dp))
-            .border(1.dp, BorderLight, RoundedCornerShape(16.dp))
+            .background(color.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+            .border(1.dp, color.copy(alpha = 0.20f), RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(icon, contentDescription = null, tint = PrimaryGreen, modifier = Modifier.size(20.dp))
+        Icon(icon, contentDescription = null, tint = color, modifier = Modifier.size(20.dp))
         Spacer(modifier = Modifier.width(8.dp))
         Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Bold)
     }
@@ -568,8 +598,8 @@ private fun CollectionCard(
                 Text(collection.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(collection.description, style = MaterialTheme.typography.bodySmall, color = TextMuted)
             }
-            Box(modifier = Modifier.background(FreshTeal, RoundedCornerShape(999.dp)).padding(horizontal = 12.dp, vertical = 7.dp)) {
-                Text("${collection.count}", style = MaterialTheme.typography.labelLarge, color = PrimaryGreen, fontWeight = FontWeight.Bold)
+            Box(modifier = Modifier.background(InfoIndigo.copy(alpha = 0.10f), RoundedCornerShape(999.dp)).padding(horizontal = 12.dp, vertical = 7.dp)) {
+                Text("${collection.count}", style = MaterialTheme.typography.labelLarge, color = InfoIndigo, fontWeight = FontWeight.Bold)
             }
         }
         if (collection.records.isEmpty()) {
@@ -580,7 +610,8 @@ private fun CollectionCard(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(BgMint, RoundedCornerShape(14.dp))
+                        .background(HistorySlate.copy(alpha = 0.08f), RoundedCornerShape(14.dp))
+                        .border(1.dp, HistorySlate.copy(alpha = 0.12f), RoundedCornerShape(14.dp))
                         .clickable { onRecordClick(record, detailKey) }
                         .padding(12.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
@@ -688,6 +719,41 @@ private fun formatIndonesianDate(value: String?): String {
 
     return source
 }
+
+@Composable
+private fun LabelBadge(text: String, color: Color, container: Color) {
+    Box(
+        modifier = Modifier
+            .background(container, RoundedCornerShape(999.dp))
+            .border(1.dp, color.copy(alpha = 0.24f), RoundedCornerShape(999.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text, style = MaterialTheme.typography.labelSmall, color = color, fontWeight = FontWeight.Bold)
+    }
+}
+
+private fun residentAccent(jenisKelamin: String?): Color =
+    if (jenisKelamin.equals("Perempuan", ignoreCase = true)) ResidentFemale else ResidentMale
+
+private fun residentContainer(jenisKelamin: String?): Color =
+    if (jenisKelamin.equals("Perempuan", ignoreCase = true)) ResidentFemaleContainer else ResidentMaleContainer
+
+private fun ageAccent(label: String): Color =
+    when (label.lowercase()) {
+        "balita" -> AgeToddler
+        "lansia" -> AgeElderly
+        "produktif" -> AgeProductive
+        else -> HistorySlate
+    }
+
+private fun ageContainer(label: String): Color =
+    when (label.lowercase()) {
+        "balita" -> AgeToddlerContainer
+        "lansia" -> AgeElderlyContainer
+        "produktif" -> AgeProductiveContainer
+        else -> SurfaceWhite.copy(alpha = 0.72f)
+    }
 
 private fun KeluargaEntity.belongsToRumah(rumah: RumahEntity): Boolean {
     val possibleIds = setOfNotNull(rumah.serverId, rumah.localId)
