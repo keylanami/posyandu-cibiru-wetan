@@ -5,9 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.RadioButtonChecked
@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -59,6 +60,8 @@ fun TambahWargaScreen(
     keluargaViewModel: KeluargaViewmodel
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
     val sharedPreferences = remember { SessionManager.getPreferences(context) }
     val token = SessionManager.getAuthorizationHeader(context)
     val userRt = sharedPreferences.getString("USER_RT", "04") ?: "04"
@@ -151,299 +154,320 @@ fun TambahWargaScreen(
         bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
         containerColor = BgMint
     ) { paddingValues ->
-        Column(
+        LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .responsiveScreenPadding()
-                .verticalScroll(rememberScrollState())
         ) {
-            Spacer(modifier = Modifier.height(24.dp))
+            item { Spacer(modifier = Modifier.height(24.dp)) }
 
-            Text(
-                "Data Identitas",
-                fontFamily = Inter,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = Color(0xFF292929)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
+            item {
+                Text(
+                    "Data Identitas",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF292929)
+                )
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
 
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(SurfaceWhite, RoundedCornerShape(18.dp))
-                    .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
-                    .padding(24.dp)
-            ) {
-                Column {
-                    ResponsiveTwoColumn(
-                        first = { fieldModifier ->
-                        AppTextField(
-                            label = "RT",
-                            value = userRt,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = fieldModifier
-                        )
-                        },
-                        second = { fieldModifier ->
-                        AppTextField(
-                            label = "RW",
-                            value = userRw,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = fieldModifier
-                        )
-                        }
-                    )
-
-                    AppDropdownField(
-                        label = "Pilih Keluarga",
-                        value = selectedKeluargaDisplay,
-                        options = dropdownKeluargaStrings,
-                        error = fieldErrors["keluarga_id"],
-                        onValueChange = { selectedStr ->
-                            selectedKeluargaDisplay = selectedStr
-                            fieldErrors = fieldErrors - "keluarga_id"
-                            selectedKeluargaId = keluargaDropdownOptions
-                                .firstOrNull { it.display == selectedStr }
-                                ?.saveId
-                        }
-                    )
-                    if (keluargaDropdownOptions.isEmpty()) {
-                        Text(
-                            "Belum ada KK tersimpan. Buat rumah dan KK dulu, lalu kembali ke form ini.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color(0xFF66756F),
-                            modifier = Modifier.padding(bottom = 12.dp)
-                        )
-                    }
-
-                    AppTextField(
-                        label = "Nama Lengkap",
-                        value = namaLengkap,
-                        placeholder = "Masukkan Nama Lengkap",
-                        error = fieldErrors["nama"],
-                        maxLength = 100,
-                        capitalization = KeyboardCapitalization.Words,
-                        onValueChange = {
-                            namaLengkap = it
-                            fieldErrors = fieldErrors - "nama"
-                        })
-
-                    Column(modifier = Modifier
+            item {
+                Box(
+                    modifier = Modifier
                         .fillMaxWidth()
-                        .padding(bottom = 12.dp)) {
-                        Text(text = "Jenis Kelamin", style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(8.dp))
+                        .background(SurfaceWhite, RoundedCornerShape(18.dp))
+                        .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+                        .padding(24.dp)
+                ) {
+                    Column {
                         ResponsiveTwoColumn(
                             first = { fieldModifier ->
-                            RadioButtonItem(
-                                "Laki-laki",
-                                jenisKelamin == "Laki-laki",
-                                modifier = fieldModifier
-                            ) { jenisKelamin = "Laki-laki" }
+                                AppTextField(
+                                    label = "RT",
+                                    value = userRt,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = fieldModifier
+                                )
                             },
                             second = { fieldModifier ->
-                            RadioButtonItem(
-                                "Perempuan",
-                                jenisKelamin == "Perempuan",
-                                modifier = fieldModifier
-                            ) { jenisKelamin = "Perempuan" }
+                                AppTextField(
+                                    label = "RW",
+                                    value = userRw,
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    modifier = fieldModifier
+                                )
                             }
                         )
-                    }
 
-                    AppTextField(
-                        label = "NIK",
-                        value = nik,
-                        placeholder = "Masukkan 16 digit NIK",
-                        keyboardType = KeyboardType.Number,
-                        maxLength = 16,
-                        counterLabel = "NIK",
-                        error = fieldErrors["nik"],
-                        onValueChange = {
-                            val digits = it.filter(Char::isDigit).take(16)
-                            nik = digits
-                            fieldErrors = fieldErrors - "nik"
-                        })
-
-                    AppTextField(
-                        label = "Tempat Lahir",
-                        value = tempatLahir,
-                        placeholder = "Contoh: Bandung",
-                        onValueChange = { tempatLahir = it },
-                        capitalization = KeyboardCapitalization.Words
-                    )
-
-
-                    AppDateField(
-                        label = "Tanggal Lahir",
-                        value = tanggalLahir,
-                        onValueChange = {
-                            tanggalLahir = it
-                            fieldErrors = fieldErrors - "tanggal_lahir"
-                        },
-                        error = fieldErrors["tanggal_lahir"]
-                    )
-
-                    AppDropdownField(
-                        label = "Golongan Darah",
-                        value = golonganDarah,
-                        options = golonganDarahOptions,
-                        onValueChange = { golonganDarah = it })
-
-                    AppTextField(
-                        label = "Suku",
-                        value = suku,
-                        placeholder = "Contoh: Sunda",
-                        capitalization = KeyboardCapitalization.Words,
-                        onValueChange = { suku = it })
-
-                    AppDropdownField(
-                        label = "Kewarganegaraan",
-                        value = kewarganegaraan,
-                        placeholder = "Warga Negara Indonesia",
-                        options = kewarganegaraanOptions,
-                        onValueChange = {
-                            kewarganegaraan = it
-                            fieldErrors = fieldErrors - "kewarganegaraan"
-                        })
-
-                    AppDropdownField(
-                        label = "Status dalam Keluarga",
-                        value = statusKeluarga,
-                        options = statusKeluargaOptions,
-                        error = fieldErrors["status_keluarga"],
-                        onValueChange = {
-                            statusKeluarga = it
-                            fieldErrors = fieldErrors - "status_keluarga"
-                        })
-                    AppDropdownField(
-                        label = "Status Sipil",
-                        value = statusSipil,
-                        options = statusSipilOptions,
-                        error = fieldErrors["status_sipil"],
-                        onValueChange = {
-                            statusSipil = it
-                            fieldErrors = fieldErrors - "status_sipil"
-                        })
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Text(
-                "Data Sosial",
-                fontFamily = Inter,
-                fontWeight = FontWeight.Bold,
-                fontSize = 20.sp,
-                color = Color(0xFF292929)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(SurfaceWhite, RoundedCornerShape(18.dp))
-                    .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
-                    .padding(24.dp)
-            ) {
-                Column {
-                    AppDropdownField(
-                        label = "Pendidikan Terakhir",
-                        value = pendidikan,
-                        options = pendidikanOptions,
-                        onValueChange = { pendidikan = it })
-                    AppTextField(
-                        label = "Pekerjaan",
-                        value = pekerjaan,
-                        placeholder = "Contoh: Buruh, Pedagang, PNS",
-                        onValueChange = { pekerjaan = it })
-                    AppTextField(
-                        label = "No BPJS",
-                        value = noBpjs,
-                        placeholder = "Masukkan nomor BPJS",
-                        keyboardType = KeyboardType.Number,
-                        maxLength = 16,
-                        counterLabel = "NO BPJS",
-                        error = fieldErrors["no_bpjs"],
-                        onValueChange = {
-                            noBpjs = it.filter(Char::isDigit).take(16)
-                            fieldErrors = fieldErrors - "no_bpjs"
-                        })
-                    AppTextField(
-                        label = "Keterangan Tambahan",
-                        value = keterangan,
-                        placeholder = "Tambah catatan jika diperlukan...",
-                        singleLine = false,
-                        onValueChange = { keterangan = it })
-                }
-            }
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-            PrimaryButton(
-                text = "Simpan Warga Baru",
-                icon = Icons.Default.AddCircleOutline,
-                onClick = {
-                    val errors = buildMap {
-                        if (selectedKeluargaId == null) put("keluarga_id", "Keluarga wajib dipilih.")
-                        if (namaLengkap.isBlank()) put("nama", "Nama lengkap wajib diisi.")
-                        if (nik.isBlank()) put("nik", "NIK wajib diisi.")
-                        else if (nik.length != 16) put("nik", "NIK harus 16 digit.")
-                        if (tanggalLahir.isBlank()) put("tanggal_lahir", "Tanggal lahir wajib dipilih.")
-                        if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
-                        if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
-                        if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
-                        if (statusKeluarga == "Kepala Keluarga" && selectedKeluargaId != null) {
-                            val alreadyHasKepala = localAnggota.any {
-                                it.keluargaId == selectedKeluargaId &&
-                                        it.statusKeluarga.equals("Kepala Keluarga", ignoreCase = true)
-                            } || apiKeluargaOptions.any {
-                                it.id == selectedKeluargaId && !it.kepalaKeluarga.isNullOrBlank()
+                        AppDropdownField(
+                            label = "Pilih Keluarga",
+                            value = selectedKeluargaDisplay,
+                            options = dropdownKeluargaStrings,
+                            error = fieldErrors["keluarga_id"],
+                            onValueChange = { selectedStr ->
+                                selectedKeluargaDisplay = selectedStr
+                                fieldErrors = fieldErrors - "keluarga_id"
+                                selectedKeluargaId = keluargaDropdownOptions
+                                    .firstOrNull { it.display == selectedStr }
+                                    ?.saveId
                             }
+                        )
+                        if (keluargaDropdownOptions.isEmpty()) {
+                            Text(
+                                "Belum ada KK tersimpan. Buat rumah dan KK dulu, lalu kembali ke form ini.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = Color(0xFF66756F),
+                                modifier = Modifier.padding(bottom = 12.dp)
+                            )
+                        }
 
-                            if (alreadyHasKepala) {
-                                put("status_keluarga", "Keluarga ini sudah memiliki Kepala Keluarga.")
+                        AppTextField(
+                            label = "Nama Lengkap",
+                            value = namaLengkap,
+                            placeholder = "Masukkan Nama Lengkap",
+                            error = fieldErrors["nama"],
+                            maxLength = 100,
+                            capitalization = KeyboardCapitalization.Words,
+                            onValueChange = {
+                                namaLengkap = it
+                                fieldErrors = fieldErrors - "nama"
+                            })
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(bottom = 12.dp)
+                        ) {
+                            Text(text = "Jenis Kelamin", style = MaterialTheme.typography.bodyMedium)
+                            Spacer(modifier = Modifier.height(8.dp))
+                            ResponsiveTwoColumn(
+                                first = { fieldModifier ->
+                                    RadioButtonItem(
+                                        "Laki-laki",
+                                        jenisKelamin == "Laki-laki",
+                                        modifier = fieldModifier
+                                    ) { jenisKelamin = "Laki-laki" }
+                                },
+                                second = { fieldModifier ->
+                                    RadioButtonItem(
+                                        "Perempuan",
+                                        jenisKelamin == "Perempuan",
+                                        modifier = fieldModifier
+                                    ) { jenisKelamin = "Perempuan" }
+                                }
+                            )
+                        }
+
+                        AppTextField(
+                            label = "NIK",
+                            value = nik,
+                            placeholder = "Masukkan 16 digit NIK",
+                            keyboardType = KeyboardType.Number,
+                            maxLength = 16,
+                            counterLabel = "NIK",
+                            error = fieldErrors["nik"],
+                            onValueChange = {
+                                val digits = it.filter(Char::isDigit).take(16)
+                                nik = digits
+                                fieldErrors = fieldErrors - "nik"
+                            })
+
+                        AppTextField(
+                            label = "Tempat Lahir",
+                            value = tempatLahir,
+                            placeholder = "Contoh: Bandung",
+                            onValueChange = { tempatLahir = it },
+                            capitalization = KeyboardCapitalization.Words
+                        )
+
+
+                        AppDateField(
+                            label = "Tanggal Lahir",
+                            value = tanggalLahir,
+                            onValueChange = {
+                                tanggalLahir = it
+                                fieldErrors = fieldErrors - "tanggal_lahir"
+                            },
+                            error = fieldErrors["tanggal_lahir"]
+                        )
+
+                        AppDropdownField(
+                            label = "Golongan Darah",
+                            value = golonganDarah,
+                            options = golonganDarahOptions,
+                            onValueChange = { golonganDarah = it })
+
+                        AppTextField(
+                            label = "Suku",
+                            value = suku,
+                            placeholder = "Contoh: Sunda",
+                            capitalization = KeyboardCapitalization.Words,
+                            onValueChange = { suku = it })
+
+                        AppDropdownField(
+                            label = "Kewarganegaraan",
+                            value = kewarganegaraan,
+                            placeholder = "Warga Negara Indonesia",
+                            options = kewarganegaraanOptions,
+                            onValueChange = {
+                                kewarganegaraan = it
+                                fieldErrors = fieldErrors - "kewarganegaraan"
+                            })
+
+                        AppDropdownField(
+                            label = "Status dalam Keluarga",
+                            value = statusKeluarga,
+                            options = statusKeluargaOptions,
+                            error = fieldErrors["status_keluarga"],
+                            onValueChange = {
+                                statusKeluarga = it
+                                fieldErrors = fieldErrors - "status_keluarga"
+                            })
+                        AppDropdownField(
+                            label = "Status Sipil",
+                            value = statusSipil,
+                            options = statusSipilOptions,
+                            error = fieldErrors["status_sipil"],
+                            onValueChange = {
+                                statusSipil = it
+                                fieldErrors = fieldErrors - "status_sipil"
+                            })
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+
+            item {
+                Text(
+                    "Data Sosial",
+                    fontFamily = Inter,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp,
+                    color = Color(0xFF292929)
+                )
+            }
+            item { Spacer(modifier = Modifier.height(16.dp)) }
+
+            item {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(SurfaceWhite, RoundedCornerShape(18.dp))
+                        .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+                        .padding(24.dp)
+                ) {
+                    Column {
+                        AppDropdownField(
+                            label = "Pendidikan Terakhir",
+                            value = pendidikan,
+                            options = pendidikanOptions,
+                            onValueChange = { pendidikan = it })
+                        AppTextField(
+                            label = "Pekerjaan",
+                            value = pekerjaan,
+                            placeholder = "Contoh: Buruh, Pedagang, PNS",
+                            onValueChange = { pekerjaan = it })
+                        AppTextField(
+                            label = "No BPJS",
+                            value = noBpjs,
+                            placeholder = "Masukkan nomor BPJS",
+                            keyboardType = KeyboardType.Number,
+                            maxLength = 16,
+                            counterLabel = "NO BPJS",
+                            error = fieldErrors["no_bpjs"],
+                            onValueChange = {
+                                noBpjs = it.filter(Char::isDigit).take(16)
+                                fieldErrors = fieldErrors - "no_bpjs"
+                            })
+                        AppTextField(
+                            label = "Keterangan Tambahan",
+                            value = keterangan,
+                            placeholder = "Tambah catatan jika diperlukan...",
+                            singleLine = false,
+                            onValueChange = { keterangan = it })
+                    }
+                }
+            }
+
+            item { Spacer(modifier = Modifier.height(32.dp)) }
+
+            item {
+                PrimaryButton(
+                    text = "Simpan Warga Baru",
+                    icon = Icons.Default.AddCircleOutline,
+                    onClick = {
+                        val errors = buildMap {
+                            if (selectedKeluargaId == null) put("keluarga_id", "Keluarga wajib dipilih.")
+                            if (namaLengkap.isBlank()) put("nama", "Nama lengkap wajib diisi.")
+                            if (nik.isBlank()) put("nik", "NIK wajib diisi.")
+                            else if (nik.length != 16) put("nik", "NIK harus 16 digit.")
+                            if (tanggalLahir.isBlank()) put("tanggal_lahir", "Tanggal lahir wajib dipilih.")
+                            if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
+                            if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
+                            if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
+                            if (statusKeluarga == "Kepala Keluarga" && selectedKeluargaId != null) {
+                                val alreadyHasKepala = localAnggota.any {
+                                    it.keluargaId == selectedKeluargaId &&
+                                            it.statusKeluarga.equals("Kepala Keluarga", ignoreCase = true)
+                                } || apiKeluargaOptions.any {
+                                    it.id == selectedKeluargaId && !it.kepalaKeluarga.isNullOrBlank()
+                                }
+
+                                if (alreadyHasKepala) {
+                                    put("status_keluarga", "Keluarga ini sudah memiliki Kepala Keluarga.")
+                                }
                             }
                         }
-                    }
-                    if (errors.isNotEmpty()) {
-                        fieldErrors = errors
-                        return@PrimaryButton
-                    }
-                    val finalKeluargaId = selectedKeluargaId ?: return@PrimaryButton
-                    val (calculatedUsia, calculatedKategori) = calculateAgeInfo(tanggalLahir)
+                        if (errors.isNotEmpty()) {
+                            fieldErrors = errors
+                            val firstErrorKey = errors.keys.first()
+                            val errorIndex = when {
+                                firstErrorKey in listOf("keluarga_id", "nama", "nik", "tanggal_lahir", "status_keluarga", "status_sipil") -> 3
+                                firstErrorKey == "no_bpjs" -> 7
+                                else -> 0
+                            }
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(errorIndex)
+                            }
+                            return@PrimaryButton
+                        }
+                        val finalKeluargaId = selectedKeluargaId ?: return@PrimaryButton
+                        val (calculatedUsia, calculatedKategori) = calculateAgeInfo(tanggalLahir)
 
-                    anggotaViewModel.tambahAnggota(
-                        token = token,
-                        keluargaId = finalKeluargaId,
-                        nik = nik,
-                        nama = namaLengkap,
-                        tanggalLahir = tanggalLahir,
-                        jenisKelamin = jenisKelamin,
-                        pendidikanTerakhir = pendidikan,
-                        pekerjaan = pekerjaan,
-                        noBpjs = noBpjs,
-                        statusKeluarga = statusKeluarga,
-                        statusSipil = statusSipil,
-                        statusWarga = "aktif",
-                        keterangan = keterangan,
-                        usia = calculatedUsia,
-                        kategoriUsia = calculatedKategori,
-                        tempatLahir = tempatLahir.ifBlank { null },
-                        golonganDarah = golonganDarah.ifBlank { null },
-                        suku = suku.ifBlank { null },
-                        kewarganegaraan = kewarganegaraan.ifBlank { "WNI" }
-                    )
-                    Toast.makeText(context, "Anggota berhasil disimpan!", Toast.LENGTH_SHORT).show()
-                    onBackClick()
-                }
-            )
+                        anggotaViewModel.tambahAnggota(
+                            token = token,
+                            keluargaId = finalKeluargaId,
+                            nik = nik,
+                            nama = namaLengkap,
+                            tanggalLahir = tanggalLahir,
+                            jenisKelamin = jenisKelamin,
+                            pendidikanTerakhir = pendidikan,
+                            pekerjaan = pekerjaan,
+                            noBpjs = noBpjs,
+                            statusKeluarga = statusKeluarga,
+                            statusSipil = statusSipil,
+                            statusWarga = "aktif",
+                            keterangan = keterangan,
+                            usia = calculatedUsia,
+                            kategoriUsia = calculatedKategori,
+                            tempatLahir = tempatLahir.ifBlank { null },
+                            golonganDarah = golonganDarah.ifBlank { null },
+                            suku = suku.ifBlank { null },
+                            kewarganegaraan = kewarganegaraan.ifBlank { "WNI" }
+                        )
+                        Toast.makeText(context, "Anggota berhasil disimpan!", Toast.LENGTH_SHORT).show()
+                        onBackClick()
+                    }
+                )
+            }
 
-            Spacer(modifier = Modifier.height(80.dp))
+            item { Spacer(modifier = Modifier.height(80.dp)) }
         }
     }
 }
