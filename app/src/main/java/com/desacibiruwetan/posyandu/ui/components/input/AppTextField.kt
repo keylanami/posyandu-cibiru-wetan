@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -44,6 +45,7 @@ fun AppTextField(
     placeholder: String = "Masukkan $label",
     error: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
+    capitalization: KeyboardCapitalization = KeyboardCapitalization.None,
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -73,7 +75,10 @@ fun AppTextField(
             },
             readOnly = readOnly,
             singleLine = singleLine,
-            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = keyboardType,
+                capitalization = capitalization
+            ),
             visualTransformation = visualTransformation,
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) TextMuted else MaterialTheme.colorScheme.onSurface),
             modifier = Modifier.onFocusChanged { isFocused = it.isFocused },

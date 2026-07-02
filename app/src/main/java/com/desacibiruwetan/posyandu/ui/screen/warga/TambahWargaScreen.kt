@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -76,7 +77,7 @@ fun TambahWargaScreen(
     var tanggalLahir by remember { mutableStateOf("") }
     var golonganDarah by remember { mutableStateOf("") }
     var suku by remember { mutableStateOf("") }
-    var kewarganegaraan by remember { mutableStateOf("WNI") }
+    var kewarganegaraan by remember { mutableStateOf("Warga Negara Indonesia") }
 
     var statusKeluarga by remember { mutableStateOf("") }
     var statusSipil by remember { mutableStateOf("") }
@@ -95,6 +96,7 @@ fun TambahWargaScreen(
     val pendidikanOptions =
         listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
     val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
+    val kewarganegaraanOptions = listOf("Warga Negara Indonesia", "Warga Negara Asing")
 
 
     LaunchedEffect(Unit) {
@@ -224,6 +226,7 @@ fun TambahWargaScreen(
                         placeholder = "Masukkan Nama Lengkap",
                         error = fieldErrors["nama"],
                         maxLength = 100,
+                        capitalization = KeyboardCapitalization.Words,
                         onValueChange = {
                             namaLengkap = it
                             fieldErrors = fieldErrors - "nama"
@@ -270,7 +273,10 @@ fun TambahWargaScreen(
                         label = "Tempat Lahir",
                         value = tempatLahir,
                         placeholder = "Contoh: Bandung",
-                        onValueChange = { tempatLahir = it })
+                        onValueChange = { tempatLahir = it },
+                        capitalization = KeyboardCapitalization.Words
+                    )
+
 
                     AppDateField(
                         label = "Tanggal Lahir",
@@ -292,13 +298,18 @@ fun TambahWargaScreen(
                         label = "Suku",
                         value = suku,
                         placeholder = "Contoh: Sunda",
+                        capitalization = KeyboardCapitalization.Words,
                         onValueChange = { suku = it })
 
-                    AppTextField(
+                    AppDropdownField(
                         label = "Kewarganegaraan",
                         value = kewarganegaraan,
-                        placeholder = "WNI",
-                        onValueChange = { kewarganegaraan = it })
+                        placeholder = "Warga Negara Indonesia",
+                        options = kewarganegaraanOptions,
+                        onValueChange = {
+                            kewarganegaraan = it
+                            fieldErrors = fieldErrors - "kewarganegaraan"
+                        })
 
                     AppDropdownField(
                         label = "Status dalam Keluarga",
@@ -386,6 +397,18 @@ fun TambahWargaScreen(
                         if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
                         if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
                         if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
+                        if (statusKeluarga == "Kepala Keluarga" && selectedKeluargaId != null) {
+                            val alreadyHasKepala = localAnggota.any {
+                                it.keluargaId == selectedKeluargaId &&
+                                        it.statusKeluarga.equals("Kepala Keluarga", ignoreCase = true)
+                            } || apiKeluargaOptions.any {
+                                it.id == selectedKeluargaId && !it.kepalaKeluarga.isNullOrBlank()
+                            }
+
+                            if (alreadyHasKepala) {
+                                put("status_keluarga", "Keluarga ini sudah memiliki Kepala Keluarga.")
+                            }
+                        }
                     }
                     if (errors.isNotEmpty()) {
                         fieldErrors = errors

@@ -80,7 +80,7 @@ fun EditWargaScreen(
     var tanggalLahir by remember { mutableStateOf("") }
     var golonganDarah by remember { mutableStateOf("") }
     var suku by remember { mutableStateOf("") }
-    var kewarganegaraan by remember { mutableStateOf("WNI") }
+    var kewarganegaraan by remember { mutableStateOf("Warga Negara Indonesia") }
 
     var statusKeluarga by remember { mutableStateOf("") }
     var statusSipil by remember { mutableStateOf("") }
@@ -100,6 +100,7 @@ fun EditWargaScreen(
     val pendidikanOptions =
         listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
     val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
+    val kewarganegaraanOptions = listOf("Warga Negara Indonesia", "Warga Negara Asing")
 
     LaunchedEffect(anggotaLokal) {
         anggotaLokal?.let {
@@ -225,10 +226,15 @@ fun EditWargaScreen(
                         value = suku,
                         onValueChange = { suku = it })
 
-                    AppTextField(
+                    AppDropdownField(
                         label = "Kewarganegaraan",
                         value = kewarganegaraan,
-                        onValueChange = { kewarganegaraan = it })
+                        placeholder = "Warga Negara Indonesia",
+                        options = kewarganegaraanOptions,
+                        onValueChange = {
+                            kewarganegaraan = it
+                            fieldErrors = fieldErrors - "kewarganegaraan"
+                        })
 
                     AppDropdownField(
                         label = "Status dalam Keluarga",
@@ -314,6 +320,17 @@ fun EditWargaScreen(
                         if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
                         if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
                         if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
+
+                        if (statusKeluarga == "Kepala Keluarga") {
+                            val alreadyHasKepala = listWarga.any {
+                                it.keluargaId == anggotaLokal.keluargaId &&
+                                        it.statusKeluarga.equals("Kepala Keluarga", ignoreCase = true) &&
+                                        it.nik != anggotaLokal.nik
+                            }
+                            if (alreadyHasKepala) {
+                                put("status_keluarga", "Keluarga ini sudah memiliki Kepala Keluarga.")
+                            }
+                        }
                     }
                     if (errors.isNotEmpty()) {
                         fieldErrors = errors
@@ -340,7 +357,7 @@ fun EditWargaScreen(
                         tempatLahirBaru = tempatLahir.ifBlank { null },
                         golonganDarahBaru = golonganDarah.ifBlank { null },
                         sukuBaru = suku.ifBlank { null },
-                        kewarganegaraanBaru = kewarganegaraan.ifBlank { "WNI" }
+                        kewarganegaraanBaru = kewarganegaraan.ifBlank { "Warga Negara Indonesia" }
                     )
                     Toast.makeText(context, "Perubahan berhasil disimpan!", Toast.LENGTH_SHORT)
                         .show()
