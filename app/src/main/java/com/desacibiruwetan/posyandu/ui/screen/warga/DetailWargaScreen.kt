@@ -51,7 +51,7 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
 import com.desacibiruwetan.posyandu.ui.components.items.InfoKependudukanCard
-import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveThreeColumn
+import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveFourColumn
 import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
 import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
@@ -157,10 +157,11 @@ private fun IdentityHero(warga: AnggotaEntity) {
                     )
                 }
             }
-            ResponsiveThreeColumn(
+            ResponsiveFourColumn(
                 first = { SummaryPill("Usia", warga.usia ?: "-", it) },
                 second = { SummaryPill("Relasi", warga.statusKeluarga, it) },
-                third = { SummaryPill("Status", warga.statusWarga ?: "Aktif", it) }
+                third = { SummaryPill("Status", warga.statusWarga ?: "Aktif", it) },
+                four = { SummaryPill("Tersimpan", if (warga.isSynced) "Tersinkron" else "Tersimpan lokal", it)}
             )
         }
     }

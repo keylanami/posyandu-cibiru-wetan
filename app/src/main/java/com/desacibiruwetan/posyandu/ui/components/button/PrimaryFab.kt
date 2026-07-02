@@ -24,7 +24,7 @@ fun PrimaryFab(
     ExtendedFloatingActionButton(
         onClick = onClick,
         containerColor = containerColor,
-        contentColor = if (containerColor == ActionAmber) DeepGreen else Color.White,
+        contentColor = Color.White,
         shape = RoundedCornerShape(16.dp),
         icon = { Icon(imageVector = icon, contentDescription = text) },
         text = {
@@ -32,7 +32,8 @@ fun PrimaryFab(
                 text = text,
                 fontFamily = Inter,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 14.sp
+                fontSize = 14.sp,
+                color = Color.White
             )
         }
     )

@@ -44,6 +44,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,7 +55,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.navigation.Screen
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.dialog.PilotSelectionDialog
@@ -73,6 +76,9 @@ import com.desacibiruwetan.posyandu.ui.theme.ProgramPurple
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
+import com.desacibiruwetan.posyandu.viewmodel.ReadCollection
+import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
 
 @Composable
 fun DashboardScreen(
@@ -87,10 +93,19 @@ fun DashboardScreen(
     onNavigateToPilot: (String) -> Unit,
     onNavItemSelected: (Int) -> Unit,
     authViewModel: AuthViewmodel,
-    userName: String
+    userName: String,
+    activeRtRw: String,
+    dataReadViewModel: DataReadViewModel
 ) {
     var showPilotDialog by remember { mutableStateOf(false) }
     val isOnline = rememberOnlineStatus()
+    val readState by dataReadViewModel.readState.collectAsState()
+    val recentActivities = ((readState as? UiState.Success<List<ReadCollection>>)
+        ?.data
+        ?.firstOrNull { it.key == "logs" }
+        ?.records)
+        .orEmpty()
+        .take(2)
 
     if (showPilotDialog) {
         PilotSelectionDialog(
@@ -124,7 +139,7 @@ fun DashboardScreen(
                 .padding(paddingValues)
                 .verticalScroll(rememberScrollState())
         ) {
-            WorkHeader(userName = userName, isOnline = isOnline)
+            WorkHeader(userName = userName, activeRtRw = activeRtRw, isOnline = isOnline)
 
             Column(
                 modifier = Modifier.responsiveScreenPadding(vertical = 16.dp),
@@ -159,8 +174,13 @@ fun DashboardScreen(
 
                 SectionHeader("Aktivitas terakhir", "Ringkas untuk membantu kader melanjutkan pekerjaan")
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    ActivityRow("Kejadian warga", "Kelahiran - Sumarsih", "10 Mei")
-                    ActivityRow("Data warga", "Pembaruan status keluarga", "Kemarin")
+                    if (recentActivities.isEmpty()) {
+                        EmptyActivityCard()
+                    } else {
+                        recentActivities.forEach { item ->
+                            ActivityRow(item)
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(54.dp))
@@ -170,7 +190,7 @@ fun DashboardScreen(
 }
 
 @Composable
-private fun WorkHeader(userName: String, isOnline: Boolean) {
+private fun WorkHeader(userName: String, activeRtRw: String, isOnline: Boolean) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -198,7 +218,7 @@ private fun WorkHeader(userName: String, isOnline: Boolean) {
                 SyncStatusBadge(isOnline = isOnline)
             }
             ResponsiveTwoColumn(
-                first = { itemModifier -> HeaderPill("RT/RW aktif", "Sesuai akun", itemModifier) },
+                first = { itemModifier -> HeaderPill("RT/RW aktif", activeRtRw, itemModifier) },
                 second = { itemModifier -> HeaderPill("Mode kerja", "Input cepat", itemModifier) }
             )
         }
@@ -330,7 +350,7 @@ private fun CompactWorkCard(title: String, icon: ImageVector, color: Color, onCl
 }
 
 @Composable
-private fun ActivityRow(type: String, description: String, date: String) {
+private fun ActivityRow(item: ReadRecord) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -347,10 +367,43 @@ private fun ActivityRow(type: String, description: String, date: String) {
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(type, style = MaterialTheme.typography.labelMedium, color = TextMuted)
-            Text(description, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Text(
+                text = item.title,
+                style = MaterialTheme.typography.labelMedium,
+                color = TextMuted,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = item.subtitle,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-        Text(date, style = MaterialTheme.typography.labelSmall, color = TextMuted)
+        Text(
+            text = item.meta,
+            style = MaterialTheme.typography.labelSmall,
+            color = TextMuted,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+@Composable
+private fun EmptyActivityCard() {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(SurfaceWhite, RoundedCornerShape(18.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(18.dp))
+            .padding(14.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text("Belum ada aktivitas", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+        Text("Riwayat terbaru akan tampil di sini setelah data tersinkron.", style = MaterialTheme.typography.bodySmall, color = TextMuted)
     }
 }
 

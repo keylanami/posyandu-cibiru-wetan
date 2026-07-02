@@ -179,7 +179,9 @@ fun CariWargaScreen(
         anggotaViewModel.syncDataAnggotaDariServer(token)
         rumahViewModel.syncDataRumah(token)
         keluargaViewModel.syncDataKeluarga(token)
-        dataReadViewModel.refresh(token)
+        dataReadViewModel.refresh(token) {
+            isRefreshing = false
+        }
     }
 
     Scaffold(

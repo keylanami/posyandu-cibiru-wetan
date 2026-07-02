@@ -56,17 +56,24 @@ class DataReadViewModel(
         loadCache()?.let { _readState.value = UiState.Success(it) }
     }
 
-    fun refresh(token: String) {
-        if (token.isBlank()) return
+    fun refresh(token: String, onFinished: () -> Unit = {}) {
+        if (token.isBlank()) {
+            onFinished()
+            return
+        }
         viewModelScope.launch {
-            if (_readState.value !is UiState.Success) {
-                _readState.value = UiState.Loading
+            try {
+                if (_readState.value !is UiState.Success) {
+                    _readState.value = UiState.Loading
+                }
+                val collections = readEndpoints.map { endpoint ->
+                    fetchCollection(token, endpoint)
+                }
+                saveCache(collections)
+                _readState.value = UiState.Success(collections)
+            } finally {
+                onFinished()
             }
-            val collections = readEndpoints.map { endpoint ->
-                fetchCollection(token, endpoint)
-            }
-            saveCache(collections)
-            _readState.value = UiState.Success(collections)
         }
     }
 

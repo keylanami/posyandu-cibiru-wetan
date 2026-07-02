@@ -35,6 +35,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -66,11 +67,11 @@ fun ProfilScreen(
     val token = remember { SessionManager.getRawToken(context) }
     val getMeState by authViewModel.getMeState.collectAsState()
 
-    var rt by remember { mutableStateOf("-") }
-    var rw by remember { mutableStateOf("-") }
-    var usernameDisplay by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var noTelepon by remember { mutableStateOf("") }
+    var rt by remember { mutableStateOf(SessionManager.getUserRt(context).ifBlank { "-" }) }
+    var rw by remember { mutableStateOf(SessionManager.getUserRw(context).ifBlank { "-" }) }
+    var usernameDisplay by remember { mutableStateOf(SessionManager.getUserName(context)) }
+    var email by remember { mutableStateOf(SessionManager.getUserEmail(context)) }
+    var noTelepon by remember { mutableStateOf(SessionManager.getUserPhone(context)) }
 
     LaunchedEffect(Unit) {
         if (token.isNotEmpty()) authViewModel.getMe(token)
@@ -80,9 +81,10 @@ fun ProfilScreen(
         if (getMeState is UiState.Success) {
             val user = (getMeState as UiState.Success).data.data
             if (user != null) {
-                email = user.email ?: ""
+                SessionManager.saveUserProfile(context, user)
+                email = user.email
                 usernameDisplay = if (email.contains("@")) email.substringBefore("@") else email
-                noTelepon = user.phoneNumber ?: ""
+                noTelepon = user.phoneNumber
                 rt = user.rt ?: "-"
                 rw = user.rw ?: "-"
             }
@@ -142,7 +144,7 @@ fun ProfilScreen(
             ) {
                 Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(19.dp))
                 Spacer(modifier = Modifier.size(8.dp))
-                Text("Keluar", fontWeight = FontWeight.Bold)
+                Text("Keluar", fontWeight = FontWeight.Bold, color = Color.White)
             }
 
             Spacer(modifier = Modifier.height(64.dp))

@@ -24,7 +24,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.VisualTransformation
@@ -45,7 +44,6 @@ fun AppTextField(
     placeholder: String = "Masukkan $label",
     error: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
-    isDarkTheme: Boolean = false,
     readOnly: Boolean = false,
     singleLine: Boolean = true,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -56,7 +54,7 @@ fun AppTextField(
     var isFocused by remember { mutableStateOf(false) }
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
-    val bgColor = if (isDarkTheme) Color(0xFF20302C) else SurfaceLightGray
+    val bgColor = SurfaceLightGray
 
     Column(modifier = modifier
         .fillMaxWidth()

@@ -48,6 +48,7 @@ import com.desacibiruwetan.posyandu.ui.theme.HistorySlate
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceMuted
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
+import com.desacibiruwetan.posyandu.ui.theme.TextDark
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
@@ -80,7 +81,9 @@ fun RiwayatScreen(
             return
         }
         isRefreshing = true
-        dataReadViewModel.refresh(token)
+        dataReadViewModel.refresh(token) {
+            isRefreshing = false
+        }
     }
 
     val logs = when (readState) {
@@ -171,18 +174,18 @@ private fun ActivityCard(item: ReadRecord) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(HistorySlate.copy(alpha = 0.08f), RoundedCornerShape(20.dp))
-            .border(1.dp, HistorySlate.copy(alpha = 0.30f), RoundedCornerShape(20.dp))
+            .background(SurfaceWhite, RoundedCornerShape(20.dp))
+            .border(1.dp, BorderLight, RoundedCornerShape(20.dp))
             .padding(14.dp),
         verticalAlignment = Alignment.Top
     ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .background(HistorySlate, RoundedCornerShape(14.dp)),
+                .background(PrimaryGreen.copy(alpha = 0.14f), RoundedCornerShape(14.dp)),
             contentAlignment = Alignment.Center
         ) {
-            Icon(Icons.Default.History, contentDescription = null, tint = SurfaceWhite)
+            Icon(Icons.Default.History, contentDescription = null, tint = PrimaryGreen)
         }
         Column(modifier = Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
             Text(item.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
@@ -193,8 +196,8 @@ private fun ActivityCard(item: ReadRecord) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(top = 6.dp)
-                        .background(SurfaceWhite.copy(alpha = 0.74f), RoundedCornerShape(14.dp))
-                        .border(1.dp, HistorySlate.copy(alpha = 0.16f), RoundedCornerShape(14.dp))
+                        .background(SurfaceMuted, RoundedCornerShape(14.dp))
+                        .border(1.dp, BorderLight, RoundedCornerShape(14.dp))
                         .padding(10.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
@@ -214,6 +217,7 @@ private fun ActivityCard(item: ReadRecord) {
                                 text = value,
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.SemiBold,
+                                color = TextDark,
                                 modifier = Modifier.weight(0.58f)
                             )
                         }

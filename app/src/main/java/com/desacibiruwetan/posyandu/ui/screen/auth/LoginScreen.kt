@@ -1,13 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.auth
 
 import android.widget.Toast
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
-import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -20,11 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DarkMode
-import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +26,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -53,7 +41,6 @@ import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
 import com.desacibiruwetan.posyandu.ui.theme.Inter
-import com.desacibiruwetan.posyandu.ui.theme.PosyanduCibiruTheme
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
@@ -68,7 +55,6 @@ fun LoginScreenWrapper(
 ) {
     val context = LocalContext.current
     val loginState by viewmodel.loginState.collectAsState()
-    var isDarkTheme by remember { mutableStateOf(false) }
     var serverError by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(loginState) {
@@ -76,7 +62,7 @@ fun LoginScreenWrapper(
             is UiState.Success -> {
                 val loginData = (loginState as UiState.Success).data.data
                 if (loginData != null) {
-                    SessionManager.saveSession(context, loginData.token, loginData.user.rt, loginData.user.rw)
+                    SessionManager.saveSession(context, loginData.token, loginData.user)
                 }
                 Toast.makeText(context, "Login Berhasil!", Toast.LENGTH_SHORT).show()
                 viewmodel.resetLoginState()
@@ -93,28 +79,15 @@ fun LoginScreenWrapper(
     }
 
     Box(modifier = Modifier.fillMaxSize()) {
-        AnimatedContent(
-            targetState = isDarkTheme,
-            transitionSpec = {
-                (fadeIn(tween(450)) + scaleIn(tween(450), transformOrigin = TransformOrigin(1f, 0f))) togetherWith
-                    (fadeOut(tween(450)) + scaleOut(tween(450), transformOrigin = TransformOrigin(1f, 0f)))
-            },
-            label = "ThemeWaveTransition"
-        ) { targetTheme ->
-            PosyanduCibiruTheme(darkTheme = targetTheme) {
-                LoginScreen(
-                    isDarkTheme = targetTheme,
-                    isLoading = loginState is UiState.Loading,
-                    serverError = serverError,
-                    onThemeToggle = { isDarkTheme = !isDarkTheme },
-                    onNavigateToRegister = onNavigateToRegister,
-                    onLoginSubmit = { email, password ->
-                        serverError = null
-                        viewmodel.login(email, password, "Android Device")
-                    }
-                )
+        LoginScreen(
+            isLoading = loginState is UiState.Loading,
+            serverError = serverError,
+            onNavigateToRegister = onNavigateToRegister,
+            onLoginSubmit = { email, password ->
+                serverError = null
+                viewmodel.login(email, password, "Android Device")
             }
-        }
+        )
 
         if (loginState is UiState.Loading) {
             Box(
@@ -131,10 +104,8 @@ fun LoginScreenWrapper(
 
 @Composable
 fun LoginScreen(
-    isDarkTheme: Boolean,
     isLoading: Boolean,
     serverError: String?,
-    onThemeToggle: () -> Unit,
     onNavigateToRegister: () -> Unit,
     onLoginSubmit: (String, String) -> Unit
 ) {
@@ -179,19 +150,6 @@ fun LoginScreen(
                 .heightIn(min = 278.dp)
                 .background(DeepGreen)
         )
-
-        IconButton(
-            onClick = onThemeToggle,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(18.dp)
-        ) {
-            Icon(
-                imageVector = if (isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                contentDescription = "Toggle Theme",
-                tint = SurfaceWhite
-            )
-        }
 
         Column(
             modifier = Modifier
@@ -252,16 +210,14 @@ fun LoginScreen(
                     value = emailText,
                     onValueChange = { emailText = it; emailError = null },
                     error = emailError,
-                    keyboardType = KeyboardType.Email,
-                    isDarkTheme = isDarkTheme
+                    keyboardType = KeyboardType.Email
                 )
 
                 AppPasswordField(
                     label = "Password",
                     value = passwordText,
                     onValueChange = { passwordText = it; passwordError = null },
-                    error = passwordError,
-                    isDarkTheme = isDarkTheme
+                    error = passwordError
                 )
 
                 serverError?.let {

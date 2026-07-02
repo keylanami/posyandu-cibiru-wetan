@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -47,15 +46,14 @@ fun AppPasswordField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String = "Masukkan $label",
-    error: String? = null,
-    isDarkTheme: Boolean = false
+    error: String? = null
 ) {
     var isFocused by remember { mutableStateOf(false) }
     var isPasswordVisible by remember { mutableStateOf(false) }
 
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
-    val bgColor = if (isDarkTheme) Color(0xFF20302C) else SurfaceLightGray
+    val bgColor = SurfaceLightGray
 
     Column(
         modifier = Modifier

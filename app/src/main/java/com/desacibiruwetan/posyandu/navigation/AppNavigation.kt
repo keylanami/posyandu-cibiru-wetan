@@ -18,6 +18,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 
 // Import Network & Repository
@@ -130,15 +131,26 @@ fun AppNavigation() {
     )
 
     val getMeState by authViewModel.getMeState.collectAsState()
+    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = currentBackStackEntry?.destination?.route
 
+    val cachedUserName = SessionManager.getUserName(context).ifBlank { "Kader" }
     val userName = when (val state = getMeState) {
         is UiState.Success -> {
             val email = state.data.data?.email ?: ""
             if (email.contains("@")) email.substringBefore("@") else email.ifEmpty { "Kader" }
         }
 
-        is UiState.Loading -> "Memuat..."
-        else -> "Kader"
+        is UiState.Loading -> cachedUserName
+        else -> cachedUserName
+    }
+    val activeRtRw = buildString {
+        val rt = SessionManager.getUserRt(context)
+        val rw = SessionManager.getUserRw(context)
+        append("RT ")
+        append(rt.ifBlank { "-" })
+        append(" / RW ")
+        append(rw.ifBlank { "-" })
     }
 
     suspend fun syncPendingThenPull() {
@@ -154,8 +166,41 @@ fun AppNavigation() {
         dataReadViewModel.refresh(formattedToken)
     }
 
+    suspend fun sendToLogin() {
+        database.clearUserData()
+        dataReadViewModel.clearCache()
+        SessionManager.clearSession(context)
+        authViewModel.resetGetMeState()
+        navController.navigate(Screen.Login.route) {
+            popUpTo(0) { inclusive = true }
+            launchSingleTop = true
+        }
+    }
+
+    fun isPublicRoute(route: String?): Boolean {
+        return route == null || route == Screen.Login.route || route == Screen.Register.route
+    }
+
     LaunchedEffect(Unit) {
         syncPendingThenPull()
+    }
+
+    LaunchedEffect(currentRoute) {
+        if (!isPublicRoute(currentRoute) && SessionManager.getRawToken(context).isBlank()) {
+            sendToLogin()
+        }
+    }
+
+    LaunchedEffect(getMeState) {
+        val user = (getMeState as? UiState.Success)?.data?.data
+        if (user != null) {
+            SessionManager.saveUserProfile(context, user)
+        }
+
+        val message = (getMeState as? UiState.Error)?.message.orEmpty()
+        if (message.contains("Unauthorized", ignoreCase = true) || message.contains("401")) {
+            sendToLogin()
+        }
     }
 
     DisposableEffect(Unit) {
@@ -231,7 +276,9 @@ fun AppNavigation() {
                 onNavigateToPilot = { route -> navController.navigate(route) },
                 onNavItemSelected = handleBottomNav,
                 authViewModel = authViewModel,
-                userName = userName
+                userName = userName,
+                activeRtRw = activeRtRw,
+                dataReadViewModel = dataReadViewModel
             )
         }
 
@@ -268,10 +315,7 @@ fun AppNavigation() {
                 onBackClick = { navController.popBackStack() },
                 onLogoutClick = {
                     coroutineScope.launch {
-                        database.clearUserData()
-                        dataReadViewModel.clearCache()
-                        SessionManager.clearSession(context)
-                        navController.navigate(Screen.Login.route) { popUpTo(0) { inclusive = true } }
+                        sendToLogin()
                     }
                 },
                 onNavItemSelected = handleBottomNav,
