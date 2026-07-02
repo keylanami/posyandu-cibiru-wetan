@@ -4,12 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 import com.desacibiruwetan.posyandu.data.repository.RumahRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class RumahViewmodel(private val repository: RumahRepository): ViewModel(){
+
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing = _isSyncing.asStateFlow()
 
     val listRumahLocal: StateFlow<List<RumahEntity>> = repository.getAllRumahLocal().stateIn(
         scope = viewModelScope,
@@ -19,7 +24,12 @@ class RumahViewmodel(private val repository: RumahRepository): ViewModel(){
 
     fun syncDataRumah(token: String){
         viewModelScope.launch {
-            repository.pullDataFromServer(token)
+            _isSyncing.value = true
+            try {
+                repository.pullDataFromServer(token)
+            } finally {
+                _isSyncing.value = false
+            }
         }
     }
 

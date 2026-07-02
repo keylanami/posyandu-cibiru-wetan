@@ -37,6 +37,9 @@ data class WargaProgramSummary(
 
 class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() {
 
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing = _isSyncing.asStateFlow()
+
     val listAnggotaLocal: StateFlow<List<AnggotaEntity>> = repository.getAllAnggotaLocal().stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
@@ -60,7 +63,14 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
 
 
     fun syncDataAnggotaDariServer(token: String) {
-        viewModelScope.launch { repository.pullDataFromServer(token) }
+        viewModelScope.launch {
+            _isSyncing.value = true
+            try {
+                repository.pullDataFromServer(token)
+            } finally {
+                _isSyncing.value = false
+            }
+        }
     }
 
 

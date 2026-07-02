@@ -1,12 +1,15 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
@@ -52,6 +55,7 @@ private data class KeluargaDropdownOption(
     val display: String
 )
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TambahWargaScreen(
     onBackClick: () -> Unit,
@@ -89,6 +93,16 @@ fun TambahWargaScreen(
     var noBpjs by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
     var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    // Requesters for scrolling
+    val keluargaRequester = remember { BringIntoViewRequester() }
+    val namaRequester = remember { BringIntoViewRequester() }
+    val nikRequester = remember { BringIntoViewRequester() }
+    val tempatLahirRequester = remember { BringIntoViewRequester() }
+    val tanggalLahirRequester = remember { BringIntoViewRequester() }
+    val statusKeluargaRequester = remember { BringIntoViewRequester() }
+    val statusSipilRequester = remember { BringIntoViewRequester() }
+    val noBpjsRequester = remember { BringIntoViewRequester() }
 
     val statusKeluargaOptions = listOf(
         "Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu",
@@ -209,6 +223,7 @@ fun TambahWargaScreen(
                             value = selectedKeluargaDisplay,
                             options = dropdownKeluargaStrings,
                             error = fieldErrors["keluarga_id"],
+                            modifier = Modifier.bringIntoViewRequester(keluargaRequester),
                             onValueChange = { selectedStr ->
                                 selectedKeluargaDisplay = selectedStr
                                 fieldErrors = fieldErrors - "keluarga_id"
@@ -233,8 +248,17 @@ fun TambahWargaScreen(
                             error = fieldErrors["nama"],
                             maxLength = 100,
                             capitalization = KeyboardCapitalization.Words,
-                            onValueChange = {
-                                namaLengkap = it
+                            modifier = Modifier.bringIntoViewRequester(namaRequester),
+                            onValueChange = { input ->
+                                val filtered = input.filter { ch ->
+                                    ch.isLetter() ||
+                                            ch.isWhitespace() ||
+                                            ch == '-' ||
+                                            ch == '\'' ||
+                                            ch == '.'
+                                }
+
+                                namaLengkap = filtered
                                 fieldErrors = fieldErrors - "nama"
                             })
 
@@ -271,6 +295,7 @@ fun TambahWargaScreen(
                             maxLength = 16,
                             counterLabel = "NIK",
                             error = fieldErrors["nik"],
+                            modifier = Modifier.bringIntoViewRequester(nikRequester),
                             onValueChange = {
                                 val digits = it.filter(Char::isDigit).take(16)
                                 nik = digits
@@ -281,14 +306,20 @@ fun TambahWargaScreen(
                             label = "Tempat Lahir",
                             value = tempatLahir,
                             placeholder = "Contoh: Bandung",
-                            onValueChange = { tempatLahir = it },
-                            capitalization = KeyboardCapitalization.Words
+                            modifier = Modifier.bringIntoViewRequester(tempatLahirRequester),
+                            onValueChange = {
+                                tempatLahir = it
+                                fieldErrors = fieldErrors - "tempat_lahir"
+                                            },
+                            capitalization = KeyboardCapitalization.Words,
+                            error = fieldErrors["tempat_lahir"]
                         )
 
 
                         AppDateField(
                             label = "Tanggal Lahir",
                             value = tanggalLahir,
+                            modifier = Modifier.bringIntoViewRequester(tanggalLahirRequester),
                             onValueChange = {
                                 tanggalLahir = it
                                 fieldErrors = fieldErrors - "tanggal_lahir"
@@ -324,6 +355,7 @@ fun TambahWargaScreen(
                             value = statusKeluarga,
                             options = statusKeluargaOptions,
                             error = fieldErrors["status_keluarga"],
+                            modifier = Modifier.bringIntoViewRequester(statusKeluargaRequester),
                             onValueChange = {
                                 statusKeluarga = it
                                 fieldErrors = fieldErrors - "status_keluarga"
@@ -333,6 +365,7 @@ fun TambahWargaScreen(
                             value = statusSipil,
                             options = statusSipilOptions,
                             error = fieldErrors["status_sipil"],
+                            modifier = Modifier.bringIntoViewRequester(statusSipilRequester),
                             onValueChange = {
                                 statusSipil = it
                                 fieldErrors = fieldErrors - "status_sipil"
@@ -381,6 +414,7 @@ fun TambahWargaScreen(
                             maxLength = 16,
                             counterLabel = "NO BPJS",
                             error = fieldErrors["no_bpjs"],
+                            modifier = Modifier.bringIntoViewRequester(noBpjsRequester),
                             onValueChange = {
                                 noBpjs = it.filter(Char::isDigit).take(16)
                                 fieldErrors = fieldErrors - "no_bpjs"
@@ -410,6 +444,7 @@ fun TambahWargaScreen(
                             if (tanggalLahir.isBlank()) put("tanggal_lahir", "Tanggal lahir wajib dipilih.")
                             if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
                             if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
+                            if (tempatLahir.isBlank()) put("tempat_lahir", "Tempat Lahir wajib diisi.")
                             if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
                             if (statusKeluarga == "Kepala Keluarga" && selectedKeluargaId != null) {
                                 val alreadyHasKepala = localAnggota.any {
@@ -427,13 +462,17 @@ fun TambahWargaScreen(
                         if (errors.isNotEmpty()) {
                             fieldErrors = errors
                             val firstErrorKey = errors.keys.first()
-                            val errorIndex = when {
-                                firstErrorKey in listOf("keluarga_id", "nama", "nik", "tanggal_lahir", "status_keluarga", "status_sipil") -> 3
-                                firstErrorKey == "no_bpjs" -> 7
-                                else -> 0
-                            }
                             coroutineScope.launch {
-                                listState.animateScrollToItem(errorIndex)
+                                when (firstErrorKey) {
+                                    "keluarga_id" -> keluargaRequester.bringIntoView()
+                                    "nama" -> namaRequester.bringIntoView()
+                                    "nik" -> nikRequester.bringIntoView()
+                                    "tempat_lahir" -> tempatLahirRequester.bringIntoView()
+                                    "tanggal_lahir" -> tanggalLahirRequester.bringIntoView()
+                                    "status_keluarga" -> statusKeluargaRequester.bringIntoView()
+                                    "status_sipil" -> statusSipilRequester.bringIntoView()
+                                    "no_bpjs" -> noBpjsRequester.bringIntoView()
+                                }
                             }
                             return@PrimaryButton
                         }
@@ -456,7 +495,7 @@ fun TambahWargaScreen(
                             keterangan = keterangan,
                             usia = calculatedUsia,
                             kategoriUsia = calculatedKategori,
-                            tempatLahir = tempatLahir.ifBlank { null },
+                            tempatLahir = tempatLahir,
                             golonganDarah = golonganDarah.ifBlank { null },
                             suku = suku.ifBlank { null },
                             kewarganegaraan = kewarganegaraan.ifBlank { "WNI" }
@@ -467,7 +506,7 @@ fun TambahWargaScreen(
                 )
             }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) }
+            //item { Spacer(modifier = Modifier.height(80.dp)) }
         }
     }
 }

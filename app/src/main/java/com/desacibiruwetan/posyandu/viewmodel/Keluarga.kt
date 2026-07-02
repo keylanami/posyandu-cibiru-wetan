@@ -5,14 +5,19 @@ import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.repository.KeluargaRepository
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel() {
 
-    private val _keluargaOptions = kotlinx.coroutines.flow.MutableStateFlow<List<com.desacibiruwetan.posyandu.data.model.KeluargaOpt>>(emptyList())
+    private val _isSyncing = MutableStateFlow(false)
+    val isSyncing = _isSyncing.asStateFlow()
+
+    private val _keluargaOptions = MutableStateFlow<List<com.desacibiruwetan.posyandu.data.model.KeluargaOpt>>(emptyList())
     val keluargaOptions: StateFlow<List<com.desacibiruwetan.posyandu.data.model.KeluargaOpt>> = _keluargaOptions
 
     val listKeluargaLocal: StateFlow<List<KeluargaEntity>> = repository.getAllKeluargaLocal().stateIn(
@@ -24,7 +29,12 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
 
     fun syncDataKeluarga(token: String){
         viewModelScope.launch {
-            repository.pullDataFromServer(token)
+            _isSyncing.value = true
+            try {
+                repository.pullDataFromServer(token)
+            } finally {
+                _isSyncing.value = false
+            }
         }
     }
 

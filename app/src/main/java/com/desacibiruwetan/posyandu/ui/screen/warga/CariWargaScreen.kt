@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.People
 import androidx.compose.material.icons.filled.PregnantWoman
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -147,6 +148,12 @@ fun CariWargaScreen(
     val rumah by rumahViewModel.listRumahLocal.collectAsState()
     val keluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
     val readState by dataReadViewModel.readState.collectAsState()
+
+    val isSyncingAnggota by anggotaViewModel.isSyncing.collectAsState()
+    val isSyncingRumah by rumahViewModel.isSyncing.collectAsState()
+    val isSyncingKeluarga by keluargaViewModel.isSyncing.collectAsState()
+    val isLoading = isSyncingAnggota || isSyncingRumah || isSyncingKeluarga || readState is UiState.Loading || isRefreshing
+
     val addAction = when (section) {
         "Warga" -> DataAddAction("Tambah warga", Icons.Default.Add, onAddWargaClick)
         "Rumah" -> DataAddAction("Tambah rumah", Icons.Default.Home, onNavigateToRumahKeluarga)
@@ -242,123 +249,128 @@ fun CariWargaScreen(
                         }
                     }
                 }
-                when (section) {
-                "Warga" -> {
-                    val filtered = warga.filter {
-                        query.isBlank() || it.nama.contains(query, true) || it.nik.contains(query)
-                    }
-                    item { SectionIntro("Registry warga", "${filtered.size} data cocok", Icons.Default.People, HealthBlue) }
-                    if (filtered.isEmpty()) {
-                        item { EmptyState(icon = Icons.Default.People, message = "Tidak ada warga ditemukan") }
-                    } else {
-                        items(filtered, key = { it.nik }) { item ->
-                            ResidentReadRow(item, onClick = { onNavigateToDetailWarga(item.nik) })
-                        }
-                    }
-                }
 
-                "Rumah" -> {
-                    val filtered = rumah.filter {
-                        query.isBlank() || it.alamat.orEmpty().contains(query, true) || it.noRumah?.toString().orEmpty().contains(query)
-                    }
-                    item { SectionIntro("Rumah", "${filtered.size} rumah dari hasil sinkron", Icons.Default.Home, HealthBlue) }
-                    item {
-                        CommandBanner("Tambah / edit rumah dan keluarga", "Buka modul rumah untuk membuat rumah, KK, dan anggota keluarga.", Icons.Default.Home, onNavigateToRumahKeluarga)
-                    }
-                    items(filtered, key = { it.localId }) { item ->
-                        val detailKey = "rumah-${item.localId}"
-                        val relatedFamilies = keluarga.filter { it.belongsToRumah(item) }
-                        RumahReadRow(
-                            item = item,
-                            familyCount = relatedFamilies.size,
-                            onClick = {
-                                selectedDetail = DetailInfo(
-                                    key = detailKey,
-                                    title = "Rumah ${item.noRumah ?: "-"}",
-                                    subtitle = item.alamat ?: "Alamat belum diisi",
-                                    rows = listOf(
-                                        "Jumlah keluarga" to "${relatedFamilies.size}",
-                                        "Alamat" to (item.alamat ?: "-"),
-                                        "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
-                                        "Dibuat" to formatIndonesianDate(item.createdAt),
-                                        "Diubah" to formatIndonesianDate(item.updatedAt)
-                                    ) + relatedFamilies.mapIndexed { index, family ->
-                                        "Keluarga ${index + 1}" to "KK ${family.noKK}"
+                if (isLoading) {
+                    item { DataSectionLoading() }
+                } else {
+                    when (section) {
+                        "Warga" -> {
+                            val filtered = warga.filter {
+                                query.isBlank() || it.nama.contains(query, true) || it.nik.contains(query)
+                            }
+                            item { SectionIntro("Registry warga", "${filtered.size} data cocok", Icons.Default.People, HealthBlue) }
+                            if (filtered.isEmpty()) {
+                                item { EmptyState(icon = Icons.Default.People, message = "Tidak ada warga ditemukan") }
+                            } else {
+                                items(filtered, key = { it.nik }) { item ->
+                                    ResidentReadRow(item, onClick = { onNavigateToDetailWarga(item.nik) })
+                                }
+                            }
+                        }
+
+                        "Rumah" -> {
+                            val filtered = rumah.filter {
+                                query.isBlank() || it.alamat.orEmpty().contains(query, true) || it.noRumah?.toString().orEmpty().contains(query)
+                            }
+                            item { SectionIntro("Rumah", "${filtered.size} rumah dari hasil sinkron", Icons.Default.Home, HealthBlue) }
+                            item {
+                                CommandBanner("Tambah / edit rumah dan keluarga", "Buka modul rumah untuk membuat rumah, KK, dan anggota keluarga.", Icons.Default.Home, onNavigateToRumahKeluarga)
+                            }
+                            items(filtered, key = { it.localId }) { item ->
+                                val detailKey = "rumah-${item.localId}"
+                                val relatedFamilies = keluarga.filter { it.belongsToRumah(item) }
+                                RumahReadRow(
+                                    item = item,
+                                    familyCount = relatedFamilies.size,
+                                    onClick = {
+                                        selectedDetail = DetailInfo(
+                                            key = detailKey,
+                                            title = "Rumah ${item.noRumah ?: "-"}",
+                                            subtitle = item.alamat ?: "Alamat belum diisi",
+                                            rows = listOf(
+                                                "Jumlah keluarga" to "${relatedFamilies.size}",
+                                                "Alamat" to (item.alamat ?: "-"),
+                                                "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
+                                                "Dibuat" to formatIndonesianDate(item.createdAt),
+                                                "Diubah" to formatIndonesianDate(item.updatedAt)
+                                            ) + relatedFamilies.mapIndexed { index, family ->
+                                                "Keluarga ${index + 1}" to "KK ${family.noKK}"
+                                            }
+                                        )
                                     }
                                 )
+                                if (selectedDetail?.key == detailKey) {
+                                    DetailPanel(detail = selectedDetail!!, onClose = { selectedDetail = null })
+                                }
                             }
-                        )
-                        if (selectedDetail?.key == detailKey) {
-                            DetailPanel(detail = selectedDetail!!, onClose = { selectedDetail = null })
                         }
-                    }
-                }
 
-                "Keluarga" -> {
-                    val filtered = keluarga.filter { query.isBlank() || it.noKK.contains(query, true) || it.rumahId.toString().contains(query) }
-                    item { SectionIntro("Keluarga", "${filtered.size} kartu keluarga", Icons.Default.Groups, ActionAmber) }
-                    item {
-                        CommandBanner("Kelola KK", "Tambah keluarga dari modul rumah, lalu isi anggota di dalamnya.", Icons.Default.Groups, onNavigateToRumahKeluarga)
-                    }
-                    items(filtered, key = { it.localId }) { item ->
-                        val detailKey = "keluarga-${item.localId}"
-                        val members = warga.filter { it.belongsToKeluarga(item) }
-                        val rumahLabel = rumah.firstOrNull { item.belongsToRumah(it) }?.noRumah?.let { "Rumah $it" }
-                            ?: "Rumah belum dikenali"
-                        KeluargaReadRow(
-                            item = item,
-                            memberCount = members.size,
-                            rumahLabel = rumahLabel,
-                            onClick = {
-                                selectedDetail = DetailInfo(
-                                    key = detailKey,
-                                    title = "KK ${item.noKK}",
-                                    subtitle = rumahLabel,
-                                    rows = listOf(
-                                        "Jumlah anggota" to "${members.size}",
-                                        "Rumah" to rumahLabel,
-                                        "Tempat tinggal" to if (item.isNgontrak) "Ngontrak" else "Milik sendiri",
-                                        "Kategori Gakin" to if (item.isGakin == true) "Ya" else "Tidak",
-                                        "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
-                                        "Dibuat" to formatIndonesianDate(item.createdAt),
-                                        "Diubah" to formatIndonesianDate(item.updatedAt)
-                                    ) + members.mapIndexed { index, member ->
-                                        "Anggota ${index + 1}" to "${member.nama} - ${member.statusKeluarga}"
+                        "Keluarga" -> {
+                            val filtered = keluarga.filter { query.isBlank() || it.noKK.contains(query, true) || it.rumahId.toString().contains(query) }
+                            item { SectionIntro("Keluarga", "${filtered.size} kartu keluarga", Icons.Default.Groups, ActionAmber) }
+                            item {
+                                CommandBanner("Kelola KK", "Tambah keluarga dari modul rumah, lalu isi anggota di dalamnya.", Icons.Default.Groups, onNavigateToRumahKeluarga)
+                            }
+                            items(filtered, key = { it.localId }) { item ->
+                                val detailKey = "keluarga-${item.localId}"
+                                val members = warga.filter { it.belongsToKeluarga(item) }
+                                val rumahLabel = rumah.firstOrNull { item.belongsToRumah(it) }?.noRumah?.let { "Rumah $it" }
+                                    ?: "Rumah belum dikenali"
+                                KeluargaReadRow(
+                                    item = item,
+                                    memberCount = members.size,
+                                    rumahLabel = rumahLabel,
+                                    onClick = {
+                                        selectedDetail = DetailInfo(
+                                            key = detailKey,
+                                            title = "KK ${item.noKK}",
+                                            subtitle = rumahLabel,
+                                            rows = listOf(
+                                                "Jumlah anggota" to "${members.size}",
+                                                "Rumah" to rumahLabel,
+                                                "Tempat tinggal" to if (item.isNgontrak) "Ngontrak" else "Milik sendiri",
+                                                "Kategori Gakin" to if (item.isGakin == true) "Ya" else "Tidak",
+                                                "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
+                                                "Dibuat" to formatIndonesianDate(item.createdAt),
+                                                "Diubah" to formatIndonesianDate(item.updatedAt)
+                                            ) + members.mapIndexed { index, member ->
+                                                "Anggota ${index + 1}" to "${member.nama} - ${member.statusKeluarga}"
+                                            }
+                                        )
                                     }
                                 )
+                                if (selectedDetail?.key == detailKey) {
+                                    DetailPanel(detail = selectedDetail!!, onClose = { selectedDetail = null })
+                                }
                             }
-                        )
-                        if (selectedDetail?.key == detailKey) {
-                            DetailPanel(detail = selectedDetail!!, onClose = { selectedDetail = null })
+                        }
+
+                        "Kesehatan" -> {
+                            item { SectionIntro("Data kesehatan", "Lihat dan update data sasaran warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
+                            item { HealthActionGrid(onNavigateToUpdateBalita, onNavigateToUpdateBumil, onNavigateToUpdateWusPus, onNavigateToUpdateKb) }
+                            readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
+                                selectedDetail = record.toDetail(collection.title, detailKey)
+                            }
+                        }
+
+                        "Program" -> {
+                            item { SectionIntro("Program dan pilot", "Baca indikator, lalu input periode baru", Icons.Default.HealthAndSafety, ProgramPurple) }
+                            item {
+                                ProgramActionGrid(onNavigateToProgram)
+                            }
+                            readCollections(readState, query, setOf("kia", "phbs", "stunting", "kebakaran"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
+                                selectedDetail = record.toDetail(collection.title, detailKey)
+                            }
+                        }
+
+                        "Log" -> {
+                            item { SectionIntro("Log aktivitas", "Riwayat aktivitas sistem dan kader", Icons.Default.Refresh, HistorySlate) }
+                            readCollections(readState, query, setOf("logs"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
+                                selectedDetail = record.toDetail(collection.title, detailKey)
+                            }
                         }
                     }
                 }
-
-                "Kesehatan" -> {
-                    item { SectionIntro("Data kesehatan", "Lihat dan update data sasaran warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
-                    item { HealthActionGrid(onNavigateToUpdateBalita, onNavigateToUpdateBumil, onNavigateToUpdateWusPus, onNavigateToUpdateKb) }
-                    readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
-                        selectedDetail = record.toDetail(collection.title, detailKey)
-                    }
-                }
-
-                "Program" -> {
-                    item { SectionIntro("Program dan pilot", "Baca indikator, lalu input periode baru", Icons.Default.HealthAndSafety, ProgramPurple) }
-                    item {
-                        ProgramActionGrid(onNavigateToProgram)
-                    }
-                    readCollections(readState, query, setOf("kia", "phbs", "stunting", "kebakaran"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
-                        selectedDetail = record.toDetail(collection.title, detailKey)
-                    }
-                }
-
-                "Log" -> {
-                    item { SectionIntro("Log aktivitas", "Riwayat aktivitas sistem dan kader", Icons.Default.Refresh, HistorySlate) }
-                    readCollections(readState, query, setOf("logs"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
-                        selectedDetail = record.toDetail(collection.title, detailKey)
-                    }
-                }
-            }
                 item { Spacer(modifier = Modifier.height(88.dp)) }
             }
         }
@@ -398,6 +410,18 @@ private fun androidx.compose.foundation.lazy.LazyListScope.readCollections(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun DataSectionLoading() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 48.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(color = PrimaryGreen)
     }
 }
 

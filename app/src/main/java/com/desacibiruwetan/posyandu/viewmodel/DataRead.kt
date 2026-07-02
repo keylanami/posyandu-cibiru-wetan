@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import com.desacibiruwetan.posyandu.data.network.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,11 +42,12 @@ private data class ReadEndpoint(
     val description: String,
     val canCreate: Boolean = true,
     val previewLimit: Int = 5,
-    val mapper: (JSONObject) -> ReadRecord
+    val mapper: suspend (JSONObject) -> ReadRecord
 )
 
 class DataReadViewModel(
     private val apiService: ApiService,
+    private val anggotaDao: AnggotaDao,
     context: Context
 ) : ViewModel() {
     private val appContext = context.applicationContext
@@ -104,7 +106,7 @@ class DataReadViewModel(
             }
 
             val records = (0 until minOf(items.length(), endpoint.previewLimit)).mapNotNull { index ->
-                items.optJSONObject(index)?.let(endpoint.mapper)
+                items.optJSONObject(index)?.let { endpoint.mapper(it) }
             }
 
                 ReadCollection(
@@ -408,9 +410,14 @@ class DataReadViewModel(
             path = "bumils",
             description = "Ibu hamil dan data ASI/kehamilan"
         ) {
+            val anggotaId = it.optInt("anggota_id")
+            val nama = it.text("nama").takeIf { n -> n != "-" }
+                ?: anggotaDao.getAnggotaByLocalOrServerId(anggotaId)?.nama
+                ?: "Anggota $anggotaId"
+
             ReadRecord(
                 id = it.text("id"),
-                title = "Anggota ${it.text("anggota_id")}",
+                title = nama,
                 subtitle = "Hamil ke-${it.text("hamil_ke")}",
                 meta = if (it.optBoolean("asi_eksklusif", false)) "ASI eksklusif" else "Belum ASI eksklusif"
             )
@@ -419,11 +426,16 @@ class DataReadViewModel(
             key = "wuspus",
             title = "WUS/PUS",
             path = "wus-pus",
-            description = "Wanita/pasangan usia subur dan statusnya"
+            description = "Wanita/pasangan usia subur and statusnya"
         ) {
+            val anggotaId = it.optInt("anggota_id")
+            val nama = it.text("nama").takeIf { n -> n != "-" }
+                ?: anggotaDao.getAnggotaByLocalOrServerId(anggotaId)?.nama
+                ?: "Anggota $anggotaId"
+
             ReadRecord(
                 id = it.text("id"),
-                title = "Anggota ${it.text("anggota_id")}",
+                title = nama,
                 subtitle = it.text("status_kategori", fallback = "Status belum diisi"),
                 meta = it.text("nama_suami", fallback = "Tanpa nama suami")
             )

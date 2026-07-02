@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
 import android.widget.Toast
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -17,6 +18,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -40,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +65,7 @@ import com.desacibiruwetan.posyandu.utils.normalizeDateForForm
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EditWargaScreen(
     onBackClick: () -> Unit,
@@ -94,6 +99,15 @@ fun EditWargaScreen(
     var keterangan by remember { mutableStateOf("") }
     var statusWarga by remember { mutableStateOf("aktif") }
     var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    // Requesters for scrolling
+    val namaRequester = remember { BringIntoViewRequester() }
+    val nikRequester = remember { BringIntoViewRequester() }
+    val tempatLahirRequester = remember { BringIntoViewRequester() }
+    val tanggalLahirRequester = remember { BringIntoViewRequester() }
+    val statusKeluargaRequester = remember { BringIntoViewRequester() }
+    val statusSipilRequester = remember { BringIntoViewRequester() }
+    val noBpjsRequester = remember { BringIntoViewRequester() }
 
     val statusKeluargaOptions = listOf(
         "Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu",
@@ -167,8 +181,17 @@ fun EditWargaScreen(
                             value = namaLengkap,
                             error = fieldErrors["nama"],
                             maxLength = 100,
-                            onValueChange = {
-                                namaLengkap = it
+                            modifier = Modifier.bringIntoViewRequester(namaRequester),
+                            onValueChange = { input ->
+                                val filtered = input.filter { ch ->
+                                    ch.isLetter() ||
+                                            ch.isWhitespace() ||
+                                            ch == '-' ||
+                                            ch == '\'' ||
+                                            ch == '.'
+                                }
+
+                                namaLengkap = filtered
                                 fieldErrors = fieldErrors - "nama"
                             })
 
@@ -204,6 +227,7 @@ fun EditWargaScreen(
                             maxLength = 16,
                             counterLabel = "NIK",
                             error = fieldErrors["nik"],
+                            modifier = Modifier.bringIntoViewRequester(nikRequester),
                             onValueChange = {
                                 nik = it.filter(Char::isDigit).take(16)
                                 fieldErrors = fieldErrors - "nik"
@@ -212,12 +236,21 @@ fun EditWargaScreen(
                         AppTextField(
                             label = "Tempat Lahir",
                             value = tempatLahir,
-                            onValueChange = { tempatLahir = it })
+                            placeholder = "Contoh: Bandung",
+                            modifier = Modifier.bringIntoViewRequester(tempatLahirRequester),
+                            onValueChange = {
+                                tempatLahir = it
+                                fieldErrors = fieldErrors - "tempat_lahir"
+                            },
+                            capitalization = KeyboardCapitalization.Words,
+                            error = fieldErrors["tempat_lahir"]
+                        )
 
                         AppDateField(
                             label = "Tanggal Lahir",
                             value = tanggalLahir,
                             error = fieldErrors["tanggal_lahir"],
+                            modifier = Modifier.bringIntoViewRequester(tanggalLahirRequester),
                             onValueChange = {
                                 tanggalLahir = it
                                 fieldErrors = fieldErrors - "tanggal_lahir"
@@ -250,6 +283,7 @@ fun EditWargaScreen(
                             value = statusKeluarga,
                             options = statusKeluargaOptions,
                             error = fieldErrors["status_keluarga"],
+                            modifier = Modifier.bringIntoViewRequester(statusKeluargaRequester),
                             onValueChange = {
                                 statusKeluarga = it
                                 fieldErrors = fieldErrors - "status_keluarga"
@@ -259,6 +293,7 @@ fun EditWargaScreen(
                             value = statusSipil,
                             options = statusSipilOptions,
                             error = fieldErrors["status_sipil"],
+                            modifier = Modifier.bringIntoViewRequester(statusSipilRequester),
                             onValueChange = {
                                 statusSipil = it
                                 fieldErrors = fieldErrors - "status_sipil"
@@ -305,6 +340,7 @@ fun EditWargaScreen(
                             maxLength = 16,
                             counterLabel = "NO BPJS",
                             error = fieldErrors["no_bpjs"],
+                            modifier = Modifier.bringIntoViewRequester(noBpjsRequester),
                             onValueChange = {
                                 noBpjs = it.filter(Char::isDigit).take(16)
                                 fieldErrors = fieldErrors - "no_bpjs"
@@ -332,6 +368,7 @@ fun EditWargaScreen(
                             if (nik.isBlank()) put("nik", "NIK wajib diisi.")
                             else if (nik.length != 16) put("nik", "NIK harus 16 digit.")
                             if (tanggalLahir.isBlank()) put("tanggal_lahir", "Tanggal lahir wajib dipilih.")
+                            if (tempatLahir.isBlank()) put("tempat_lahir", "Tempat Lahir wajib diisi.")
                             if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
                             if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
                             if (noBpjs.isNotBlank() && noBpjs.length != 16) put(
@@ -353,13 +390,16 @@ fun EditWargaScreen(
                         if (errors.isNotEmpty()) {
                             fieldErrors = errors
                             val firstErrorKey = errors.keys.first()
-                            val errorIndex = when {
-                                firstErrorKey in listOf("nama", "nik", "tanggal_lahir", "status_keluarga", "status_sipil") -> 3
-                                firstErrorKey == "no_bpjs" -> 7
-                                else -> 0
-                            }
                             coroutineScope.launch {
-                                listState.animateScrollToItem(errorIndex)
+                                when (firstErrorKey) {
+                                    "nama" -> namaRequester.bringIntoView()
+                                    "nik" -> nikRequester.bringIntoView()
+                                    "tempat_lahir" -> tempatLahirRequester.bringIntoView()
+                                    "tanggal_lahir" -> tanggalLahirRequester.bringIntoView()
+                                    "status_keluarga" -> statusKeluargaRequester.bringIntoView()
+                                    "status_sipil" -> statusSipilRequester.bringIntoView()
+                                    "no_bpjs" -> noBpjsRequester.bringIntoView()
+                                }
                             }
                             return@PrimaryButton
                         }
@@ -393,7 +433,7 @@ fun EditWargaScreen(
                 )
             }
 
-            item { Spacer(modifier = Modifier.height(80.dp)) }
+            //item { Spacer(modifier = Modifier.height(80.dp)) }
         }
     }
 }
