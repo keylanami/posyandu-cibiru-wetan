@@ -65,7 +65,8 @@ fun AppPasswordField(
 
         BasicTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = { onValueChange(it.replace("\n", "").replace("\r", "")) },
+            singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),

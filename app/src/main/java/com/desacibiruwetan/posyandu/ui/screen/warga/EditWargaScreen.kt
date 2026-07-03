@@ -89,7 +89,7 @@ fun EditWargaScreen(
     var tanggalLahir by remember { mutableStateOf("") }
     var golonganDarah by remember { mutableStateOf("") }
     var suku by remember { mutableStateOf("") }
-    var kewarganegaraan by remember { mutableStateOf("Warga Negara Indonesia") }
+    var kewarganegaraan by remember { mutableStateOf("WNI") }
 
     var statusKeluarga by remember { mutableStateOf("") }
     var statusSipil by remember { mutableStateOf("") }
@@ -115,10 +115,36 @@ fun EditWargaScreen(
     )
     val statusSipilOptions =
         listOf("Belum Kawin", "Kawin Tercatat", "Kawin Belum Tercatat", "Cerai Hidup", "Cerai Mati")
-    val pendidikanOptions =
-        listOf("Tidak/Belum Sekolah", "SD", "SMP", "SMA/SMK", "Diploma", "Sarjana", "Pascasarjana")
+    val pendidikanOptions = listOf(
+        "Belum masuk TK/Kelompok Bermain",
+        "Sedang D-1/sederajat",
+        "Sedang D-2/sederajat",
+        "Sedang D-3/sederajat",
+        "Sedang S-1/sederajat",
+        "Sedang S-2/sederajat",
+        "Sedang S-3/sederajat",
+        "Sedang SD/sederajat",
+        "Sedang SLB B/sederajat",
+        "Sedang SLTA/sederajat",
+        "Sedang SLTP/Sederajat",
+        "Sedang TK/Kelompok Bermain",
+        "Tamat D-1/sederajat",
+        "Tamat D-2/sederajat",
+        "Tamat D-3/sederajat",
+        "Tamat D-4/sederajat",
+        "Tamat S-1/sederajat",
+        "Tamat S-2/sederajat",
+        "Tamat S-3/sederajat",
+        "Tamat SD/sederajat",
+        "Tamat SLB B/sederajat",
+        "Tamat SLB C/sederajat",
+        "Tamat SLTA/sederajat",
+        "Tamat SLTP/sederajat",
+        "Tidak pernah sekolah",
+        "Tidak tamat SD/sederajat"
+    )
     val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
-    val kewarganegaraanOptions = listOf("Warga Negara Indonesia", "Warga Negara Asing")
+    val kewarganegaraanOptions = listOf("WNI", "WNA")
 
     LaunchedEffect(anggotaLokal) {
         anggotaLokal?.let {
@@ -134,7 +160,7 @@ fun EditWargaScreen(
 
             statusKeluarga = it.statusKeluarga
             statusSipil = it.statusSipil
-            pendidikan = it.pendidikanTerakhir ?: "Tidak/Belum Sekolah"
+            pendidikan = it.pendidikanTerakhir ?: "Tidak pernah sekolah"
             pekerjaan = it.pekerjaan ?: "Tidak Bekerja"
             noBpjs = it.noBpjs ?: ""
             keterangan = it.keterangan ?: ""
@@ -271,7 +297,7 @@ fun EditWargaScreen(
                         AppDropdownField(
                             label = "Kewarganegaraan",
                             value = kewarganegaraan,
-                            placeholder = "Warga Negara Indonesia",
+                            placeholder = "WNI",
                             options = kewarganegaraanOptions,
                             onValueChange = {
                                 kewarganegaraan = it
@@ -424,7 +450,7 @@ fun EditWargaScreen(
                             tempatLahirBaru = tempatLahir.ifBlank { null },
                             golonganDarahBaru = golonganDarah.ifBlank { null },
                             sukuBaru = suku.ifBlank { null },
-                            kewarganegaraanBaru = kewarganegaraan.ifBlank { "Warga Negara Indonesia" }
+                            kewarganegaraanBaru = kewarganegaraan.ifBlank { "WNI" }
                         )
                         Toast.makeText(context, "Perubahan berhasil disimpan!", Toast.LENGTH_SHORT)
                             .show()

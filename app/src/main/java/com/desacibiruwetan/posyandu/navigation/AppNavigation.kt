@@ -174,9 +174,20 @@ fun AppNavigation() {
         dataReadViewModel.clearCache()
         SessionManager.clearSession(context)
         authViewModel.resetGetMeState()
+        authViewModel.resetLogoutState()
         safeNavController.navigate(Screen.Login.route) {
             popUpTo(0) { inclusive = true }
         }
+    }
+
+    suspend fun logoutThenSendToLogin() {
+        val rawToken = SessionManager.getRawToken(context)
+        if (rawToken.isNotBlank()) {
+            runCatching {
+                apiService.logout(SessionManager.formatAuthorizationHeader(rawToken))
+            }
+        }
+        sendToLogin()
     }
 
     fun isPublicRoute(route: String?): Boolean {
@@ -234,11 +245,10 @@ fun AppNavigation() {
         }
 
         if (route != null) {
-            safeNavController.navigate(route) {
+            navController.navigate(route) {
                 launchSingleTop = true
-                restoreState = true
                 popUpTo(Screen.Dashboard.route) {
-                    saveState = true
+                    inclusive = false
                 }
             }
         }
@@ -326,7 +336,7 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onLogoutClick = {
                     coroutineScope.launch {
-                        sendToLogin()
+                        logoutThenSendToLogin()
                     }
                 },
                 onNavItemSelected = handleBottomNav,
