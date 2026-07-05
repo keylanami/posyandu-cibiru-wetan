@@ -270,7 +270,7 @@ fun CariWargaScreen(
 
                         "Rumah" -> {
                             val filtered = rumah.filter {
-                                query.isBlank() || it.alamat.orEmpty().contains(query, true) || it.noRumah?.toString().orEmpty().contains(query)
+                                query.isBlank() || it.alamat.orEmpty().contains(query, true) || it.noRumah.orEmpty().contains(query, true) || it.dusun.orEmpty().contains(query, true)
                             }
                             item { SectionIntro("Rumah", "${filtered.size} rumah dari hasil sinkron", Icons.Default.Home, HealthBlue) }
                             item {
@@ -289,6 +289,7 @@ fun CariWargaScreen(
                                             subtitle = item.alamat ?: "Alamat belum diisi",
                                             rows = listOf(
                                                 "Jumlah keluarga" to "${relatedFamilies.size}",
+                                                "Dusun" to (item.dusun ?: "-"),
                                                 "Alamat" to (item.alamat ?: "-"),
                                                 "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
                                                 "Dibuat" to formatIndonesianDate(item.createdAt),
@@ -328,8 +329,10 @@ fun CariWargaScreen(
                                             rows = listOf(
                                                 "Jumlah anggota" to "${members.size}",
                                                 "Rumah" to rumahLabel,
-                                                "Tempat tinggal" to if (item.isNgontrak) "Ngontrak" else "Milik sendiri",
-                                                "Kategori Gakin" to if (item.isGakin == true) "Ya" else "Tidak",
+                                                "Tempat tinggal" to item.statusKepemilikanRumah,
+                                                "Jamban" to (item.kepemilikanJamban ?: "-"),
+                                                "SPAL" to (item.kepemilikanSpal ?: "-"),
+                                                "Status ekonomi" to item.statusEkonomi,
                                                 "Status" to if (item.isSynced) "Tersinkron" else "Tersimpan lokal",
                                                 "Dibuat" to formatIndonesianDate(item.createdAt),
                                                 "Diubah" to formatIndonesianDate(item.updatedAt)
@@ -515,7 +518,7 @@ private fun RumahReadRow(item: RumahEntity, familyCount: Int, onClick: () -> Uni
     ReadRow(
         title = "Rumah ${item.noRumah ?: "-"}",
         subtitle = item.alamat ?: "Alamat belum diisi",
-        meta = "$familyCount keluarga - ${if (item.isSynced) "Tersinkron" else "Lokal"}",
+        meta = listOfNotNull(item.dusun?.let { "Dusun $it" }, "$familyCount keluarga", if (item.isSynced) "Tersinkron" else "Lokal").joinToString(" - "),
         icon = Icons.Default.Home,
         color = HealthBlue,
         onClick = onClick
@@ -527,7 +530,7 @@ private fun KeluargaReadRow(item: KeluargaEntity, memberCount: Int, rumahLabel: 
     ReadRow(
         title = "KK ${item.noKK}",
         subtitle = rumahLabel,
-        meta = listOf("$memberCount anggota", if (item.isNgontrak) "Ngontrak" else "Tetap", if (item.isGakin == true) "Gakin" else "Non-gakin").joinToString(" - "),
+        meta = listOf("$memberCount anggota", item.statusKepemilikanRumah, item.statusEkonomi).joinToString(" - "),
         icon = Icons.Default.Groups,
         color = ActionAmber,
         onClick = onClick

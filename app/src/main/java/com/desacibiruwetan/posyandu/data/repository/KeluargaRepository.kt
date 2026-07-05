@@ -39,8 +39,10 @@ class KeluargaRepository(
                         serverId = keluargaServer.id,
                         rumahId = keluargaServer.rumahId,
                         noKK = keluargaServer.noKK,
-                        isNgontrak = keluargaServer.isNgontrak,
-                        isGakin = keluargaServer.isGakin,
+                        statusKepemilikanRumah = keluargaServer.statusKepemilikanRumah,
+                        kepemilikanJamban = keluargaServer.kepemilikanJamban,
+                        kepemilikanSpal = keluargaServer.kepemilikanSpal,
+                        statusEkonomi = keluargaServer.statusEkonomi,
                         createdAt = keluargaServer.createdAt,
                         updatedAt = keluargaServer.updatedAt,
                         isSynced = true
@@ -64,14 +66,18 @@ class KeluargaRepository(
         rumahId: Int,
         rumahServerId: Int?,
         noKK: String,
-        isNgontrak: Boolean,
-        isGakin: Boolean
+        statusKepemilikanRumah: String,
+        kepemilikanJamban: String?,
+        kepemilikanSpal: String?,
+        statusEkonomi: String
     ): Long{
         val entitasBaru = KeluargaEntity(
             rumahId = rumahId,
             noKK = noKK,
-            isNgontrak = isNgontrak,
-            isGakin = isGakin,
+            statusKepemilikanRumah = statusKepemilikanRumah,
+            kepemilikanJamban = kepemilikanJamban,
+            kepemilikanSpal = kepemilikanSpal,
+            statusEkonomi = statusEkonomi,
             isSynced = false
         )
 
@@ -84,8 +90,10 @@ class KeluargaRepository(
         try {
             val request = KeluargaReq(
                 noKK = noKK,
-                isNgontrak = isNgontrak,
-                isGakin = isGakin,
+                statusKepemilikanRumah = statusKepemilikanRumah,
+                kepemilikanJamban = kepemilikanJamban,
+                kepemilikanSpal = kepemilikanSpal,
+                statusEkonomi = statusEkonomi,
             )
 
             val response = apiService.postDataKeluarga(token, rumahServerId, request)
@@ -113,11 +121,21 @@ class KeluargaRepository(
     }
 
 
-    suspend fun updateKeluarga(token: String, keluargaLokal: KeluargaEntity, noKKBaru: String, isNgontrakBaru: Boolean, isGakinBaru: Boolean){
+    suspend fun updateKeluarga(
+        token: String,
+        keluargaLokal: KeluargaEntity,
+        noKKBaru: String,
+        statusKepemilikanRumahBaru: String,
+        kepemilikanJambanBaru: String?,
+        kepemilikanSpalBaru: String?,
+        statusEkonomiBaru: String
+    ){
         val keluargaUpdate = keluargaLokal.copy(
             noKK = noKKBaru,
-            isNgontrak = isNgontrakBaru,
-            isGakin = isGakinBaru,
+            statusKepemilikanRumah = statusKepemilikanRumahBaru,
+            kepemilikanJamban = kepemilikanJambanBaru,
+            kepemilikanSpal = kepemilikanSpalBaru,
+            statusEkonomi = statusEkonomiBaru,
             isSynced = false
         )
         keluargaDao.updateKeluargaLocal(keluargaUpdate)
@@ -126,8 +144,10 @@ class KeluargaRepository(
             try {
                 val request = KeluargaReq(
                     noKK = noKKBaru,
-                    isNgontrak = isNgontrakBaru,
-                    isGakin = isGakinBaru
+                    statusKepemilikanRumah = statusKepemilikanRumahBaru,
+                    kepemilikanJamban = kepemilikanJambanBaru,
+                    kepemilikanSpal = kepemilikanSpalBaru,
+                    statusEkonomi = statusEkonomiBaru
                 )
                 val response = apiService.putKeluarga(token, keluargaUpdate.serverId, request)
 
@@ -137,8 +157,10 @@ class KeluargaRepository(
                         keluargaUpdate.copy(
                             serverId = server?.id ?: keluargaUpdate.serverId,
                             noKK = server?.noKK ?: keluargaUpdate.noKK,
-                            isNgontrak = server?.isNgontrak ?: keluargaUpdate.isNgontrak,
-                            isGakin = server?.isGakin ?: keluargaUpdate.isGakin,
+                            statusKepemilikanRumah = server?.statusKepemilikanRumah ?: keluargaUpdate.statusKepemilikanRumah,
+                            kepemilikanJamban = server?.kepemilikanJamban ?: keluargaUpdate.kepemilikanJamban,
+                            kepemilikanSpal = server?.kepemilikanSpal ?: keluargaUpdate.kepemilikanSpal,
+                            statusEkonomi = server?.statusEkonomi ?: keluargaUpdate.statusEkonomi,
                             createdAt = server?.createdAt ?: keluargaUpdate.createdAt,
                             updatedAt = server?.updatedAt ?: keluargaUpdate.updatedAt,
                             isSynced = true

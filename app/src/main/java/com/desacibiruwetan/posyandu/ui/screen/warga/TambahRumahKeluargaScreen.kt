@@ -54,6 +54,7 @@ import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
+import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
@@ -175,12 +176,12 @@ fun RumahKeluargaScreen(
                         rt = rt,
                         rw = rw,
                         onCancel = { showAddRumahForm = false },
-                        onSubmit = { alamat ->
+                        onSubmit = { alamat, dusun ->
                             if (token.isBlank()) {
                                 Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
                                 return@RumahFormCard
                             }
-                            rumahViewModel.tambahRumah(token, alamat, rt.toIntOrNull() ?: 0) {
+                            rumahViewModel.tambahRumah(token, alamat, dusun, rt.toIntOrNull() ?: 0) {
                                 Toast.makeText(context, "Rumah berhasil disimpan.", Toast.LENGTH_SHORT).show()
                                 showAddRumahForm = false
                             }
@@ -232,16 +233,16 @@ fun RumahKeluargaScreen(
                             editingKeluargaId = keluarga.localId
                         },
                         onCancel = { closeForms() },
-                        onSubmitRumah = { alamat ->
+                        onSubmitRumah = { alamat, dusun ->
                             if (token.isBlank()) {
                                 Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
                                 return@RumahManagementCard
                             }
-                            rumahViewModel.updateRumah(token, rumah, alamat)
+                            rumahViewModel.updateRumah(token, rumah, alamat, dusun)
                             Toast.makeText(context, "Perubahan rumah disimpan.", Toast.LENGTH_SHORT).show()
                             closeForms()
                         },
-                        onSubmitKeluarga = { keluarga, noKk, isNgontrak, isGakin ->
+                        onSubmitKeluarga = { keluarga, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
                             if (token.isBlank()) {
                                 Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
                                 return@RumahManagementCard
@@ -252,14 +253,24 @@ fun RumahKeluargaScreen(
                                     rumahId = rumah.localId,
                                     rumahServerId = rumah.serverId,
                                     noKk = noKk,
-                                    isNgontrak = isNgontrak,
-                                    isGakin = isGakin
+                                    statusKepemilikanRumah = statusKepemilikanRumah,
+                                    kepemilikanJamban = kepemilikanJamban,
+                                    kepemilikanSpal = kepemilikanSpal,
+                                    statusEkonomi = statusEkonomi
                                 ) {
                                     Toast.makeText(context, "KK berhasil ditambahkan ke rumah ini.", Toast.LENGTH_SHORT).show()
                                     closeForms()
                                 }
                             } else {
-                                keluargaViewModel.updateKeluarga(token, keluarga, noKk, isNgontrak, isGakin)
+                                keluargaViewModel.updateKeluarga(
+                                    token,
+                                    keluarga,
+                                    noKk,
+                                    statusKepemilikanRumah,
+                                    kepemilikanJamban,
+                                    kepemilikanSpal,
+                                    statusEkonomi
+                                )
                                 Toast.makeText(context, "Perubahan KK disimpan.", Toast.LENGTH_SHORT).show()
                                 closeForms()
                             }
@@ -370,8 +381,8 @@ private fun RumahManagementCard(
     onToggleKeluargaDetail: (KeluargaEntity) -> Unit,
     onEditKeluarga: (KeluargaEntity) -> Unit,
     onCancel: () -> Unit,
-    onSubmitRumah: (String) -> Unit,
-    onSubmitKeluarga: (KeluargaEntity?, String, Boolean, Boolean) -> Unit
+    onSubmitRumah: (String?, String?) -> Unit,
+    onSubmitKeluarga: (KeluargaEntity?, String, String, String?, String?, String) -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -391,7 +402,15 @@ private fun RumahManagementCard(
             Column(modifier = Modifier.weight(1f).padding(start = 12.dp)) {
                 Text("Rumah ${rumah.noRumah ?: "-"}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                 Text(rumah.alamat ?: "Alamat belum diisi", style = MaterialTheme.typography.bodySmall, color = TextMuted)
-                Text("${keluargaList.size} KK - ${if (rumah.isSynced) "Tersinkron" else "Tersimpan lokal"}", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                Text(
+                    listOfNotNull(
+                        rumah.dusun?.let { "Dusun $it" },
+                        "${keluargaList.size} KK",
+                        if (rumah.isSynced) "Tersinkron" else "Tersimpan lokal"
+                    ).joinToString(" - "),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextMuted
+                )
             }
         }
 
@@ -418,7 +437,9 @@ private fun RumahManagementCard(
                 subtitle = "Satu rumah bisa punya lebih dari satu KK.",
                 keluarga = null,
                 onCancel = onCancel,
-                onSubmit = { noKk, isNgontrak, isGakin -> onSubmitKeluarga(null, noKk, isNgontrak, isGakin) }
+                onSubmit = { noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
+                    onSubmitKeluarga(null, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi)
+                }
             )
         }
 
@@ -435,7 +456,9 @@ private fun RumahManagementCard(
                     onToggleDetail = { onToggleKeluargaDetail(keluarga) },
                     onEdit = { onEditKeluarga(keluarga) },
                     onCancel = onCancel,
-                    onSubmit = { noKk, isNgontrak, isGakin -> onSubmitKeluarga(keluarga, noKk, isNgontrak, isGakin) }
+                    onSubmit = { noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
+                        onSubmitKeluarga(keluarga, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi)
+                    }
                 )
             }
         }
@@ -451,7 +474,7 @@ private fun KeluargaRow(
     onToggleDetail: () -> Unit,
     onEdit: () -> Unit,
     onCancel: () -> Unit,
-    onSubmit: (String, Boolean, Boolean) -> Unit
+    onSubmit: (String, String, String?, String?, String) -> Unit
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(
@@ -472,8 +495,8 @@ private fun KeluargaRow(
                 Text("KK ${keluarga.noKK}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
                 Text(
                     listOf(
-                        if (keluarga.isNgontrak) "Ngontrak" else "Milik sendiri",
-                        if (keluarga.isGakin == true) "Gakin" else "Non-gakin",
+                        keluarga.statusKepemilikanRumah,
+                        keluarga.statusEkonomi,
                         if (keluarga.isSynced) "Tersinkron" else "Lokal"
                     ).joinToString(" - "),
                     style = MaterialTheme.typography.labelSmall,
@@ -534,14 +557,30 @@ private fun KeluargaDetailPanel(
             first = { itemModifier ->
                 DetailPill(
                     label = "Tempat tinggal",
-                    value = if (keluarga.isNgontrak) "Ngontrak" else "Milik sendiri",
+                    value = keluarga.statusKepemilikanRumah,
                     modifier = itemModifier
                 )
             },
             second = { itemModifier ->
                 DetailPill(
-                    label = "Gakin",
-                    value = if (keluarga.isGakin == true) "Ya" else "Tidak",
+                    label = "Status ekonomi",
+                    value = keluarga.statusEkonomi,
+                    modifier = itemModifier
+                )
+            }
+        )
+        ResponsiveTwoColumn(
+            first = { itemModifier ->
+                DetailPill(
+                    label = "Jamban",
+                    value = keluarga.kepemilikanJamban ?: "-",
+                    modifier = itemModifier
+                )
+            },
+            second = { itemModifier ->
+                DetailPill(
+                    label = "SPAL",
+                    value = keluarga.kepemilikanSpal ?: "-",
                     modifier = itemModifier
                 )
             }
@@ -614,21 +653,26 @@ private fun RumahFormCard(
     rt: String,
     rw: String,
     onCancel: () -> Unit,
-    onSubmit: (String) -> Unit
+    onSubmit: (String?, String?) -> Unit
 ) {
     var alamat by remember(rumah?.localId) { mutableStateOf(rumah?.alamat.orEmpty()) }
-    var alamatError by remember(rumah?.localId) { mutableStateOf<String?>(null) }
+    var dusun by remember(rumah?.localId) { mutableStateOf(rumah?.dusun.orEmpty()) }
 
     FormPanel(title = title, subtitle = subtitle, icon = Icons.Default.Home, color = HealthBlue, onCancel = onCancel) {
         AppTextField(
             label = "Alamat Lengkap",
             value = alamat,
             singleLine = false,
-            error = alamatError,
             onValueChange = {
                 alamat = it
-                alamatError = null
             }
+        )
+        AppDropdownField(
+            label = "Dusun",
+            value = dusun,
+            options = listOf("1", "2", "3", "4", "5"),
+            placeholder = "Pilih dusun",
+            onValueChange = { dusun = it }
         )
         ResponsiveTwoColumn(
             first = { fieldModifier ->
@@ -659,11 +703,7 @@ private fun RumahFormCard(
             text = if (rumah == null) "Simpan rumah" else "Simpan perubahan rumah",
             icon = Icons.Default.Save,
             onClick = {
-                if (alamat.isBlank()) {
-                    alamatError = "Alamat wajib diisi."
-                    return@PrimaryButton
-                }
-                onSubmit(alamat.trim())
+                onSubmit(alamat.trim().ifBlank { null }, dusun.ifBlank { null })
             }
         )
     }
@@ -675,11 +715,13 @@ private fun KeluargaFormCard(
     subtitle: String,
     keluarga: KeluargaEntity?,
     onCancel: () -> Unit,
-    onSubmit: (String, Boolean, Boolean) -> Unit
+    onSubmit: (String, String, String?, String?, String) -> Unit
 ) {
     var noKk by remember(keluarga?.localId) { mutableStateOf(keluarga?.noKK.orEmpty()) }
-    var isNgontrak by remember(keluarga?.localId) { mutableStateOf(keluarga?.isNgontrak ?: false) }
-    var isGakin by remember(keluarga?.localId) { mutableStateOf(keluarga?.isGakin ?: false) }
+    var statusKepemilikanRumah by remember(keluarga?.localId) { mutableStateOf(keluarga?.statusKepemilikanRumah ?: "Milik Sendiri") }
+    var kepemilikanJamban by remember(keluarga?.localId) { mutableStateOf(keluarga?.kepemilikanJamban ?: "Milik Sendiri") }
+    var kepemilikanSpal by remember(keluarga?.localId) { mutableStateOf(keluarga?.kepemilikanSpal ?: "Septitang") }
+    var statusEkonomi by remember(keluarga?.localId) { mutableStateOf(keluarga?.statusEkonomi ?: "Sejahtera") }
     var noKkError by remember(keluarga?.localId) { mutableStateOf<String?>(null) }
 
     FormPanel(title = title, subtitle = subtitle, icon = Icons.Default.Groups, color = PrimaryGreen, onCancel = onCancel) {
@@ -696,21 +738,37 @@ private fun KeluargaFormCard(
                 noKkError = null
             }
         )
-        ChoiceGroup(
-            title = "Status tempat tinggal",
-            first = "Milik sendiri",
-            second = "Ngontrak",
-            selectedSecond = isNgontrak,
-            onFirst = { isNgontrak = false },
-            onSecond = { isNgontrak = true }
+        AppDropdownField(
+            label = "Status tempat tinggal",
+            value = statusKepemilikanRumah,
+            options = listOf("Milik Sendiri", "Ngontrak", "Numpang Orang Tua"),
+            onValueChange = { statusKepemilikanRumah = it }
         )
-        ChoiceGroup(
-            title = "Kategori Gakin",
-            first = "Tidak",
-            second = "Ya",
-            selectedSecond = isGakin,
-            onFirst = { isGakin = false },
-            onSecond = { isGakin = true }
+        ResponsiveTwoColumn(
+            first = { fieldModifier ->
+                AppDropdownField(
+                    modifier = fieldModifier,
+                    label = "Jamban",
+                    value = kepemilikanJamban,
+                    options = listOf("Milik Sendiri", "Umum"),
+                    onValueChange = { kepemilikanJamban = it }
+                )
+            },
+            second = { fieldModifier ->
+                AppDropdownField(
+                    modifier = fieldModifier,
+                    label = "SPAL",
+                    value = kepemilikanSpal,
+                    options = listOf("Septitang", "Selokan"),
+                    onValueChange = { kepemilikanSpal = it }
+                )
+            }
+        )
+        AppDropdownField(
+            label = "Status ekonomi",
+            value = statusEkonomi,
+            options = listOf("Sejahtera", "Pra Sejahtera", "Gakin"),
+            onValueChange = { statusEkonomi = it }
         )
         PrimaryButton(
             text = if (keluarga == null) "Simpan KK" else "Simpan perubahan KK",
@@ -722,7 +780,7 @@ private fun KeluargaFormCard(
                     else -> null
                 }
                 if (noKkError != null) return@PrimaryButton
-                onSubmit(noKk, isNgontrak, isGakin)
+                onSubmit(noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi)
             }
         )
     }
@@ -837,7 +895,8 @@ private fun RumahEntity.matchesRumahKeluargaSearch(
         keluargaRumah.any { keluarga -> anggota.belongsToKeluarga(keluarga) }
     }
 
-    return noRumah?.toString().orEmpty().contains(keyword, ignoreCase = true) ||
+    return noRumah.orEmpty().contains(keyword, ignoreCase = true) ||
+        dusun.orEmpty().contains(keyword, ignoreCase = true) ||
         alamat.orEmpty().contains(keyword, ignoreCase = true) ||
         keluargaRumah.any { it.noKK.contains(keyword, ignoreCase = true) } ||
         anggotaRumah.any { it.nama.contains(keyword, ignoreCase = true) }

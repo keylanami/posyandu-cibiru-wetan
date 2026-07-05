@@ -43,19 +43,46 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
         rumahId: Int,
         rumahServerId: Int?,
         noKk: String,
-        isNgontrak: Boolean,
-        isGakin: Boolean,
+        statusKepemilikanRumah: String,
+        kepemilikanJamban: String?,
+        kepemilikanSpal: String?,
+        statusEkonomi: String,
         onSuccess: (Int) -> Unit
     ){
         viewModelScope.launch {
-            val newId = repository.addNewKeluarga(token, rumahId, rumahServerId, noKk, isNgontrak, isGakin)
+            val newId = repository.addNewKeluarga(
+                token,
+                rumahId,
+                rumahServerId,
+                noKk,
+                statusKepemilikanRumah,
+                kepemilikanJamban,
+                kepemilikanSpal,
+                statusEkonomi
+            )
             onSuccess(newId.toInt())
         }
     }
 
-    fun updateKeluarga(token: String, keluargaLocal: KeluargaEntity, noKKBaru: String, isNgontrakBaru: Boolean, isGakinBaru: Boolean){
+    fun updateKeluarga(
+        token: String,
+        keluargaLocal: KeluargaEntity,
+        noKKBaru: String,
+        statusKepemilikanRumahBaru: String,
+        kepemilikanJambanBaru: String?,
+        kepemilikanSpalBaru: String?,
+        statusEkonomiBaru: String
+    ){
         viewModelScope.launch {
-            repository.updateKeluarga(token, keluargaLocal, noKKBaru, isNgontrakBaru, isGakinBaru)
+            repository.updateKeluarga(
+                token,
+                keluargaLocal,
+                noKKBaru,
+                statusKepemilikanRumahBaru,
+                kepemilikanJambanBaru,
+                kepemilikanSpalBaru,
+                statusEkonomiBaru
+            )
         }
     }
 

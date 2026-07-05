@@ -13,8 +13,10 @@ data class KeluargaEntity(
     val rumahId: Int,
 
     val noKK: String,
-    val isNgontrak: Boolean,
-    val isGakin: Boolean?= null,
+    val statusKepemilikanRumah: String = "Milik Sendiri",
+    val kepemilikanJamban: String? = null,
+    val kepemilikanSpal: String? = null,
+    val statusEkonomi: String = "Sejahtera",
     val createdAt: String?= null,
     val updatedAt: String?= null,
     val isSynced: Boolean = false

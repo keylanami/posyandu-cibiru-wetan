@@ -5,7 +5,8 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class RumahRequest(
-    val alamat: String
+    val alamat: String? = null,
+    val dusun: String? = null
 )
 
 
@@ -13,12 +14,14 @@ data class RumahRequest(
 data class RumahData(
     val id: Int,
     @Json(name = "no_rumah")
-    val nomorRumah: Int,
+    val nomorRumah: String,
 
 
     @Json(name = "rt_id")
     val rtId: Int,
 
+
+    val dusun: String?= null,
 
     val alamat: String?= null,
 

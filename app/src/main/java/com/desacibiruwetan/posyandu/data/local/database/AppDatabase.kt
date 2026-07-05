@@ -26,7 +26,7 @@ import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
         BumilEntity::class,
         WusPusEntity::class
     ],
-    version = 10,
+    version = 12,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

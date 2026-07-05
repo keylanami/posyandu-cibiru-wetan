@@ -329,12 +329,15 @@ class DataReadViewModel(
             )
             "rumahs" -> source.compactRows(
                 "no_rumah" to "No rumah",
+                "dusun" to "Dusun",
                 "alamat" to "Alamat"
             )
             "keluargas" -> source.compactRows(
                 "no_kk" to "No KK",
-                "isNgontrak" to "Ngontrak",
-                "isGakin" to "Gakin"
+                "status_kepemilikan_rumah" to "Status tempat tinggal",
+                "kepemilikan_jamban" to "Jamban",
+                "kepemilikan_spal" to "SPAL",
+                "status_ekonomi" to "Status ekonomi"
             )
             "bumils" -> source.compactRows(
                 "hamil_ke" to "Hamil ke",

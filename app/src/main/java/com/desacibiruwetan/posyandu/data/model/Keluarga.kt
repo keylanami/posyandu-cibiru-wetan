@@ -12,8 +12,14 @@ data class KeluargaReq(
     val rumahId: Int?= null,
     @Json(name = "no_kk")
     val noKK: String,
-    val isNgontrak: Boolean,
-    val isGakin: Boolean,
+    @Json(name = "status_kepemilikan_rumah")
+    val statusKepemilikanRumah: String,
+    @Json(name = "kepemilikan_jamban")
+    val kepemilikanJamban: String? = null,
+    @Json(name = "kepemilikan_spal")
+    val kepemilikanSpal: String? = null,
+    @Json(name = "status_ekonomi")
+    val statusEkonomi: String,
 )
 
 
@@ -27,8 +33,14 @@ data class KeluargaData(
     @Json(name = "no_kk")
     val noKK: String,
 
-    val isNgontrak: Boolean,
-    val isGakin: Boolean?= null,
+    @Json(name = "status_kepemilikan_rumah")
+    val statusKepemilikanRumah: String = "Milik Sendiri",
+    @Json(name = "kepemilikan_jamban")
+    val kepemilikanJamban: String? = null,
+    @Json(name = "kepemilikan_spal")
+    val kepemilikanSpal: String? = null,
+    @Json(name = "status_ekonomi")
+    val statusEkonomi: String = "Sejahtera",
 
     @Json(name = "created_at")
     val createdAt: String?= null,

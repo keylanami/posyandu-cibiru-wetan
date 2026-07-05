@@ -205,14 +205,27 @@ fun AppNavigation() {
     }
 
     LaunchedEffect(getMeState) {
-        val user = (getMeState as? UiState.Success)?.data?.data
-        if (user != null) {
-            SessionManager.saveUserProfile(context, user)
-        }
+        when (val state = getMeState) {
+            is UiState.Success -> {
+                val user = state.data.data
+                if (user != null) {
+                    SessionManager.saveUserProfile(context, user)
+                }
+            }
+            is UiState.Error -> {
+                val message = state.message
+                val isAuthError = message.contains("Unauthorized", ignoreCase = true) ||
+                        message.contains("401") ||
+                        message.contains("Gagal mengambil data user")
 
-        val message = (getMeState as? UiState.Error)?.message.orEmpty()
-        if (message.contains("Unauthorized", ignoreCase = true) || message.contains("401")) {
-            sendToLogin()
+                val isNetworkError = message.contains("Tidak ada internet", ignoreCase = true)
+
+                // ONLY redirect if it's an authentication error and NOT a network error
+                if (isAuthError && !isNetworkError) {
+                    sendToLogin()
+                }
+            }
+            else -> {}
         }
     }
 

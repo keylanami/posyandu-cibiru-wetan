@@ -51,7 +51,8 @@ class OfflineSyncRepository(
     private suspend fun syncRumah(token: String) {
         rumahDao.getRumahBelumSinkron().forEach { rumah ->
             val request = RumahRequest(
-                alamat = rumah.alamat.orEmpty()
+                alamat = rumah.alamat,
+                dusun = rumah.dusun
             )
 
             val response = if (rumah.serverId == null) {
@@ -67,6 +68,8 @@ class OfflineSyncRepository(
                         serverId = server?.id ?: rumah.serverId,
                         rtId = server?.rtId ?: rumah.rtId,
                         noRumah = server?.nomorRumah ?: rumah.noRumah,
+                        dusun = server?.dusun ?: rumah.dusun,
+                        alamat = server?.alamat ?: rumah.alamat,
                         createdAt = server?.createdAt ?: rumah.createdAt,
                         updatedAt = server?.updateAt ?: rumah.updatedAt,
                         isSynced = true
@@ -83,8 +86,10 @@ class OfflineSyncRepository(
 
             val request = KeluargaReq(
                 noKK = keluarga.noKK,
-                isNgontrak = keluarga.isNgontrak,
-                isGakin = keluarga.isGakin ?: false
+                statusKepemilikanRumah = keluarga.statusKepemilikanRumah,
+                kepemilikanJamban = keluarga.kepemilikanJamban,
+                kepemilikanSpal = keluarga.kepemilikanSpal,
+                statusEkonomi = keluarga.statusEkonomi
             )
 
             val response = if (keluarga.serverId == null) {
@@ -99,6 +104,11 @@ class OfflineSyncRepository(
                     keluarga.copy(
                         serverId = server?.id ?: keluarga.serverId,
                         rumahId = rumah.localId,
+                        noKK = server?.noKK ?: keluarga.noKK,
+                        statusKepemilikanRumah = server?.statusKepemilikanRumah ?: keluarga.statusKepemilikanRumah,
+                        kepemilikanJamban = server?.kepemilikanJamban ?: keluarga.kepemilikanJamban,
+                        kepemilikanSpal = server?.kepemilikanSpal ?: keluarga.kepemilikanSpal,
+                        statusEkonomi = server?.statusEkonomi ?: keluarga.statusEkonomi,
                         createdAt = server?.createdAt ?: keluarga.createdAt,
                         updatedAt = server?.updatedAt ?: keluarga.updatedAt,
                         isSynced = true

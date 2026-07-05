@@ -37,6 +37,7 @@ class RumahRepository(
                         rtId = rumahServer.rtId,
                         alamat = rumahServer.alamat,
                         noRumah = rumahServer.nomorRumah,
+                        dusun = rumahServer.dusun,
                         createdAt = rumahServer.createdAt,
                         updatedAt = rumahServer.updateAt,
                         isSynced = true
@@ -55,11 +56,12 @@ class RumahRepository(
 
 
     // to insert or save
-    suspend fun addNewRumah(token: String, alamat: String, rtId: Int): Long{
+    suspend fun addNewRumah(token: String, alamat: String?, dusun: String?, rtId: Int): Long{
 
         val entitasBaru = RumahEntity(
             rtId = rtId,
             alamat = alamat,
+            dusun = dusun,
             isSynced = false
         )
 
@@ -67,7 +69,8 @@ class RumahRepository(
 
         try {
             val request = RumahRequest(
-                alamat = alamat
+                alamat = alamat,
+                dusun = dusun
             )
 
             val response = apiService.postRumah(token, request)
@@ -81,6 +84,8 @@ class RumahRepository(
                         serverId = dataServer.id,
                         rtId = dataServer.rtId,
                         noRumah = dataServer.nomorRumah,
+                        dusun = dataServer.dusun,
+                        alamat = dataServer.alamat,
                         isSynced = true,
                         createdAt = dataServer.createdAt,
                         updatedAt = dataServer.updateAt
@@ -103,9 +108,10 @@ class RumahRepository(
 
 
     // update
-    suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String){
+    suspend fun updateRumah(token: String, rumahLokal: RumahEntity, alamatBaru: String?, dusunBaru: String?){
         val rumahUpdate = rumahLokal.copy(
             alamat = alamatBaru,
+            dusun = dusunBaru,
             isSynced = false
         )
         rumahDao.updateRumahLocal(rumahUpdate)
@@ -113,7 +119,8 @@ class RumahRepository(
         if (rumahUpdate.serverId != null) {
             try {
                 val request = RumahRequest(
-                    alamat = alamatBaru
+                    alamat = alamatBaru,
+                    dusun = dusunBaru
                 )
                 val response = apiService.putRumah(token, rumahUpdate.serverId, request)
 
@@ -124,6 +131,8 @@ class RumahRepository(
                             serverId = server?.id ?: rumahUpdate.serverId,
                             rtId = server?.rtId ?: rumahUpdate.rtId,
                             noRumah = server?.nomorRumah ?: rumahUpdate.noRumah,
+                            dusun = server?.dusun ?: rumahUpdate.dusun,
+                            alamat = server?.alamat ?: rumahUpdate.alamat,
                             createdAt = server?.createdAt ?: rumahUpdate.createdAt,
                             updatedAt = server?.updateAt ?: rumahUpdate.updatedAt,
                             isSynced = true
