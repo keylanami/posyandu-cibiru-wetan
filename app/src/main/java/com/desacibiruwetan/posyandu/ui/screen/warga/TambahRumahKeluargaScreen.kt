@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -38,6 +39,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,13 +55,13 @@ import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.button.PrimaryButton
+import com.desacibiruwetan.posyandu.ui.components.button.PrimaryFab
 import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
 import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
 import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
-import com.desacibiruwetan.posyandu.ui.theme.ActionAmber
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
@@ -73,6 +75,7 @@ import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -86,6 +89,8 @@ fun RumahKeluargaScreen(
     anggotaViewModel: AnggotaViewmodel
 ) {
     val context = LocalContext.current
+    val coroutineScope = rememberCoroutineScope()
+    val listState = rememberLazyListState()
     val preferences = remember { SessionManager.getPreferences(context) }
     val token = SessionManager.getAuthorizationHeader(context)
     val rt = preferences.getString("USER_RT", "00") ?: "00"
@@ -130,9 +135,23 @@ fun RumahKeluargaScreen(
     Scaffold(
         topBar = { AppTopBar(title = "Rumah & Keluarga", onBackClick = onBackClick) },
         bottomBar = { AppNavBar(selectedIndex = 1, onItemSelected = onNavItemSelected) },
+        floatingActionButton = {
+            PrimaryFab(
+                text = "Tambah Rumah",
+                icon = Icons.Default.Add,
+                onClick = {
+                    closeForms()
+                    showAddRumahForm = true
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(3)
+                    }
+                }
+            )
+        },
         containerColor = BgMint
     ) { paddingValues ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
@@ -143,11 +162,7 @@ fun RumahKeluargaScreen(
             item {
                 RumahKeluargaHero(
                     rumahCount = rumahList.size,
-                    keluargaCount = keluargaList.size,
-                    onAddRumah = {
-                        closeForms()
-                        showAddRumahForm = true
-                    }
+                    keluargaCount = keluargaList.size
                 )
             }
             item {
@@ -286,8 +301,7 @@ fun RumahKeluargaScreen(
 @Composable
 private fun RumahKeluargaHero(
     rumahCount: Int,
-    keluargaCount: Int,
-    onAddRumah: () -> Unit
+    keluargaCount: Int
 ) {
     Column(
         modifier = Modifier
@@ -296,12 +310,9 @@ private fun RumahKeluargaHero(
             .padding(18.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Rumah & keluarga", style = MaterialTheme.typography.labelLarge, color = SurfaceWhite.copy(alpha = 0.72f))
-                Text("Kelola rumah, lalu isi KK di dalamnya", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = SurfaceWhite)
-            }
-            SmallIconButton(icon = Icons.Default.Add, label = "Tambah rumah", color = ActionAmber, onClick = onAddRumah)
+        Column(modifier = Modifier.fillMaxWidth()) {
+            Text("Rumah & keluarga", style = MaterialTheme.typography.labelLarge, color = SurfaceWhite.copy(alpha = 0.72f))
+            Text("Kelola rumah, lalu isi KK di dalamnya", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = SurfaceWhite)
         }
         ResponsiveTwoColumn(
             first = { itemModifier -> HeroMetric("Rumah", rumahCount.toString(), itemModifier) },
