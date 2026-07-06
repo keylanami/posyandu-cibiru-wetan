@@ -66,6 +66,7 @@ import com.desacibiruwetan.posyandu.ui.theme.Inter
 import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.utils.SessionManager
+import com.desacibiruwetan.posyandu.utils.calculateAgeInfo
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 
 @Composable
@@ -157,7 +158,7 @@ fun CatatKejadianScreen(
                         jenisKelamin = jenisKelaminBayi,
                         pendidikanTerakhir = "Tidak/Belum Sekolah",
                         pekerjaan = "Belum Bekerja",
-                        noBpjs = "",
+                        jaminanKesehatan = false,
                         statusKeluarga = "Anak",
                         statusSipil = "Belum Kawin",
                         statusWarga = "kelahiran",
@@ -180,6 +181,7 @@ fun CatatKejadianScreen(
 
                 "Pindah Masuk" -> {
                     selectedWarga?.let { warga ->
+                        val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -189,19 +191,20 @@ fun CatatKejadianScreen(
                             jenisKelaminBaru = warga.jenisKelamin,
                             pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
                             pekerjaanBaru = warga.pekerjaan ?: "",
-                            noBpjsBaru = warga.noBpjs ?: "",
+                            jaminanKesehatanBaru = warga.jaminanKesehatan,
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
                             statusWargaBaru = "aktif",
                             keteranganBaru = "Tgl Masuk: $apiDate. Asal: $asalAlamat. $keterangan",
-                            usiaBaru = warga.usia ?: "",
-                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                            usiaBaru = calcUsia,
+                            kategoriUsiaBaru = calcKat
                         )
                     }
                 }
 
                 "Pindah Keluar" -> {
                     selectedWarga?.let { warga ->
+                        val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -211,19 +214,20 @@ fun CatatKejadianScreen(
                             jenisKelaminBaru = warga.jenisKelamin,
                             pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
                             pekerjaanBaru = warga.pekerjaan ?: "",
-                            noBpjsBaru = warga.noBpjs ?: "",
+                            jaminanKesehatanBaru = warga.jaminanKesehatan,
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
                             statusWargaBaru = "pindah_keluar",
                             keteranganBaru = "Tgl Keluar: $apiDate. Tujuan: $tujuanAlamat. $keterangan",
-                            usiaBaru = warga.usia ?: "",
-                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                            usiaBaru = calcUsia,
+                            kategoriUsiaBaru = calcKat
                         )
                     }
                 }
 
                 "Meninggal" -> {
                     selectedWarga?.let { warga ->
+                        val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -233,19 +237,20 @@ fun CatatKejadianScreen(
                             jenisKelaminBaru = warga.jenisKelamin,
                             pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
                             pekerjaanBaru = warga.pekerjaan ?: "",
-                            noBpjsBaru = warga.noBpjs ?: "",
+                            jaminanKesehatanBaru = warga.jaminanKesehatan,
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
                             statusWargaBaru = "meninggal",
                             keteranganBaru = "Wafat: $apiDate. Penyebab: $keterangan",
-                            usiaBaru = warga.usia ?: "",
-                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                            usiaBaru = calcUsia,
+                            kategoriUsiaBaru = calcKat
                         )
                     }
                 }
 
                 "Nikah", "Cerai" -> {
                     selectedWarga?.let { warga ->
+                        val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -255,14 +260,14 @@ fun CatatKejadianScreen(
                             jenisKelaminBaru = warga.jenisKelamin,
                             pendidikanTerakhirBaru = warga.pendidikanTerakhir ?: "",
                             pekerjaanBaru = warga.pekerjaan ?: "",
-                            noBpjsBaru = warga.noBpjs ?: "",
+                            jaminanKesehatanBaru = warga.jaminanKesehatan,
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = if (selectedCategory == "Nikah") "Kawin Tercatat" else "Cerai Hidup",
                             statusWargaBaru = warga.statusWarga
                                 ?: "aktif",
                             keteranganBaru = "Status baru: $selectedCategory dengan $namaPasangan. $keterangan",
-                            usiaBaru = warga.usia ?: "",
-                            kategoriUsiaBaru = warga.kategoriUsia ?: ""
+                            usiaBaru = calcUsia,
+                            kategoriUsiaBaru = calcKat
                         )
                     }
                 }

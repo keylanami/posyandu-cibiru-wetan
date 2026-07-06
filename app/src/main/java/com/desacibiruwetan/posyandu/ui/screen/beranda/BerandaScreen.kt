@@ -7,6 +7,7 @@ import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -44,6 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,6 +56,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -95,9 +98,51 @@ fun DashboardScreen(
     authViewModel: AuthViewmodel,
     userName: String,
     activeRtRw: String,
-    dataReadViewModel: DataReadViewModel
+    dataReadViewModel: DataReadViewModel,
+    updateViewModel: com.desacibiruwetan.posyandu.viewmodel.UpdateViewmodel
 ) {
+    val context = LocalContext.current
     var showPilotDialog by remember { mutableStateOf(false) }
+    val updateInfo by updateViewModel.updateInfo.collectAsState()
+    val downloadId by updateViewModel.downloadId.collectAsState()
+
+    LaunchedEffect(Unit) {
+        updateViewModel.checkForUpdate()
+    }
+
+    DisposableEffect(downloadId) {
+        if (downloadId == null) return@DisposableEffect onDispose {}
+
+        val receiver = object : android.content.BroadcastReceiver() {
+            override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
+                val id = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+                if (id == downloadId) {
+                    updateViewModel.installUpdate()
+                }
+            }
+        }
+        ContextCompat.registerReceiver(
+            context,
+            receiver,
+            android.content.IntentFilter(android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE),
+            ContextCompat.RECEIVER_EXPORTED
+        )
+        onDispose {
+            context.unregisterReceiver(receiver)
+        }
+    }
+
+    if (updateInfo != null) {
+        com.desacibiruwetan.posyandu.ui.components.dialog.UpdateDialog(
+            updateInfo = updateInfo!!,
+            onDismiss = { updateViewModel.clearUpdateInfo() },
+            onUpdateClick = {
+                updateViewModel.startDownload()
+                updateViewModel.clearUpdateInfo()
+                Toast.makeText(context, "Mengunduh update...", Toast.LENGTH_LONG).show()
+            }
+        )
+    }
     val isOnline = rememberOnlineStatus()
     val readState by dataReadViewModel.readState.collectAsState()
     val recentActivities = ((readState as? UiState.Success<List<ReadCollection>>)
@@ -204,7 +249,7 @@ private fun WorkHeader(userName: String, activeRtRw: String, isOnline: Boolean) 
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Posyandu Cibiru Wetan",
+                        text = "GKSTTB Cibiru Wetan",
                         style = MaterialTheme.typography.labelLarge,
                         color = SurfaceWhite.copy(alpha = 0.78f)
                     )

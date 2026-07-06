@@ -37,6 +37,7 @@ import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.UpdateViewmodel
 import com.desacibiruwetan.posyandu.utils.SessionManager
 
 // Import Screens
@@ -130,6 +131,14 @@ fun AppNavigation() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 DataReadViewModel(apiService, database.anggotaDao(), context.applicationContext) as T
+        }
+    )
+
+    val updateViewModel: UpdateViewmodel = viewModel(
+        factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                UpdateViewmodel(context.applicationContext as android.app.Application, apiService) as T
         }
     )
 
@@ -312,7 +321,8 @@ fun AppNavigation() {
                 authViewModel = authViewModel,
                 userName = userName,
                 activeRtRw = activeRtRw,
-                dataReadViewModel = dataReadViewModel
+                dataReadViewModel = dataReadViewModel,
+                updateViewModel = updateViewModel
             )
         }
 

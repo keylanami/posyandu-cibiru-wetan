@@ -76,7 +76,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Pekerjaan", value = warga.pekerjaan ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "No BPJS", value = warga.noBpjs ?: "-")
+                    InfoItem(label = "Jaminan Kesehatan", value = if (warga.jaminanKesehatan) "Punya" else "Tidak")
                 }
                 },
                 second = { columnModifier ->

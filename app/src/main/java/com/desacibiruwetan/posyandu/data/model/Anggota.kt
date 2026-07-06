@@ -28,8 +28,8 @@ data class AnggotaReq(
     @Json(name = "pendidikan_terakhir")
     val pendidikanTerakhir: String? = null,
 
-    @Json(name = "no_bpjs")
-    val noBpjs: String? = null,
+    @Json(name = "jaminan_kesehatan")
+    val jaminanKesehatan: Boolean = false,
 
     @Json(name = "status_keluarga")
     val statusKeluarga: String,
@@ -73,8 +73,8 @@ data class AnggotaData(
     val pendidikanTerakhir: String? = null,
     val pekerjaan: String? = null,
 
-    @Json(name = "no_bpjs")
-    val noBpjs: String? = null,
+    @Json(name = "jaminan_kesehatan")
+    val jaminanKesehatan: Boolean = false,
 
     @Json(name = "status_keluarga")
     val statusKeluarga: String,

@@ -95,7 +95,7 @@ fun EditWargaScreen(
     var statusSipil by remember { mutableStateOf("") }
     var pendidikan by remember { mutableStateOf("") }
     var pekerjaan by remember { mutableStateOf("") }
-    var noBpjs by remember { mutableStateOf("") }
+    var jaminanKesehatan by remember { mutableStateOf(false) }
     var keterangan by remember { mutableStateOf("") }
     var statusWarga by remember { mutableStateOf("aktif") }
     var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
@@ -107,7 +107,6 @@ fun EditWargaScreen(
     val tanggalLahirRequester = remember { BringIntoViewRequester() }
     val statusKeluargaRequester = remember { BringIntoViewRequester() }
     val statusSipilRequester = remember { BringIntoViewRequester() }
-    val noBpjsRequester = remember { BringIntoViewRequester() }
 
     val statusKeluargaOptions = listOf(
         "Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu",
@@ -145,6 +144,7 @@ fun EditWargaScreen(
     )
     val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
     val kewarganegaraanOptions = listOf("WNI", "WNA")
+    val jaminanKesehatanOptions = listOf("Punya", "Tidak")
 
     LaunchedEffect(anggotaLokal) {
         anggotaLokal?.let {
@@ -162,7 +162,7 @@ fun EditWargaScreen(
             statusSipil = it.statusSipil
             pendidikan = it.pendidikanTerakhir ?: "Tidak pernah sekolah"
             pekerjaan = it.pekerjaan ?: "Tidak Bekerja"
-            noBpjs = it.noBpjs ?: ""
+            jaminanKesehatan = it.jaminanKesehatan
             keterangan = it.keterangan ?: ""
             statusWarga = it.statusWarga ?: "aktif"
         }
@@ -359,18 +359,14 @@ fun EditWargaScreen(
                             label = "Pekerjaan",
                             value = pekerjaan,
                             onValueChange = { pekerjaan = it })
-                        AppTextField(
-                            label = "No BPJS",
-                            value = noBpjs,
-                            keyboardType = KeyboardType.Number,
-                            maxLength = 16,
-                            counterLabel = "NO BPJS",
-                            error = fieldErrors["no_bpjs"],
-                            modifier = Modifier.bringIntoViewRequester(noBpjsRequester),
+                        AppDropdownField(
+                            label = "Jaminan Kesehatan",
+                            value = if (jaminanKesehatan) "Punya" else "Tidak",
+                            options = jaminanKesehatanOptions,
                             onValueChange = {
-                                noBpjs = it.filter(Char::isDigit).take(16)
-                                fieldErrors = fieldErrors - "no_bpjs"
-                            })
+                                jaminanKesehatan = it == "Punya"
+                            }
+                        )
                         AppTextField(
                             label = "Keterangan Tambahan",
                             value = keterangan,
@@ -397,21 +393,7 @@ fun EditWargaScreen(
                             if (tempatLahir.isBlank()) put("tempat_lahir", "Tempat Lahir wajib diisi.")
                             if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
                             if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
-                            if (noBpjs.isNotBlank() && noBpjs.length != 16) put(
-                                "no_bpjs",
-                                "No BPJS harus 16 digit atau dikosongkan."
-                            )
-
-                            if (statusKeluarga == "Kepala Keluarga") {
-                                val alreadyHasKepala = listWarga.any {
-                                    it.keluargaId == anggotaLokal.keluargaId &&
-                                            it.statusKeluarga.equals("Kepala Keluarga", ignoreCase = true) &&
-                                            it.nik != anggotaLokal.nik
-                                }
-                                if (alreadyHasKepala) {
-                                    put("status_keluarga", "Keluarga ini sudah memiliki Kepala Keluarga.")
-                                }
-                            }
+                            
                         }
                         if (errors.isNotEmpty()) {
                             fieldErrors = errors
@@ -424,7 +406,6 @@ fun EditWargaScreen(
                                     "tanggal_lahir" -> tanggalLahirRequester.bringIntoView()
                                     "status_keluarga" -> statusKeluargaRequester.bringIntoView()
                                     "status_sipil" -> statusSipilRequester.bringIntoView()
-                                    "no_bpjs" -> noBpjsRequester.bringIntoView()
                                 }
                             }
                             return@PrimaryButton
@@ -440,14 +421,14 @@ fun EditWargaScreen(
                             jenisKelaminBaru = jenisKelamin,
                             pekerjaanBaru = pekerjaan,
                             pendidikanTerakhirBaru = pendidikan,
-                            noBpjsBaru = noBpjs,
+                            jaminanKesehatanBaru = jaminanKesehatan,
                             keteranganBaru = keterangan,
                             statusKeluargaBaru = statusKeluarga,
                             statusSipilBaru = statusSipil,
                             statusWargaBaru = statusWarga,
                             usiaBaru = calculatedUsia,
                             kategoriUsiaBaru = calculatedKategori,
-                            tempatLahirBaru = tempatLahir.ifBlank { null },
+                            tempatLahirBaru = tempatLahir,
                             golonganDarahBaru = golonganDarah.ifBlank { null },
                             sukuBaru = suku.ifBlank { null },
                             kewarganegaraanBaru = kewarganegaraan.ifBlank { "WNI" }

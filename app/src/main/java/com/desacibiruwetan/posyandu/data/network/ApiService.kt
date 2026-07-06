@@ -27,6 +27,7 @@ import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranData
 import com.desacibiruwetan.posyandu.data.model.SiagaKebakaranRequest
 import com.desacibiruwetan.posyandu.data.model.WusPusData
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
+import com.desacibiruwetan.posyandu.data.model.AppVersion
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -46,6 +47,9 @@ interface ApiService {
     suspend fun login(
         @Body request: LoginRequest
     ): Response<BaseResponse<LoginData>>
+
+    @GET("app/version")
+    suspend fun getLatestVersion(): Response<BaseResponse<AppVersion>>
 
 
     @POST("register")

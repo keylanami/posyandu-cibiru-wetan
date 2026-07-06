@@ -20,7 +20,7 @@ data class AnggotaEntity(
     val jenisKelamin: String,
     val pendidikanTerakhir: String?= null,
     val pekerjaan: String?= null,
-    val noBpjs: String?= null,
+    val jaminanKesehatan: Boolean = false,
     val statusKeluarga: String,
     val statusSipil: String,
     val statusWarga: String? = null,

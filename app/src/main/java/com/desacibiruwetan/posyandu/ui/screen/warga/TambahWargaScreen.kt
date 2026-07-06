@@ -90,7 +90,7 @@ fun TambahWargaScreen(
     var statusSipil by remember { mutableStateOf("") }
     var pendidikan by remember { mutableStateOf("") }
     var pekerjaan by remember { mutableStateOf("") }
-    var noBpjs by remember { mutableStateOf("") }
+    var jaminanKesehatan by remember { mutableStateOf(false) }
     var keterangan by remember { mutableStateOf("") }
     var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
@@ -102,7 +102,6 @@ fun TambahWargaScreen(
     val tanggalLahirRequester = remember { BringIntoViewRequester() }
     val statusKeluargaRequester = remember { BringIntoViewRequester() }
     val statusSipilRequester = remember { BringIntoViewRequester() }
-    val noBpjsRequester = remember { BringIntoViewRequester() }
 
     val statusKeluargaOptions = listOf(
         "Kepala Keluarga", "Suami", "Istri", "Anak", "Menantu",
@@ -140,6 +139,7 @@ fun TambahWargaScreen(
     )
     val golonganDarahOptions = listOf("A", "B", "AB", "O", "Tidak Tahu")
     val kewarganegaraanOptions = listOf("WNI", "WNA")
+    val jaminanKesehatanOptions = listOf("Punya", "Tidak")
 
 
     LaunchedEffect(Unit) {
@@ -432,19 +432,14 @@ fun TambahWargaScreen(
                             value = pekerjaan,
                             placeholder = "Contoh: Buruh, Pedagang, PNS",
                             onValueChange = { pekerjaan = it })
-                        AppTextField(
-                            label = "No BPJS",
-                            value = noBpjs,
-                            placeholder = "Masukkan nomor BPJS",
-                            keyboardType = KeyboardType.Number,
-                            maxLength = 16,
-                            counterLabel = "NO BPJS",
-                            error = fieldErrors["no_bpjs"],
-                            modifier = Modifier.bringIntoViewRequester(noBpjsRequester),
+                        AppDropdownField(
+                            label = "Jaminan Kesehatan",
+                            value = if (jaminanKesehatan) "Punya" else "Tidak",
+                            options = jaminanKesehatanOptions,
                             onValueChange = {
-                                noBpjs = it.filter(Char::isDigit).take(16)
-                                fieldErrors = fieldErrors - "no_bpjs"
-                            })
+                                jaminanKesehatan = it == "Punya"
+                            }
+                        )
                         AppTextField(
                             label = "Keterangan Tambahan",
                             value = keterangan,
@@ -471,7 +466,6 @@ fun TambahWargaScreen(
                             if (statusKeluarga.isBlank()) put("status_keluarga", "Status keluarga wajib dipilih.")
                             if (statusSipil.isBlank()) put("status_sipil", "Status sipil wajib dipilih.")
                             if (tempatLahir.isBlank()) put("tempat_lahir", "Tempat Lahir wajib diisi.")
-                            if (noBpjs.isNotBlank() && noBpjs.length != 16) put("no_bpjs", "No BPJS harus 16 digit atau dikosongkan.")
                             if (statusKeluarga == "Kepala Keluarga" && selectedKeluargaId != null) {
                                 val alreadyHasKepala = localAnggota.any {
                                     it.keluargaId == selectedKeluargaId &&
@@ -497,7 +491,6 @@ fun TambahWargaScreen(
                                     "tanggal_lahir" -> tanggalLahirRequester.bringIntoView()
                                     "status_keluarga" -> statusKeluargaRequester.bringIntoView()
                                     "status_sipil" -> statusSipilRequester.bringIntoView()
-                                    "no_bpjs" -> noBpjsRequester.bringIntoView()
                                 }
                             }
                             return@PrimaryButton
@@ -514,7 +507,7 @@ fun TambahWargaScreen(
                             jenisKelamin = jenisKelamin,
                             pendidikanTerakhir = pendidikan,
                             pekerjaan = pekerjaan,
-                            noBpjs = noBpjs,
+                            jaminanKesehatan = jaminanKesehatan,
                             statusKeluarga = statusKeluarga,
                             statusSipil = statusSipil,
                             statusWarga = "aktif",

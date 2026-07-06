@@ -159,7 +159,7 @@ fun LoginScreen(
             Spacer(modifier = Modifier.height(64.dp))
 
             Text(
-                text = "Posyandu Cibiru Wetan",
+                text = "GKSTTB Cibiru Wetan",
                 style = MaterialTheme.typography.headlineMedium,
                 color = SurfaceWhite
             )

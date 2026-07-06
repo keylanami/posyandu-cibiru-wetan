@@ -244,7 +244,7 @@ class OfflineSyncRepository(
             kewarganegaraan = kewarganegaraan ?: "WNI",
             jenisKelamin = jenisKelamin,
             pendidikanTerakhir = pendidikanTerakhir,
-            noBpjs = noBpjs,
+            jaminanKesehatan = jaminanKesehatan,
             statusKeluarga = statusKeluarga,
             statusSipil = statusSipil,
             statusWarga = statusWarga ?: "aktif",
