@@ -2,6 +2,7 @@ package com.desacibiruwetan.posyandu.utils.update
 
 import android.content.Context
 import android.os.Build
+import android.util.Log
 import com.desacibiruwetan.posyandu.data.model.AppVersion
 import com.desacibiruwetan.posyandu.data.network.ApiService
 
@@ -9,6 +10,10 @@ class AppUpdater(
     private val context: Context,
     private val apiService: ApiService
 ) {
+    private companion object {
+        const val TAG = "AppUpdater"
+    }
+
     suspend fun checkForUpdate(): AppVersion? {
         return try {
             val response = apiService.getLatestVersion()
@@ -27,9 +32,11 @@ class AppUpdater(
                     null
                 }
             } else {
+                Log.w(TAG, "Update check failed: HTTP ${response.code()}")
                 null
             }
         } catch (e: Exception) {
+            Log.e(TAG, "Update check failed", e)
             null
         }
     }

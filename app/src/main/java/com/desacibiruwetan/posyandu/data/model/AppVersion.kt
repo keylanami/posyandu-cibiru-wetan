@@ -5,21 +5,21 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class AppVersion(
-    @Json(name = "version_code")
+    @Json(name = "versionCode")
     val versionCode: Int,
-    @Json(name = "version_name")
+    @Json(name = "versionName")
     val versionName: String,
-    @Json(name = "minimum_version_code")
+    @Json(name = "minimumVersionCode")
     val minimumVersionCode: Int,
-    @Json(name = "force_update")
+    @Json(name = "forceUpdate")
     val forceUpdate: Boolean,
-    @Json(name = "apk_url")
+    @Json(name = "apkUrl")
     val apkUrl: String,
     val sha256: String,
-    @Json(name = "file_size")
+    @Json(name = "fileSize")
     val fileSize: Long,
-    @Json(name = "release_notes")
+    @Json(name = "releaseNotes")
     val releaseNotes: String?,
-    @Json(name = "published_at")
+    @Json(name = "publishedAt")
     val publishedAt: String
 )

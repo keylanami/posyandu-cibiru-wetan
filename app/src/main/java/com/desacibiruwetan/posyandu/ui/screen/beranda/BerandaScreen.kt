@@ -202,7 +202,7 @@ fun DashboardScreen(
                     onEvent = onNavigateToCatatKejadian
                 )
 
-                SectionHeader("Update data kesehatan", "Pilih program yang paling sering dicatat")
+                SectionHeader("Update data kesehatan", "Pilih program kesehatan yang ingin dicatat")
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     WorkRow("Balita", "BB/TB, orang tua, dan pertumbuhan", Icons.Default.ChildCare, ProgramPurple, onNavigateToUpdateBalita)
                     WorkRow("Bumil", "Kehamilan, menyusui, dan catatan risiko", Icons.Default.PregnantWoman, HealthBlue, onNavigateToBumil)

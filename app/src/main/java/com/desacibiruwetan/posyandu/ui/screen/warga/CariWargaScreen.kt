@@ -439,8 +439,8 @@ private fun DataHero(wargaCount: Int, rumahCount: Int, keluargaCount: Int) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text("Pusat data posyandu", style = MaterialTheme.typography.labelLarge, color = SurfaceWhite.copy(alpha = 0.72f))
-                    Text("Browse dulu, update setelah jelas", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = SurfaceWhite)
+                    Text("Pusat data Warga Cibiru Wetan", style = MaterialTheme.typography.labelLarge, color = SurfaceWhite.copy(alpha = 0.72f))
+                        Text("Manajemen Data Warga", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = SurfaceWhite)
                 }
             }
             ResponsiveThreeColumn(
