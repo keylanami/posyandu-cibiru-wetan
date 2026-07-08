@@ -3,7 +3,6 @@ package com.desacibiruwetan.posyandu.data.repository
 import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
-import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService

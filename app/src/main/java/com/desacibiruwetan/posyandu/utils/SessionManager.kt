@@ -1,6 +1,7 @@
 package com.desacibiruwetan.posyandu.utils
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import com.desacibiruwetan.posyandu.data.schema.UserSchema
 
@@ -13,7 +14,7 @@ object SessionManager {
     private const val USER_RT_KEY = "USER_RT"
     private const val USER_RW_KEY = "USER_RW"
 
-    fun getPreferences(context: Context) =
+    fun getPreferences(context: Context): SharedPreferences =
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 
     fun saveSession(context: Context, token: String, user: UserSchema) {
@@ -59,7 +60,7 @@ object SessionManager {
     fun getUserRw(context: Context): String =
         getPreferences(context).getString(USER_RW_KEY, "").orEmpty()
 
-    private fun android.content.SharedPreferences.Editor.putUserProfile(user: UserSchema) {
+    private fun SharedPreferences.Editor.putUserProfile(user: UserSchema) {
         val email = user.email
         val displayName = if (email.contains("@")) email.substringBefore("@") else email
         putString(USER_NAME_KEY, displayName.ifBlank { "Kader" })

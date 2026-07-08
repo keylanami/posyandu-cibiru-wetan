@@ -58,7 +58,6 @@ import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 
 @Composable
 fun ProfilScreen(
-    onBackClick: () -> Unit,
     onLogoutClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     authViewModel: AuthViewmodel

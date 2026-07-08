@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -91,7 +90,7 @@ fun AppNavigation() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 AuthViewmodel(AuthRepository(apiService)) as T
-        }
+        },
     )
 
     val rumahViewModel: RumahViewmodel = viewModel(
@@ -99,7 +98,7 @@ fun AppNavigation() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 RumahViewmodel(RumahRepository(apiService, database.rumahDao())) as T
-        }
+        },
     )
 
     val keluargaViewModel: KeluargaViewmodel = viewModel(
@@ -107,7 +106,7 @@ fun AppNavigation() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 KeluargaViewmodel(KeluargaRepository(apiService, database.keluargaDao())) as T
-        }
+        },
     )
 
     val anggotaViewModel: AnggotaViewmodel = viewModel(
@@ -120,10 +119,10 @@ fun AppNavigation() {
                         database.anggotaDao(),
                         database.balitaDao(),
                         database.bumilDao(),
-                        database.wusPusDao()
-                    )
+                        database.wusPusDao(),
+                    ),
                 ) as T
-        }
+        },
     )
 
     val dataReadViewModel: DataReadViewModel = viewModel(
@@ -131,7 +130,7 @@ fun AppNavigation() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 DataReadViewModel(apiService, database.anggotaDao(), context.applicationContext) as T
-        }
+        },
     )
 
     val updateViewModel: UpdateViewmodel = viewModel(
@@ -139,7 +138,7 @@ fun AppNavigation() {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
                 UpdateViewmodel(context.applicationContext as android.app.Application, apiService) as T
-        }
+        },
     )
 
     val getMeState by authViewModel.getMeState.collectAsState()
@@ -200,7 +199,7 @@ fun AppNavigation() {
     }
 
     fun isPublicRoute(route: String?): Boolean {
-        return route == null || route == Screen.Login.route || route == Screen.Register.route
+        return (route == null) || (route == Screen.Login.route) || (route == Screen.Register.route)
     }
 
     LaunchedEffect(Unit) {
@@ -216,8 +215,7 @@ fun AppNavigation() {
     LaunchedEffect(getMeState) {
         when (val state = getMeState) {
             is UiState.Success -> {
-                val user = state.data.data
-                if (user != null) {
+                state.data.data?.let { user ->
                     SessionManager.saveUserProfile(context, user)
                 }
             }
@@ -266,8 +264,8 @@ fun AppNavigation() {
             else -> null
         }
 
-        if (route != null) {
-            navController.navigate(route) {
+        route?.let {
+            navController.navigate(it) {
                 launchSingleTop = true
                 popUpTo(Screen.Dashboard.route) {
                     inclusive = false
@@ -278,7 +276,7 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable(Screen.Login.route) {
-            BackHandler(true) {
+            BackHandler(enabled = true) {
                 // Prevent going back from Login to white screen
             }
             LoginScreenWrapper(
@@ -288,19 +286,19 @@ fun AppNavigation() {
                         popUpTo(0) { inclusive = true }
                     }
                 },
-                viewmodel = authViewModel
+                viewmodel = authViewModel,
             )
         }
 
         composable(Screen.Register.route) {
             RegisterScreenWrapper(
                 onNavigateToLogin = { safeNavController.popBackStack() },
-                viewmodel = authViewModel
+                viewmodel = authViewModel,
             )
         }
 
         composable(Screen.Dashboard.route) {
-            BackHandler(true) {
+            BackHandler(enabled = true) {
                 // Prevent going back from Dashboard to white screen
             }
             LaunchedEffect(Unit) {
@@ -318,11 +316,10 @@ fun AppNavigation() {
                 onNavigateToRumahKeluarga = { safeNavController.navigate(Screen.RumahKeluarga.route) },
                 onNavigateToPilot = { route -> safeNavController.navigate(route) },
                 onNavItemSelected = handleBottomNav,
-                authViewModel = authViewModel,
                 userName = userName,
                 activeRtRw = activeRtRw,
                 dataReadViewModel = dataReadViewModel,
-                updateViewModel = updateViewModel
+                updateViewModel = updateViewModel,
             )
         }
 
@@ -341,8 +338,9 @@ fun AppNavigation() {
                 onNavigateToUpdateBumil = { safeNavController.navigate(Screen.UpdateBumil.route) },
                 onNavigateToUpdateWusPus = { safeNavController.navigate(Screen.UpdateWusPus.route) },
                 onNavigateToUpdateKb = { safeNavController.navigate(Screen.UpdateKb.route) },
-                onNavigateToProgram = { route -> safeNavController.navigate(route) }
-            )
+            ) { route ->
+                safeNavController.navigate(route)
+            }
         }
 
         composable(Screen.Riwayat.route) {
@@ -350,20 +348,19 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 userName = userName,
-                dataReadViewModel = dataReadViewModel
+                dataReadViewModel = dataReadViewModel,
             )
         }
 
         composable(Screen.Profil.route) {
             ProfilScreen(
-                onBackClick = { safeNavController.popBackStack() },
                 onLogoutClick = {
                     coroutineScope.launch {
                         logoutThenSendToLogin()
                     }
                 },
                 onNavItemSelected = handleBottomNav,
-                authViewModel = authViewModel
+                authViewModel = authViewModel,
             )
         }
 
@@ -372,7 +369,7 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                keluargaViewModel = keluargaViewModel
+                keluargaViewModel = keluargaViewModel,
             )
         }
 
@@ -383,7 +380,7 @@ fun AppNavigation() {
                 onCatatKejadianClick = { nikWarga -> safeNavController.navigate("${Screen.CatatKejadian.route}/$nikWarga") },
                 nikWarga = nik,
                 anggotaViewModel = anggotaViewModel,
-                onEditClick = { nikWarga -> safeNavController.navigate("edit_warga/$nikWarga") }
+                onEditClick = { nikWarga -> safeNavController.navigate("edit_warga/$nikWarga") },
             )
         }
 
@@ -393,7 +390,7 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                nikWarga = nik
+                nikWarga = nik,
             )
         }
 
@@ -401,23 +398,21 @@ fun AppNavigation() {
             UpdateBalitaScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
             )
         }
         composable(Screen.UpdateKb.route) {
             UpdateKbScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
             )
         }
         composable(Screen.UpdateWusPus.route) {
             UpdateWusPusScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
             )
         }
 
@@ -427,15 +422,15 @@ fun AppNavigation() {
                 navArgument("nik") {
                     type = NavType.StringType
                     nullable = true
-                }
-            )
+                },
+            ),
         ) { backStackEntry ->
             val nik = backStackEntry.arguments?.getString("nik")
             CatatKejadianScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                initialNik = nik
+                initialNik = nik,
             )
         }
 
@@ -444,14 +439,13 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                initialNik = null
+                initialNik = null,
             )
         }
         composable(Screen.AdministrasiRt.route) {
             AdministrasiRtScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.RumahKeluarga.route) {
@@ -460,77 +454,68 @@ fun AppNavigation() {
                 onNavItemSelected = handleBottomNav,
                 rumahViewModel = rumahViewModel,
                 keluargaViewModel = keluargaViewModel,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
             )
         }
         composable(Screen.UpdateBumil.route) {
             UpdateBumilScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                anggotaViewModel = anggotaViewModel
+                anggotaViewModel = anggotaViewModel,
             )
         }
         composable(Screen.PilotStunting.route) {
             PilotStuntingScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotPhbs.route) {
             PilotPHBSScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotKia.route) {
             PilotKesBuNakScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotKebakaran.route) {
             PilotSiagaKebakaraanScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotBencana.route) {
             PilotBencanaAlamScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotLingkungan.route) {
             PilotPeduliLingkunganScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotKeluargaSehat.route) {
             PilotKelSehatBerkualitasScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotKeuangan.route) {
             PilotKeuanganSehatScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
         composable(Screen.PilotKesehatanPus.route) {
             PilotKesehatanPusScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
-                userName = userName
             )
         }
     }

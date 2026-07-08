@@ -7,10 +7,10 @@ import com.squareup.moshi.JsonClass
 data class KeluargaOpt(
     val id: Int,
 
-    @Json(name = "no_kk")
+    @param:Json(name = "no_kk")
     val noKk:String,
 
-    @Json(name = "kepala_keluarga")
+    @param:Json(name = "kepala_keluarga")
     val kepalaKeluarga: String?,
 
-)
+    )

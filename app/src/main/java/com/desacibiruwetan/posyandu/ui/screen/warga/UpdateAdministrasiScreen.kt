@@ -34,8 +34,7 @@ import com.desacibiruwetan.posyandu.ui.theme.BgMint
 @Composable
 fun AdministrasiRtScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit,
-    userName: String
+    onNavItemSelected: (Int) -> Unit
 ) {
     val context = LocalContext.current
 

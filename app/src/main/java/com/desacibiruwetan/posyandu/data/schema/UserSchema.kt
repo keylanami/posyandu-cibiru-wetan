@@ -7,19 +7,19 @@ import com.squareup.moshi.JsonClass
 data class UserSchema(
     val id: Int,
 
-    @Json(name = "phone_number")
+    @param:Json(name = "phone_number")
     val phoneNumber: String,
     val email: String,
 
     val rt: String? = null,
     val rw: String? = null,
 
-    @Json(name = "email_verified_at")
+    @param:Json(name = "email_verified_at")
     val emailVerifiedAt: String?,
 
-    @Json(name = "created_at")
+    @param:Json(name = "created_at")
     val createdAt: String,
 
-    @Json(name = "updated_at")
+    @param:Json(name = "updated_at")
     val updatedAt: String
 )

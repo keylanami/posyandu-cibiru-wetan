@@ -9,35 +9,35 @@ data class AnggotaReq(
     val nik: String,
     val nama: String,
 
-    @Json(name = "tempat_lahir")
+    @param:Json(name = "tempat_lahir")
     val tempatLahir: String? = null,
 
-    @Json(name = "tanggal_lahir")
+    @param:Json(name = "tanggal_lahir")
     val tanggalLahir: String,
 
-    @Json(name = "golongan_darah")
+    @param:Json(name = "golongan_darah")
     val golonganDarah: String? = null,
 
     val suku: String? = null,
 
     val kewarganegaraan: String = "WNI",
 
-    @Json(name = "jenis_kelamin")
+    @param:Json(name = "jenis_kelamin")
     val jenisKelamin: String,
 
-    @Json(name = "pendidikan_terakhir")
+    @param:Json(name = "pendidikan_terakhir")
     val pendidikanTerakhir: String? = null,
 
-    @Json(name = "jaminan_kesehatan")
+    @param:Json(name = "jaminan_kesehatan")
     val jaminanKesehatan: Boolean = false,
 
-    @Json(name = "status_keluarga")
+    @param:Json(name = "status_keluarga")
     val statusKeluarga: String,
 
-    @Json(name = "status_sipil")
+    @param:Json(name = "status_sipil")
     val statusSipil: String,
 
-    @Json(name = "status_warga")
+    @param:Json(name = "status_warga")
     val statusWarga: String,
 
     val pekerjaan: String?= null,
@@ -48,53 +48,53 @@ data class AnggotaReq(
 @JsonClass(generateAdapter = true)
 data class AnggotaData(
     val id: Int,
-    @Json(name = "keluarga_id")
+    @param:Json(name = "keluarga_id")
     val keluargaId: Int,
     val nik: String,
     val nama: String,
 
-    @Json(name = "tempat_lahir")
+    @param:Json(name = "tempat_lahir")
     val tempatLahir: String? = null,
 
-    @Json(name = "tanggal_lahir")
+    @param:Json(name = "tanggal_lahir")
     val tanggalLahir: String,
 
-    @Json(name = "golongan_darah")
+    @param:Json(name = "golongan_darah")
     val golonganDarah: String? = null,
 
     val suku: String? = null,
 
     val kewarganegaraan: String? = "WNI",
 
-    @Json(name = "jenis_kelamin")
+    @param:Json(name = "jenis_kelamin")
     val jenisKelamin: String,
 
-    @Json(name = "pendidikan_terakhir")
+    @param:Json(name = "pendidikan_terakhir")
     val pendidikanTerakhir: String? = null,
     val pekerjaan: String? = null,
 
-    @Json(name = "jaminan_kesehatan")
+    @param:Json(name = "jaminan_kesehatan")
     val jaminanKesehatan: Boolean = false,
 
-    @Json(name = "status_keluarga")
+    @param:Json(name = "status_keluarga")
     val statusKeluarga: String,
 
-    @Json(name = "status_sipil")
+    @param:Json(name = "status_sipil")
     val statusSipil: String,
 
-    @Json(name = "status_warga")
+    @param:Json(name = "status_warga")
     val statusWarga: String,
 
     val keterangan: String? = null,
 
-    @Json(name = "created_at")
+    @param:Json(name = "created_at")
     val createdAt: String? = null,
 
-    @Json(name = "updated_at")
+    @param:Json(name = "updated_at")
     val updatedAt: String? = null,
 
     val usia: String,
 
-    @Json(name = "kategori_usia")
+    @param:Json(name = "kategori_usia")
     val kategoriUsia: String
 )

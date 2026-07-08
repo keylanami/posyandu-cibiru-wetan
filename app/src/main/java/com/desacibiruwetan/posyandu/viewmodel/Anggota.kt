@@ -1,6 +1,5 @@
 package com.desacibiruwetan.posyandu.viewmodel
 
-import android.util.Log.e
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity

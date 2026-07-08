@@ -2,13 +2,13 @@ package com.desacibiruwetan.posyandu.utils.update
 
 import android.app.DownloadManager
 import android.content.Context
-import android.net.Uri
 import android.os.Environment
+import androidx.core.net.toUri
 
 object ApkDownloader {
     fun download(context: Context, url: String, versionName: String): Long {
         val fileName = "posyandu_v$versionName.apk"
-        val request = DownloadManager.Request(Uri.parse(url))
+        val request = DownloadManager.Request(url.toUri())
             .setTitle("Downloading MyKader Update")
             .setDescription("Version $versionName")
             .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)

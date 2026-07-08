@@ -78,7 +78,6 @@ import com.desacibiruwetan.posyandu.ui.theme.PrimaryGreen
 import com.desacibiruwetan.posyandu.ui.theme.ProgramPurple
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 import com.desacibiruwetan.posyandu.ui.theme.TextMuted
-import com.desacibiruwetan.posyandu.viewmodel.AuthViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.DataReadViewModel
 import com.desacibiruwetan.posyandu.viewmodel.ReadCollection
 import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
@@ -95,7 +94,6 @@ fun DashboardScreen(
     onNavigateToRumahKeluarga: () -> Unit,
     onNavigateToPilot: (String) -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    authViewModel: AuthViewmodel,
     userName: String,
     activeRtRw: String,
     dataReadViewModel: DataReadViewModel,

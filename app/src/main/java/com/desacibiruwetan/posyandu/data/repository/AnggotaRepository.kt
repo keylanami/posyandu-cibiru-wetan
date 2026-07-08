@@ -59,6 +59,7 @@ class AnggotaRepository(
                         kewarganegaraan = anggotaServer.kewarganegaraan,
                         jenisKelamin = anggotaServer.jenisKelamin,
                         pendidikanTerakhir = anggotaServer.pendidikanTerakhir,
+                        pekerjaan = anggotaServer.pekerjaan,
                         jaminanKesehatan = anggotaServer.jaminanKesehatan,
                         statusKeluarga = anggotaServer.statusKeluarga,
                         statusSipil = anggotaServer.statusSipil,

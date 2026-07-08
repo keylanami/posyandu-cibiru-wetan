@@ -13,11 +13,11 @@ data class RumahRequest(
 @JsonClass(generateAdapter = true)
 data class RumahData(
     val id: Int,
-    @Json(name = "no_rumah")
+    @param:Json(name = "no_rumah")
     val nomorRumah: String,
 
 
-    @Json(name = "rt_id")
+    @param:Json(name = "rt_id")
     val rtId: Int,
 
 
@@ -25,9 +25,9 @@ data class RumahData(
 
     val alamat: String?= null,
 
-    @Json(name = "created_at")
+    @param:Json(name = "created_at")
     val createdAt: String?= null,
 
-    @Json(name = "updated_at")
+    @param:Json(name = "updated_at")
     val updateAt: String?= null
 )

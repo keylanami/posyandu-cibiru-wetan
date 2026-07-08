@@ -8,31 +8,31 @@ import com.squareup.moshi.JsonClass
 data class KiaData(
     val id: Int,
 
-    @Json(name = "ibu_hamil_rutin_periksa")
+    @param:Json(name = "ibu_hamil_rutin_periksa")
     val ibuHamilRutinPeriksa: Int?= null,
 
-    @Json(name = "persalinan_tenaga_kesehatan")
+    @param:Json(name = "persalinan_tenaga_kesehatan")
     val persalinanTenagaKesehatan: Int?= null,
 
-    @Json(name = "kematian_ibu_nifas")
+    @param:Json(name = "kematian_ibu_nifas")
     val kematianIbuNifas: Int?= null,
 
-    @Json(name = "kanker_serviks")
+    @param:Json(name = "kanker_serviks")
     val kankerServiks: Int?= null,
 
-    @Json(name = "imunisasi_bayi_balita")
+    @param:Json(name = "imunisasi_bayi_balita")
     val imunisasiBayiBalita: Int?= null,
 
-    @Json(name = "bati_balita_sakit_terdata")
+    @param:Json(name = "bati_balita_sakit_terdata")
     val bayiBalitaSakitTerdata: Int?= null,
 
-    @Json(name = "kematian_bayi_balita")
+    @param:Json(name = "kematian_bayi_balita")
     val kematianBayiBalita: Int?= null,
 
-    @Json(name = "created_at")
+    @param:Json(name = "created_at")
     val createdAt: String?= null,
 
-    @Json(name = "updated_at")
+    @param:Json(name = "updated_at")
     val updatedAt: String?= null
 )
 
@@ -41,24 +41,24 @@ data class KiaData(
 @JsonClass(generateAdapter = true)
 data class KiaReq(
 
-    @Json(name = "ibu_hamil_rutin_periksa")
+    @param:Json(name = "ibu_hamil_rutin_periksa")
     val ibuHamilRutinPeriksa: Int?= null,
 
-    @Json(name = "persalinan_tenaga_kesehatan")
+    @param:Json(name = "persalinan_tenaga_kesehatan")
     val persalinanTenagaKesehatan: Int?= null,
 
-    @Json(name = "kematian_ibu_nifas")
+    @param:Json(name = "kematian_ibu_nifas")
     val kematianIbuNifas: Int?= null,
 
-    @Json(name = "kanker_serviks")
+    @param:Json(name = "kanker_serviks")
     val kankerServiks: Int?= null,
 
-    @Json(name = "imunisasi_bayi_balita")
+    @param:Json(name = "imunisasi_bayi_balita")
     val imunisasiBayiBalita: Int?= null,
 
-    @Json(name = "bati_balita_sakit_terdata")
+    @param:Json(name = "bati_balita_sakit_terdata")
     val bayiBalitaSakitTerdata: Int?= null,
 
-    @Json(name = "kematian_bayi_balita")
+    @param:Json(name = "kematian_bayi_balita")
     val kematianBayiBalita: Int?= null,
 )

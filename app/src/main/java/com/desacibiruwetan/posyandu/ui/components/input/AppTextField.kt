@@ -53,18 +53,20 @@ fun AppTextField(
     counterLabel: String? = null,
     trailingContent: (@Composable () -> Unit)? = null,
 ) {
-    var isFocused by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(value = false) }
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
     val bgColor = SurfaceLightGray
 
-    Column(modifier = modifier
-        .fillMaxWidth()
-        .padding(bottom = 12.dp)) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(bottom = 12.dp),
+    ) {
         Text(
             text = label,
             style = MaterialTheme.typography.labelLarge,
-            color = TextMuted
+            color = TextMuted,
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -77,7 +79,7 @@ fun AppTextField(
             singleLine = singleLine,
             keyboardOptions = KeyboardOptions(
                 keyboardType = keyboardType,
-                capitalization = capitalization
+                capitalization = capitalization,
             ),
             visualTransformation = visualTransformation,
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) TextMuted else MaterialTheme.colorScheme.onSurface),
@@ -91,36 +93,44 @@ fun AppTextField(
                         .border(
                             width = if (isFocused && !readOnly) 2.dp else 1.dp,
                             color = borderColor,
-                            shape = RoundedCornerShape(14.dp)
+                            shape = RoundedCornerShape(14.dp),
                         )
                         .padding(horizontal = 16.dp, vertical = if (singleLine) 0.dp else 14.dp),
-                    verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top
+                    verticalAlignment = if (singleLine) Alignment.CenterVertically else Alignment.Top,
                 ) {
-                    Box(modifier = Modifier.weight(1f), contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = if (singleLine) Alignment.CenterStart else Alignment.TopStart,
+                    ) {
                         if (value.isEmpty()) {
-                            Text(text = placeholder, style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.36f)))
+                            Text(
+                                text = placeholder,
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.36f),
+                                ),
+                            )
                         }
                         innerTextField()
                     }
-                    if (counterLabel != null && maxLength != null) {
+                    if ((counterLabel != null) && (maxLength != null)) {
                         Spacer(modifier = Modifier.width(10.dp))
                         RemainingCounter(
                             label = counterLabel,
                             remaining = (maxLength - value.length).coerceAtLeast(0),
                             isComplete = value.length >= maxLength,
-                            isError = error != null
+                            isError = error != null,
                         )
                     }
                     trailingContent?.invoke()
                 }
-            }
+            },
         )
-        if (error != null) {
+        error?.let {
             Text(
-                text = error,
+                text = it,
                 color = MaterialTheme.colorScheme.error,
                 fontSize = 11.sp,
-                modifier = Modifier.padding(top = 6.dp)
+                modifier = Modifier.padding(top = 6.dp),
             )
         }
     }
@@ -131,7 +141,7 @@ private fun RemainingCounter(
     label: String,
     remaining: Int,
     isComplete: Boolean,
-    isError: Boolean
+    isError: Boolean,
 ) {
     val color = when {
         isError -> MaterialTheme.colorScheme.error
@@ -147,6 +157,6 @@ private fun RemainingCounter(
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier
             .background(SurfaceWhite.copy(alpha = 0.72f), RoundedCornerShape(999.dp))
-            .padding(horizontal = 9.dp, vertical = 5.dp)
+            .padding(horizontal = 9.dp, vertical = 5.dp),
     )
 }

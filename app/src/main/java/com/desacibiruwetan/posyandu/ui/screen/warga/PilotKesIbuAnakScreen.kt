@@ -7,8 +7,7 @@ import com.desacibiruwetan.posyandu.ui.components.program.ProgramMetricFormScree
 @Composable
 fun PilotKesBuNakScreen(
     onBackClick: () -> Unit,
-    onNavItemSelected: (Int) -> Unit,
-    userName: String
+    onNavItemSelected: (Int) -> Unit
 ) {
     ProgramMetricFormScreen(
         title = "KIA",

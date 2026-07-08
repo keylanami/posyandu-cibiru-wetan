@@ -15,7 +15,7 @@ data class LoginData(
 data class LoginRequest(
     val email: String,
     val password: String,
-    @Json(name = "device_name")
+    @param:Json(name = "device_name")
     val deviceName: String
 )
 

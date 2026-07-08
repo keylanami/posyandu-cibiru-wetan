@@ -48,7 +48,6 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 fun UpdateKbScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    userName: String,
     anggotaViewModel: AnggotaViewmodel,
 ) {
     val context = LocalContext.current

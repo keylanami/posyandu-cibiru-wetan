@@ -3,11 +3,6 @@ package com.desacibiruwetan.posyandu.data.repository
 import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.database.AppDatabase
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
-import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
-import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
-import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
-import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
-import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilReq

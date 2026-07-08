@@ -76,7 +76,6 @@ fun LargeActionCard(
 fun SmallActionCard(
     title: String,
     icon: ImageVector,
-    iconBgColor: Color,
     iconColor: Color = PrimaryGreen,
     onClick: () -> Unit,
     modifier: Modifier = Modifier

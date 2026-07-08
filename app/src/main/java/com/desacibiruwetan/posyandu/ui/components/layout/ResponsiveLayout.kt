@@ -121,7 +121,7 @@ fun ResponsiveFourColumn(
                 first(Modifier.weight(1f))
                 second(Modifier.weight(1f))
                 third(Modifier.weight(1f))
-                four(Modifier.fillMaxWidth())
+                four(Modifier.weight(1f))
             }
         }
     }
