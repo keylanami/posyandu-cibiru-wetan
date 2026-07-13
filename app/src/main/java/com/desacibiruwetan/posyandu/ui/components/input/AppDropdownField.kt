@@ -5,12 +5,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.desacibiruwetan.posyandu.ui.theme.FreshTeal
@@ -27,19 +29,33 @@ fun AppDropdownField(
     options: List<String>,
     onValueChange: (String) -> Unit,
     placeholder: String = "Pilih $label",
-    error: String? = null
+    error: String? = null,
+    searchable: Boolean = false,
 ) {
     var expanded by remember { mutableStateOf(value = false) }
+    var searchQuery by remember(value) { mutableStateOf(value = value) }
+    var isFocused by remember { mutableStateOf(value = false) }
+
+    val filteredOptions = remember(searchQuery, options) {
+        if (!searchable || (searchQuery == value) || searchQuery.isEmpty()) {
+            options
+        } else {
+            options.filter { it.contains(searchQuery, ignoreCase = true) }
+        }
+    }
     
     val containerColor by animateColorAsState(
-        targetValue = if (expanded) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceContainerLow,
+        targetValue = when {
+            isFocused || expanded -> MaterialTheme.colorScheme.surface
+            else -> MaterialTheme.colorScheme.surfaceContainerLow
+        },
         label = "containerColor",
     )
     
     val borderColor by animateColorAsState(
         targetValue = when {
             error != null -> MaterialTheme.colorScheme.error
-            expanded -> MaterialTheme.colorScheme.primary
+            isFocused || expanded -> MaterialTheme.colorScheme.primary
             else -> MaterialTheme.colorScheme.outlineVariant
         },
         label = "borderColor",
@@ -48,7 +64,7 @@ fun AppDropdownField(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(bottom = 12.dp)
+            .padding(bottom = 12.dp),
     ) {
         Text(
             text = label,
@@ -60,66 +76,139 @@ fun AppDropdownField(
 
         ExposedDropdownMenuBox(
             expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+            onExpandedChange = { 
+                expanded = !expanded
+                if (expanded && searchable) {
+                    searchQuery = "" // Clear search when opening to show all options
+                }
+            }
         ) {
-            Box(
-                modifier = Modifier
-                    .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
-                    .fillMaxWidth()
-                    .height(56.dp)
-                    .background(color = containerColor, shape = RoundedCornerShape(18.dp))
-                    .border(
-                        width = 1.dp,
-                        color = borderColor,
-                        shape = RoundedCornerShape(18.dp)
-                    )
-                    .padding(horizontal = 16.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                if (value.isEmpty()) {
-                    Text(
-                        text = placeholder,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
-                    )
-                } else {
-                    Text(
-                        text = value,
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface
+            if (searchable) {
+                BasicTextField(
+                    value = if (expanded) searchQuery else value,
+                    onValueChange = {
+                        searchQuery = it
+                        expanded = true
+                    },
+                    modifier = Modifier
+                        .menuAnchor(type = MenuAnchorType.PrimaryEditable, enabled = true)
+                        .fillMaxWidth()
+                        .onFocusChanged { isFocused = it.isFocused },
+                    textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+                    singleLine = true,
+                    decorationBox = { innerTextField ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .background(color = containerColor, shape = RoundedCornerShape(18.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = borderColor,
+                                    shape = RoundedCornerShape(18.dp)
+                                )
+                                .padding(horizontal = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Box(modifier = Modifier.weight(1f)) {
+                                if (searchQuery.isEmpty() && expanded) {
+                                    Text(
+                                        text = "Cari $label...",
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                } else if (value.isEmpty() && !expanded) {
+                                    Text(
+                                        text = placeholder,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                                    )
+                                }
+                                innerTextField()
+                            }
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                        }
+                    }
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .menuAnchor(type = MenuAnchorType.PrimaryNotEditable, enabled = true)
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .background(color = containerColor, shape = RoundedCornerShape(18.dp))
+                        .border(
+                            width = 1.dp,
+                            color = borderColor,
+                            shape = RoundedCornerShape(18.dp)
+                        )
+                        .padding(horizontal = 16.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        )
+                    } else {
+                        Text(
+                            text = value,
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded,
+                        modifier = Modifier.align(Alignment.CenterEnd),
                     )
                 }
-
-                ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded,
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                )
             }
 
             ExposedDropdownMenu(
                 expanded = expanded,
-                onDismissRequest = { expanded = false },
+                onDismissRequest = { 
+                    expanded = false
+                    searchQuery = value // Reset search to current value on dismiss
+                },
                 modifier = Modifier
                     .background(SurfaceWhite, RoundedCornerShape(18.dp))
                     .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(18.dp))
             ) {
-                options.forEach { selectionOption ->
-                    val selected = selectionOption == value
+                if (filteredOptions.isEmpty()) {
                     DropdownMenuItem(
-                        modifier = Modifier.background(if (selected) FreshTeal.copy(alpha = 0.4f) else SurfaceWhite),
                         text = {
                             Text(
-                                selectionOption,
+                                "Tidak ada hasil",
                                 style = MaterialTheme.typography.bodyLarge,
-                                color = if (selected) PrimaryGreen else TextDark,
-                                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
-                        onClick = {
-                            onValueChange(selectionOption)
-                            expanded = false
-                        }
+                        onClick = { },
+                        enabled = false
                     )
+                } else {
+                    filteredOptions.forEach { selectionOption ->
+                        val selected = selectionOption == value
+                        DropdownMenuItem(
+                            modifier = Modifier.background(if (selected) FreshTeal.copy(alpha = 0.4f) else SurfaceWhite),
+                            text = {
+                                Text(
+                                    selectionOption,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = if (selected) PrimaryGreen else TextDark,
+                                    fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+                                )
+                            },
+                            onClick = {
+                                searchQuery = selectionOption
+                                onValueChange(selectionOption)
+                                expanded = false
+                            }
+                        )
+                    }
                 }
             }
         }

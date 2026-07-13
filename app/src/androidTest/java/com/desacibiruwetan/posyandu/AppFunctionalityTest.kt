@@ -50,8 +50,11 @@ class AppFunctionalityTest {
         // CariWargaScreen uses PrimaryFab with label "Tambah warga"
         composeTestRule.onNodeWithText("Tambah warga").performClick()
 
-        // 1. Test Dropdown selection
+        // 1. Test Searchable Dropdown
         composeTestRule.onNodeWithText("Pilih Keluarga").performClick()
+        // Type into the editable dropdown
+        composeTestRule.onNodeWithText("Cari Pilih Keluarga...", substring = true).performTextInput("3201")
+
         // Select filtered result
         composeTestRule.onNode(hasText("KK 3201", substring = true)).performClick()
 

@@ -250,6 +250,7 @@ fun TambahWargaScreen(
                             options = dropdownKeluargaStrings,
                             error = fieldErrors["keluarga_id"],
                             modifier = Modifier.bringIntoViewRequester(keluargaRequester),
+                            searchable = true,
                             onValueChange = { selectedStr ->
                                 selectedKeluargaDisplay = selectedStr
                                 fieldErrors = fieldErrors - "keluarga_id"
