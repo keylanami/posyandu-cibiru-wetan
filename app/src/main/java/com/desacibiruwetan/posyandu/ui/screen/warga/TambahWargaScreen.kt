@@ -160,7 +160,7 @@ fun TambahWargaScreen(
             val status = if (keluarga.isSynced) "" else " - tersimpan lokal"
             KeluargaDropdownOption(
                 saveId = saveId,
-                display = "KK ${keluarga.noKK} - ${kepalaKeluarga ?: "Tanpa Kepala"}$status"
+                display = "KK ${keluarga.noKK} - ${kepalaKeluarga ?: "Tanpa Kepala Keluarga"}$status"
             )
         }
     }
@@ -171,7 +171,7 @@ fun TambahWargaScreen(
             .map { option ->
                 KeluargaDropdownOption(
                     saveId = option.id,
-                    display = "KK ${option.noKk} - ${option.kepalaKeluarga ?: "Tanpa Kepala"}"
+                    display = "KK ${option.noKk} - ${option.kepalaKeluarga ?: "Tanpa Kepala Keluarga"}"
                 )
             }
     }
