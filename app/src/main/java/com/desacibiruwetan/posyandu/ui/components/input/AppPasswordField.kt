@@ -42,14 +42,15 @@ import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 
 @Composable
 fun AppPasswordField(
+    modifier: Modifier = Modifier,
     label: String,
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String = "Masukkan $label",
     error: String? = null
 ) {
-    var isFocused by remember { mutableStateOf(false) }
-    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isFocused by remember { mutableStateOf(value = false) }
+    var isPasswordVisible by remember { mutableStateOf(value = false) }
 
     val borderColor =
         if (error != null) MaterialTheme.colorScheme.error else if (isFocused) MaterialTheme.colorScheme.primary else BorderGray
@@ -70,7 +71,7 @@ fun AppPasswordField(
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
-            modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
+            modifier = modifier.onFocusChanged { isFocused = it.isFocused },
             decorationBox = { innerTextField ->
                 Row(
                     modifier = Modifier

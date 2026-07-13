@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -209,14 +210,16 @@ fun LoginScreen(
                     value = emailText,
                     onValueChange = { emailText = it; emailError = null },
                     error = emailError,
-                    keyboardType = KeyboardType.Email
+                    keyboardType = KeyboardType.Email,
+                    modifier = Modifier.testTag("emailField")
                 )
 
                 AppPasswordField(
                     label = "Password",
                     value = passwordText,
                     onValueChange = { passwordText = it; passwordError = null },
-                    error = passwordError
+                    error = passwordError,
+                    modifier = Modifier.testTag("passwordField")
                 )
 
                 serverError?.let {
@@ -232,7 +235,8 @@ fun LoginScreen(
 
                 PrimaryButton(
                     text = if (isLoading) "Memeriksa..." else "Masuk",
-                    onClick = { validateLogin() }
+                    onClick = { validateLogin() },
+                    modifier = Modifier.testTag("loginButton")
                 )
 
                 Spacer(modifier = Modifier.height(18.dp))

@@ -59,7 +59,7 @@ fun AppTextField(
     val bgColor = SurfaceLightGray
 
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 12.dp),
     ) {
@@ -83,7 +83,7 @@ fun AppTextField(
             ),
             visualTransformation = visualTransformation,
             textStyle = MaterialTheme.typography.bodyMedium.copy(color = if (readOnly) TextMuted else MaterialTheme.colorScheme.onSurface),
-            modifier = Modifier.onFocusChanged { isFocused = it.isFocused },
+            modifier = modifier.onFocusChanged { isFocused = it.isFocused },
             decorationBox = { innerTextField ->
                 Row(
                     modifier = Modifier
