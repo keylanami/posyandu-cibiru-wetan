@@ -188,12 +188,6 @@ fun DashboardScreen(
                 modifier = Modifier.responsiveScreenPadding(vertical = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(18.dp)
             ) {
-                ResponsiveThreeColumn(
-                    first = { itemModifier -> MetricTile("Warga", "Cari cepat", Icons.Default.People, HealthBlue, itemModifier) },
-                    second = { itemModifier -> MetricTile("Hari ini", "3 tugas", Icons.AutoMirrored.Filled.Assignment, HealthBlue, itemModifier) },
-                    third = { itemModifier -> MetricTile("Sync", if (isOnline) "Aktif" else "Offline", Icons.Default.HealthAndSafety, ActionAmber, itemModifier) }
-                )
-
                 PrimaryWorkflow(
                     onSearch = onNavigateToCariWarga,
                     onAdd = onNavigateToRumahKeluarga,
@@ -205,14 +199,13 @@ fun DashboardScreen(
                     WorkRow("Balita", "BB/TB, orang tua, dan pertumbuhan", Icons.Default.ChildCare, ProgramPurple, onNavigateToUpdateBalita)
                     WorkRow("Bumil", "Kehamilan, menyusui, dan catatan risiko", Icons.Default.PregnantWoman, HealthBlue, onNavigateToBumil)
                     WorkRow("WUS/PUS", "Status sasaran perempuan dan pasangan usia subur", Icons.Default.Favorite, ActionAmber, onNavigateToUpdateWusPus)
-                    WorkRow("KB", "Metode kontrasepsi dan status penggunaan", Icons.Default.FamilyRestroom, PrimaryGreen, onNavigateToUpdateKb)
+                    WorkRow("KB", "Status penggunaan", Icons.Default.FamilyRestroom, PrimaryGreen, onNavigateToUpdateKb)
                 }
 
-                SectionHeader("Wilayah & program", "Data rumah, keluarga, administrasi, dan indikator")
-                ResponsiveThreeColumn(
-                    first = { itemModifier -> CompactWorkCard("Rumah & KK", Icons.Default.Home, HealthBlue, onNavigateToRumahKeluarga, itemModifier) },
-                    second = { itemModifier -> CompactWorkCard("Administrasi", Icons.Default.Groups, ActionAmber, onNavigateToAdministrasiRt, itemModifier) },
-                    third = { itemModifier -> CompactWorkCard("Program", Icons.Default.HealthAndSafety, ProgramPurple, { showPilotDialog = true }, itemModifier) }
+                SectionHeader("Wilayah & program", "Administrasi wilayah dan indikator program")
+                ResponsiveTwoColumn(
+                    first = { itemModifier -> CompactWorkCard("Administrasi", Icons.Default.Groups, ActionAmber, onNavigateToAdministrasiRt, itemModifier) },
+                    second = { itemModifier -> CompactWorkCard("Program", Icons.Default.HealthAndSafety, ProgramPurple, { showPilotDialog = true }, itemModifier) }
                 )
 
                 SectionHeader("Aktivitas terakhir", "Ringkas untuk membantu kader melanjutkan pekerjaan")
@@ -310,10 +303,10 @@ private fun PrimaryWorkflow(onSearch: () -> Unit, onAdd: () -> Unit, onEvent: ()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text("Alur cepat kader", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text("Navigasi Utama", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         ResponsiveThreeColumn(
-            first = { itemModifier -> WorkflowButton("Baca", "data", Icons.Default.Search, PrimaryGreen, onSearch, itemModifier) },
-            second = { itemModifier -> WorkflowButton("Tambah", "rumah/KK", Icons.Default.Add, HealthBlue, onAdd, itemModifier) },
+            first = { itemModifier -> WorkflowButton("Pusat", "data", Icons.Default.Search, PrimaryGreen, onSearch, itemModifier) },
+                second = { itemModifier -> WorkflowButton("Manajemen", "Rumah dan KK", Icons.Default.Add, HealthBlue, onAdd, itemModifier) },
             third = { itemModifier -> WorkflowButton("Catat", "kejadian", Icons.Default.EditNote, ActionAmber, onEvent, itemModifier) }
         )
     }
