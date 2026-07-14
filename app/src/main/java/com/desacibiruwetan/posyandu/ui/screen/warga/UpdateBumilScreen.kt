@@ -15,8 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -56,10 +59,39 @@ fun UpdateBumilScreen(
 
     val detailBumil by anggotaViewModel.detailBumilState.collectAsState()
 
+    fun resetScreenState() {
+        anggotaViewModel.resetDetailBumilState()
+        selectedWarga = null
+        namaBumil = ""
+        hamilKe = ""
+        asiEksklusif = false
+        tanggalMulaiAsi = ""
+        tanggalSelesaiAsi = ""
+        fieldErrors = emptyMap()
+    }
+
+    LaunchedEffect(Unit) {
+        resetScreenState()
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                resetScreenState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     LaunchedEffect(detailBumil) {
         if (detailBumil is UiState.Success) {
+            val warga = selectedWarga ?: return@LaunchedEffect
             val dataServer = (detailBumil as UiState.Success).data.data
-            if (dataServer != null) {
+            if (dataServer != null && dataServer.anggotaId == warga.serverId) {
                 hamilKe = dataServer.hamilKe.toString()
                 asiEksklusif = dataServer.asiEksklusif
                 tanggalMulaiAsi = normalizeDateForForm(dataServer.tanggalMulaiAsi)
@@ -76,9 +108,17 @@ fun UpdateBumilScreen(
                     Toast.makeText(context, "Bumil harus seorang Perempuan!", Toast.LENGTH_SHORT)
                         .show()
                 } else {
+                    anggotaViewModel.resetDetailBumilState()
                     selectedWarga = warga
                     namaBumil = warga.nama
+                    
+                    // Reset local form fields when switching citizens
+                    hamilKe = ""
+                    asiEksklusif = false
+                    tanggalMulaiAsi = ""
+                    tanggalSelesaiAsi = ""
                     fieldErrors = fieldErrors - "warga_id"
+
                     if (warga.serverId != null) {
                         anggotaViewModel.getDetailBumilByAnggotaFromServer(token, warga.serverId)
                     }

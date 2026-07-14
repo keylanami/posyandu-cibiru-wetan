@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -27,7 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -67,10 +71,39 @@ fun UpdateWusPusScreen(
 
     val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
 
+    fun resetScreenState() {
+        anggotaViewModel.resetDetailWusPusState()
+        selectedWarga = null
+        namaWarga = ""
+        namaPasangan = ""
+        kategoriStatus = "WUS"
+        tanggalMulaiKb = ""
+        keterangan = ""
+        fieldErrors = emptyMap()
+    }
+
+    LaunchedEffect(Unit) {
+        resetScreenState()
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                resetScreenState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     LaunchedEffect(detailWusPus) {
         if (detailWusPus is UiState.Success) {
+            val warga = selectedWarga ?: return@LaunchedEffect
             val dataServer = (detailWusPus as UiState.Success).data.data
-            if (dataServer != null) {
+            if (dataServer != null && dataServer.anggotaId == warga.serverId) {
                 namaPasangan = dataServer.namaSuami ?: ""
                 kategoriStatus = dataServer.statusKategori
                 tanggalMulaiKb = normalizeDateForForm(dataServer.tanggalMulaiStatus)
@@ -86,9 +119,17 @@ fun UpdateWusPusScreen(
                 if (warga.jenisKelamin.equals("Laki-laki", ignoreCase = true)) {
                     Toast.makeText(context, "WUS/PUS harus seorang Perempuan!", Toast.LENGTH_SHORT).show()
                 } else {
+                    anggotaViewModel.resetDetailWusPusState()
                     selectedWarga = warga
                     namaWarga = warga.nama
+                    
+                    // Reset local form fields when switching citizens
+                    namaPasangan = ""
+                    kategoriStatus = "WUS"
+                    tanggalMulaiKb = ""
+                    keterangan = ""
                     fieldErrors = fieldErrors - "warga_id"
+
                     if (warga.serverId != null) {
                         anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
                     }

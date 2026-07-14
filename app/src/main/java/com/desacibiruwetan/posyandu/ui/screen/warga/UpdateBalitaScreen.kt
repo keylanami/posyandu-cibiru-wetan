@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -34,8 +35,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
@@ -71,12 +75,43 @@ fun UpdateBalitaScreen(
 
     val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
+    fun resetScreenState() {
+        anggotaViewModel.resetDetailBalitaState()
+        selectedWarga = null
+        namaBalita = ""
+        tinggiBadan = ""
+        beratBadan = ""
+        fieldErrors = emptyMap()
+    }
+
+    LaunchedEffect(Unit) {
+        resetScreenState()
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                resetScreenState()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
     if (showDialog) {
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
+                anggotaViewModel.resetDetailBalitaState()
                 selectedWarga = warga
                 namaBalita = warga.nama
+                
+                // Reset local form fields when switching citizens
+                tinggiBadan = ""
+                beratBadan = ""
                 fieldErrors = fieldErrors - "warga_id"
 
                 val ket = warga.keterangan ?: ""
@@ -99,6 +134,7 @@ fun UpdateBalitaScreen(
 
     LaunchedEffect(detailBalita) {
         if (detailBalita is UiState.Success) {
+            selectedWarga ?: return@LaunchedEffect
             val dataServer = (detailBalita as UiState.Success).data.data
             if (dataServer != null) {
                 if (dataServer.tinggiBadan != null) tinggiBadan = dataServer.tinggiBadan.toString()

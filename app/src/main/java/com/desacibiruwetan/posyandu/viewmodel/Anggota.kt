@@ -48,14 +48,30 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     private val _detailBalitaState =
         MutableStateFlow<UiState<BaseResponse<BalitaData>>>(UiState.Idle)
     val detailBalitaState = _detailBalitaState.asStateFlow()
+    private var activeBalitaDetailRequestId: Int? = null
 
+    fun resetDetailBalitaState() {
+        activeBalitaDetailRequestId = null
+        _detailBalitaState.value = UiState.Idle
+    }
 
     private val _detailBumilState = MutableStateFlow<UiState<BaseResponse<BumilData>>>(UiState.Idle)
     val detailBumilState = _detailBumilState.asStateFlow()
+    private var activeBumilDetailRequestId: Int? = null
 
+    fun resetDetailBumilState() {
+        activeBumilDetailRequestId = null
+        _detailBumilState.value = UiState.Idle
+    }
 
     private val _detailWusPusState = MutableStateFlow<UiState<BaseResponse<WusPusData>>>(UiState.Idle)
     val detailWusPusState = _detailWusPusState.asStateFlow()
+    private var activeWusPusDetailRequestId: Int? = null
+
+    fun resetDetailWusPusState() {
+        activeWusPusDetailRequestId = null
+        _detailWusPusState.value = UiState.Idle
+    }
 
     private val _programSummaryState = MutableStateFlow<UiState<WargaProgramSummary>>(UiState.Idle)
     val programSummaryState = _programSummaryState.asStateFlow()
@@ -198,10 +214,12 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     }
 
     fun getDetailBalitaFromServer(token: String, anggotaId: Int) {
+        activeBalitaDetailRequestId = anggotaId
         viewModelScope.launch {
             _detailBalitaState.value = UiState.Loading
             try {
                 val response = repository.getBalitaById(token, anggotaId)
+                if (activeBalitaDetailRequestId != anggotaId) return@launch
                 if (response.isSuccessful && response.body() != null) {
                     _detailBalitaState.value = UiState.Success(response.body()!!)
                 } else {
@@ -209,6 +227,7 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                         UiState.Error("Gagal memuat detail balita: ${response.message()}")
                 }
             } catch (e: Exception) {
+                if (activeBalitaDetailRequestId != anggotaId) return@launch
                 _detailBalitaState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
             }
         }
@@ -268,10 +287,12 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     }
 
     fun getDetailBumilFromServer(token: String, bumilId: Int) {
+        activeBumilDetailRequestId = bumilId
         viewModelScope.launch {
             _detailBumilState.value = UiState.Loading
             try {
                 val response = repository.getBumilById(token, bumilId)
+                if (activeBumilDetailRequestId != bumilId) return@launch
                 if (response.isSuccessful && response.body() != null) {
                     _detailBumilState.value = UiState.Success(response.body()!!)
                 } else {
@@ -279,16 +300,19 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                         UiState.Error("Gagal memuat detail Bumil: ${response.message()}")
                 }
             } catch (e: Exception) {
+                if (activeBumilDetailRequestId != bumilId) return@launch
                 _detailBumilState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
             }
         }
     }
 
     fun getDetailBumilByAnggotaFromServer(token: String, anggotaId: Int) {
+        activeBumilDetailRequestId = anggotaId
         viewModelScope.launch {
             _detailBumilState.value = UiState.Loading
             try {
                 val response = repository.getBumilsByAnggotaId(token, anggotaId)
+                if (activeBumilDetailRequestId != anggotaId) return@launch
                 val bumil = response.body()?.data?.firstOrNull()
                 if (response.isSuccessful && bumil != null) {
                     _detailBumilState.value = UiState.Success(
@@ -302,6 +326,7 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                     _detailBumilState.value = UiState.Error("Data Bumil belum tersedia")
                 }
             } catch (e: Exception) {
+                if (activeBumilDetailRequestId != anggotaId) return@launch
                 _detailBumilState.value = UiState.Error("Terjadi kesalahan: ${e.localizedMessage}")
             }
         }
@@ -339,11 +364,13 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
 
 
     fun getDetailWusPusFromServer(token: String, wuspusId: Int){
+        activeWusPusDetailRequestId = wuspusId
         viewModelScope.launch {
             _detailWusPusState.value = UiState.Loading
 
             try {
                 val response = repository.getDataWusPusById(token, wuspusId)
+                if (activeWusPusDetailRequestId != wuspusId) return@launch
                 if (response.isSuccessful && response.body() != null){
                     _detailWusPusState.value = UiState.Success(response.body()!!)
                 } else {
@@ -351,6 +378,7 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
                 }
 
             } catch (e: Exception){
+                if (activeWusPusDetailRequestId != wuspusId) return@launch
                 _detailWusPusState.value = UiState.Error("Terjadi kesalahan ${e.localizedMessage}")
             }
         }
