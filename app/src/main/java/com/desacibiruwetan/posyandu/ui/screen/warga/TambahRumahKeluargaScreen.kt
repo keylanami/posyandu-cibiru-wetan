@@ -60,6 +60,7 @@ import com.desacibiruwetan.posyandu.ui.components.input.AppRadioButton
 import com.desacibiruwetan.posyandu.ui.components.input.AppDropdownField
 import com.desacibiruwetan.posyandu.ui.components.input.AppSearchBar
 import com.desacibiruwetan.posyandu.ui.components.input.AppTextField
+import com.desacibiruwetan.posyandu.ui.components.layout.DraggableScrollbar
 import com.desacibiruwetan.posyandu.ui.components.layout.ResponsiveTwoColumn
 import com.desacibiruwetan.posyandu.ui.components.layout.responsiveScreenPadding
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
@@ -150,150 +151,156 @@ fun RumahKeluargaScreen(
         },
         containerColor = BgMint
     ) { paddingValues ->
-        LazyColumn(
-            state = listState,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .responsiveScreenPadding(),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            item { Spacer(modifier = Modifier.height(4.dp)) }
-            item {
-                RumahKeluargaHero(
-                    rumahCount = rumahList.size,
-                    keluargaCount = keluargaList.size
-                )
-            }
-            item {
-                AppSearchBar(
-                    query = searchQuery,
-                    onQueryChange = { searchQuery = it },
-                    placeholder = "Cari no rumah, alamat, no KK, atau nama anggota"
-                )
-            }
-            if (searchQuery.isNotBlank() && rumahList.isNotEmpty()) {
+        Box(modifier = Modifier.fillMaxSize().padding(paddingValues)) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .responsiveScreenPadding(),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+                item { Spacer(modifier = Modifier.height(4.dp)) }
                 item {
-                    Text(
-                        text = "${filteredRumahList.size} rumah cocok untuk \"$searchQuery\"",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = TextMuted
+                    RumahKeluargaHero(
+                        rumahCount = rumahList.size,
+                        keluargaCount = keluargaList.size
                     )
                 }
-            }
-
-            if (showAddRumahForm) {
                 item {
-                    RumahFormCard(
-                        title = "Tambah rumah",
-                        subtitle = "Buat data rumah dulu, lalu tambahkan satu atau beberapa KK di dalamnya.",
-                        rumah = null,
-                        rt = rt,
-                        rw = rw,
-                        onCancel = { showAddRumahForm = false },
-                        onSubmit = { alamat, dusun ->
-                            if (token.isBlank()) {
-                                Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
-                                return@RumahFormCard
-                            }
-                            rumahViewModel.tambahRumah(token, alamat, dusun, rt.toIntOrNull() ?: 0) {
-                                Toast.makeText(context, "Rumah berhasil disimpan.", Toast.LENGTH_SHORT).show()
-                                showAddRumahForm = false
-                            }
-                        }
+                    AppSearchBar(
+                        query = searchQuery,
+                        onQueryChange = { searchQuery = it },
+                        placeholder = "Cari no rumah, alamat, no KK, atau nama anggota"
                     )
                 }
-            }
+                if (searchQuery.isNotBlank() && rumahList.isNotEmpty()) {
+                    item {
+                        Text(
+                            text = "${filteredRumahList.size} rumah cocok untuk \"$searchQuery\"",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = TextMuted
+                        )
+                    }
+                }
 
-            if (rumahList.isEmpty()) {
-                item {
-                    EmptyRumahCard(onAddRumah = {
-                        closeForms()
-                        showAddRumahForm = true
-                    })
-                }
-            } else if (filteredRumahList.isEmpty()) {
-                item {
-                    EmptySearchCard(query = searchQuery)
-                }
-            } else {
-                items(filteredRumahList, key = { it.localId }) { rumah ->
-                    val keluargaRumah = keluargaList.filter { it.belongsToRumah(rumah) }
-                    RumahManagementCard(
-                        rumah = rumah,
-                        keluargaList = keluargaRumah,
-                        anggotaList = anggotaList,
-                        selectedKeluargaDetailId = selectedKeluargaDetailId,
-                        isEditingRumah = editingRumahId == rumah.localId,
-                        isAddingKeluarga = addingKeluargaRumahId == rumah.localId,
-                        editingKeluargaId = editingKeluargaId,
-                        rt = rt,
-                        rw = rw,
-                        onEditRumah = {
-                            closeForms()
-                            editingRumahId = rumah.localId
-                        },
-                        onAddKeluarga = {
-                            closeForms()
-                            addingKeluargaRumahId = rumah.localId
-                        },
-                        onToggleKeluargaDetail = { keluarga ->
-                            closeForms()
-                            selectedKeluargaDetailId =
-                                if (selectedKeluargaDetailId == keluarga.localId) null else keluarga.localId
-                        },
-                        onEditKeluarga = { keluarga ->
-                            closeForms()
-                            selectedKeluargaDetailId = keluarga.localId
-                            editingKeluargaId = keluarga.localId
-                        },
-                        onCancel = { closeForms() },
-                        onSubmitRumah = { alamat, dusun ->
-                            if (token.isBlank()) {
-                                Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
-                                return@RumahManagementCard
+                if (showAddRumahForm) {
+                    item {
+                        RumahFormCard(
+                            title = "Tambah rumah",
+                            subtitle = "Buat data rumah dulu, lalu tambahkan satu atau beberapa KK di dalamnya.",
+                            rumah = null,
+                            rt = rt,
+                            rw = rw,
+                            onCancel = { showAddRumahForm = false },
+                            onSubmit = { alamat, dusun ->
+                                if (token.isBlank()) {
+                                    Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
+                                    return@RumahFormCard
+                                }
+                                rumahViewModel.tambahRumah(token, alamat, dusun, rt.toIntOrNull() ?: 0) {
+                                    Toast.makeText(context, "Rumah berhasil disimpan.", Toast.LENGTH_SHORT).show()
+                                    showAddRumahForm = false
+                                }
                             }
-                            rumahViewModel.updateRumah(token, rumah, alamat, dusun)
-                            Toast.makeText(context, "Perubahan rumah disimpan.", Toast.LENGTH_SHORT).show()
+                        )
+                    }
+                }
+
+                if (rumahList.isEmpty()) {
+                    item {
+                        EmptyRumahCard(onAddRumah = {
                             closeForms()
-                        },
-                        onSubmitKeluarga = { keluarga, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
-                            if (token.isBlank()) {
-                                Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
-                                return@RumahManagementCard
-                            }
-                            if (keluarga == null) {
-                                keluargaViewModel.tambahKeluarga(
-                                    token = token,
-                                    rumahId = rumah.localId,
-                                    rumahServerId = rumah.serverId,
-                                    noKk = noKk,
-                                    statusKepemilikanRumah = statusKepemilikanRumah,
-                                    kepemilikanJamban = kepemilikanJamban,
-                                    kepemilikanSpal = kepemilikanSpal,
-                                    statusEkonomi = statusEkonomi
-                                ) {
-                                    Toast.makeText(context, "KK berhasil ditambahkan ke rumah ini.", Toast.LENGTH_SHORT).show()
+                            showAddRumahForm = true
+                        })
+                    }
+                } else if (filteredRumahList.isEmpty()) {
+                    item {
+                        EmptySearchCard(query = searchQuery)
+                    }
+                } else {
+                    items(filteredRumahList, key = { it.localId }) { rumah ->
+                        val keluargaRumah = keluargaList.filter { it.belongsToRumah(rumah) }
+                        RumahManagementCard(
+                            rumah = rumah,
+                            keluargaList = keluargaRumah,
+                            anggotaList = anggotaList,
+                            selectedKeluargaDetailId = selectedKeluargaDetailId,
+                            isEditingRumah = editingRumahId == rumah.localId,
+                            isAddingKeluarga = addingKeluargaRumahId == rumah.localId,
+                            editingKeluargaId = editingKeluargaId,
+                            rt = rt,
+                            rw = rw,
+                            onEditRumah = {
+                                closeForms()
+                                editingRumahId = rumah.localId
+                            },
+                            onAddKeluarga = {
+                                closeForms()
+                                addingKeluargaRumahId = rumah.localId
+                            },
+                            onToggleKeluargaDetail = { keluarga ->
+                                closeForms()
+                                selectedKeluargaDetailId =
+                                    if (selectedKeluargaDetailId == keluarga.localId) null else keluarga.localId
+                            },
+                            onEditKeluarga = { keluarga ->
+                                closeForms()
+                                selectedKeluargaDetailId = keluarga.localId
+                                editingKeluargaId = keluarga.localId
+                            },
+                            onCancel = { closeForms() },
+                            onSubmitRumah = { alamat, dusun ->
+                                if (token.isBlank()) {
+                                    Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
+                                    return@RumahManagementCard
+                                }
+                                rumahViewModel.updateRumah(token, rumah, alamat, dusun)
+                                Toast.makeText(context, "Perubahan rumah disimpan.", Toast.LENGTH_SHORT).show()
+                                closeForms()
+                            },
+                            onSubmitKeluarga = { keluarga, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
+                                if (token.isBlank()) {
+                                    Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
+                                    return@RumahManagementCard
+                                }
+                                if (keluarga == null) {
+                                    keluargaViewModel.tambahKeluarga(
+                                        token = token,
+                                        rumahId = rumah.localId,
+                                        rumahServerId = rumah.serverId,
+                                        noKk = noKk,
+                                        statusKepemilikanRumah = statusKepemilikanRumah,
+                                        kepemilikanJamban = kepemilikanJamban,
+                                        kepemilikanSpal = kepemilikanSpal,
+                                        statusEkonomi = statusEkonomi
+                                    ) {
+                                        Toast.makeText(context, "KK berhasil ditambahkan ke rumah ini.", Toast.LENGTH_SHORT).show()
+                                        closeForms()
+                                    }
+                                } else {
+                                    keluargaViewModel.updateKeluarga(
+                                        token,
+                                        keluarga,
+                                        noKk,
+                                        statusKepemilikanRumah,
+                                        kepemilikanJamban,
+                                        kepemilikanSpal,
+                                        statusEkonomi
+                                    )
+                                    Toast.makeText(context, "Perubahan KK disimpan.", Toast.LENGTH_SHORT).show()
                                     closeForms()
                                 }
-                            } else {
-                                keluargaViewModel.updateKeluarga(
-                                    token,
-                                    keluarga,
-                                    noKk,
-                                    statusKepemilikanRumah,
-                                    kepemilikanJamban,
-                                    kepemilikanSpal,
-                                    statusEkonomi
-                                )
-                                Toast.makeText(context, "Perubahan KK disimpan.", Toast.LENGTH_SHORT).show()
-                                closeForms()
                             }
-                        }
-                    )
+                        )
+                    }
                 }
+                item { Spacer(modifier = Modifier.height(88.dp)) }
             }
-            item { Spacer(modifier = Modifier.height(88.dp)) }
+
+            DraggableScrollbar(
+                listState = listState,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
         }
     }
 }

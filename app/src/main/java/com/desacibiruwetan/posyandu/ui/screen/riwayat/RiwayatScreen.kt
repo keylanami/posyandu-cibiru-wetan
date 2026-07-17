@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Assignment
@@ -40,6 +41,7 @@ import com.desacibiruwetan.posyandu.data.network.UiState
 import com.desacibiruwetan.posyandu.ui.components.bar.AppNavBar
 import com.desacibiruwetan.posyandu.ui.components.bar.AppTopBar
 import com.desacibiruwetan.posyandu.ui.components.feedback.EmptyState
+import com.desacibiruwetan.posyandu.ui.components.layout.DraggableScrollbar
 import com.desacibiruwetan.posyandu.ui.theme.BgMint
 import com.desacibiruwetan.posyandu.ui.theme.BorderLight
 import com.desacibiruwetan.posyandu.ui.theme.DeepGreen
@@ -64,6 +66,7 @@ fun RiwayatScreen(
     val context = LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
     val readState by dataReadViewModel.readState.collectAsState()
+    val listState = rememberLazyListState()
     var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(token) {
@@ -125,14 +128,22 @@ fun RiwayatScreen(
                         if (records.isEmpty()) {
                             EmptyState(icon = Icons.Default.History, message = "Belum ada riwayat aktivitas")
                         } else {
-                            LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                            ) {
-                                items(records) { item ->
-                                    ActivityCard(item)
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                LazyColumn(
+                                    state = listState,
+                                    modifier = Modifier.fillMaxSize(),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    items(records) { item ->
+                                        ActivityCard(item)
+                                    }
+                                    item { Spacer(modifier = Modifier.height(82.dp)) }
                                 }
-                                item { Spacer(modifier = Modifier.height(82.dp)) }
+
+                                DraggableScrollbar(
+                                    listState = listState,
+                                    modifier = Modifier.align(Alignment.CenterEnd)
+                                )
                             }
                         }
                     }
