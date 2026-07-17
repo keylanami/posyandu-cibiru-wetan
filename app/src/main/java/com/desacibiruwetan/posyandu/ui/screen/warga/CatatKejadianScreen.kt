@@ -72,7 +72,7 @@ fun CatatKejadianScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
-    initialNik: String? = null
+    initialLocalId: Int? = null
 ) {
     val context = LocalContext.current
     val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
@@ -102,9 +102,9 @@ fun CatatKejadianScreen(
     var namaPasangan by remember { mutableStateOf("") }
     var fieldErrors by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
 
-    LaunchedEffect(initialNik, listWarga) {
-        if (!initialNik.isNullOrEmpty() && listWarga.isNotEmpty()) {
-            val found = listWarga.find { it.nik == initialNik }
+    LaunchedEffect(initialLocalId, listWarga) {
+        if (initialLocalId != null && listWarga.isNotEmpty()) {
+            val found = listWarga.find { it.localId == initialLocalId }
             if (found != null) {
                 selectedWarga = found
                 fieldErrors = fieldErrors - "warga_id"

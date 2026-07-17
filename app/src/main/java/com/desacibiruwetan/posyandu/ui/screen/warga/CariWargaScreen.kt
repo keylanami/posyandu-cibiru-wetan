@@ -120,7 +120,7 @@ private data class DataAddAction(
 fun CariWargaScreen(
     onBackClick: () -> Unit,
     onAddWargaClick: () -> Unit,
-    onNavigateToDetailWarga: (String) -> Unit,
+    onNavigateToDetailWarga: (Int) -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
     rumahViewModel: RumahViewmodel,
@@ -261,8 +261,8 @@ fun CariWargaScreen(
                             if (filtered.isEmpty()) {
                                 item { EmptyState(icon = Icons.Default.People, message = "Tidak ada warga ditemukan") }
                             } else {
-                                items(filtered, key = { it.nik }) { item ->
-                                    ResidentReadRow(item, onClick = { onNavigateToDetailWarga(item.nik) })
+                                items(filtered, key = { it.localId }) { item ->
+                                    ResidentReadRow(item, onClick = { onNavigateToDetailWarga(item.localId) })
                                 }
                             }
                         }

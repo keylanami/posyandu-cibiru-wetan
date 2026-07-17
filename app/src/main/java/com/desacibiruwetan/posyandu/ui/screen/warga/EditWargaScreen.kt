@@ -70,7 +70,7 @@ fun EditWargaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
-    nikWarga: String?
+    localId: Int?
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -78,7 +78,7 @@ fun EditWargaScreen(
     val token = SessionManager.getAuthorizationHeader(context)
 
     val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
-    val anggotaLokal = listWarga.find { it.nik == nikWarga }
+    val anggotaLokal = listWarga.find { it.localId == localId }
 
     // --- State Data ---
     var namaLengkap by remember { mutableStateOf("") }

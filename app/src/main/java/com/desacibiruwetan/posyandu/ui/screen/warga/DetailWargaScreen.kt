@@ -71,16 +71,16 @@ import com.desacibiruwetan.posyandu.viewmodel.WargaProgramSummary
 @Composable
 fun DetailWargaScreen(
     onBackClick: () -> Unit,
-    onCatatKejadianClick: (String) -> Unit,
-    onEditClick: (String) -> Unit,
-    nikWarga: String? = null,
+    onCatatKejadianClick: (Int) -> Unit,
+    onEditClick: (Int) -> Unit,
+    localId: Int? = null,
     anggotaViewModel: AnggotaViewmodel,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
     val programSummaryState by anggotaViewModel.programSummaryState.collectAsState()
-    val warga = listWargaAsli.find { it.nik == nikWarga }
+    val warga = listWargaAsli.find { it.localId == localId }
 
     LaunchedEffect(warga?.localId, warga?.serverId, token) {
         if (warga != null) {
@@ -114,8 +114,8 @@ fun DetailWargaScreen(
             IdentityHero(warga)
             ProgramChips(warga, (programSummaryState as? UiState.Success)?.data)
             ActionPanel(
-                onEdit = { onEditClick(warga.nik) },
-                onEvent = { onCatatKejadianClick(warga.nik) }
+                onEdit = { onEditClick(warga.localId) },
+                onEvent = { onCatatKejadianClick(warga.localId) }
             )
             ProgramDetailSection(programSummaryState)
             InfoKependudukanCard(warga = warga)

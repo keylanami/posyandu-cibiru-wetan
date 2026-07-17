@@ -327,7 +327,7 @@ fun AppNavigation() {
             CariWargaScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onAddWargaClick = { safeNavController.navigate(Screen.TambahWarga.route) },
-                onNavigateToDetailWarga = { nikWarga -> safeNavController.navigate("${Screen.DetailWarga.route}/$nikWarga") },
+                onNavigateToDetailWarga = { localId -> safeNavController.navigate("${Screen.DetailWarga.route}/$localId") },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
                 rumahViewModel = rumahViewModel,
@@ -373,24 +373,34 @@ fun AppNavigation() {
             )
         }
 
-        composable("${Screen.DetailWarga.route}/{nik}") { backStackEntry ->
-            val nik = backStackEntry.arguments?.getString("nik")
+        composable(
+            route = "${Screen.DetailWarga.route}/{localId}",
+            arguments = listOf(
+                navArgument("localId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val localId = backStackEntry.arguments?.getInt("localId")
             DetailWargaScreen(
                 onBackClick = { safeNavController.popBackStack() },
-                onCatatKejadianClick = { nikWarga -> safeNavController.navigate("${Screen.CatatKejadian.route}/$nikWarga") },
-                nikWarga = nik,
+                onCatatKejadianClick = { id -> safeNavController.navigate("${Screen.CatatKejadian.route}/$id") },
+                localId = localId,
                 anggotaViewModel = anggotaViewModel,
-                onEditClick = { nikWarga -> safeNavController.navigate("edit_warga/$nikWarga") },
+                onEditClick = { id -> safeNavController.navigate("edit_warga/$id") },
             )
         }
 
-        composable("edit_warga/{nik}") { backStackEntry ->
-            val nik = backStackEntry.arguments?.getString("nik")
+        composable(
+            route = "edit_warga/{localId}",
+            arguments = listOf(
+                navArgument("localId") { type = NavType.IntType }
+            )
+        ) { backStackEntry ->
+            val localId = backStackEntry.arguments?.getInt("localId")
             EditWargaScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                nikWarga = nik,
+                localId = localId,
             )
         }
 
@@ -417,20 +427,20 @@ fun AppNavigation() {
         }
 
         composable(
-            route = "${Screen.CatatKejadian.route}/{nik}",
+            route = "${Screen.CatatKejadian.route}/{localId}",
             arguments = listOf(
-                navArgument("nik") {
-                    type = NavType.StringType
-                    nullable = true
-                },
-            ),
+                navArgument("localId") {
+                    type = NavType.IntType
+                    defaultValue = -1
+                }
+            )
         ) { backStackEntry ->
-            val nik = backStackEntry.arguments?.getString("nik")
+            val localId = backStackEntry.arguments?.getInt("localId")?.takeIf { it != -1 }
             CatatKejadianScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                initialNik = nik,
+                initialLocalId = localId,
             )
         }
 
@@ -439,7 +449,7 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
-                initialNik = null,
+                initialLocalId = null,
             )
         }
         composable(Screen.AdministrasiRt.route) {
