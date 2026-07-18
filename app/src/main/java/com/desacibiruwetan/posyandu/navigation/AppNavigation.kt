@@ -169,12 +169,14 @@ fun AppNavigation() {
         if (rawToken.isBlank()) return
         val formattedToken = SessionManager.formatAuthorizationHeader(rawToken)
 
+        // 1. Priority: Upload local offline changes first
         offlineSyncRepository.syncPendingChanges(formattedToken)
+
+        // 2. Fetch latest app-wide metadata
         authViewModel.getMe(rawToken)
-        rumahViewModel.syncDataRumah(formattedToken)
-        keluargaViewModel.syncDataKeluarga(formattedToken)
-        anggotaViewModel.syncDataAnggotaDariServer(formattedToken)
         dataReadViewModel.refresh(formattedToken)
+
+        // Note: Heavy domain data (Rumah, Keluarga, Anggota) is synced within specific screens
     }
 
     suspend fun sendToLogin() {
@@ -300,9 +302,6 @@ fun AppNavigation() {
         composable(Screen.Dashboard.route) {
             BackHandler(enabled = true) {
                 // Prevent going back from Dashboard to white screen
-            }
-            LaunchedEffect(Unit) {
-                syncPendingThenPull()
             }
 
             DashboardScreen(
