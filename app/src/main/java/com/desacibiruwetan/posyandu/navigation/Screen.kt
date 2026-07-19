@@ -21,6 +21,9 @@ sealed class Screen(val route: String) {
     object RumahKeluarga : Screen("rumah_keluarga")
     object UpdateBumil : Screen("update_bumil")
 
+    // Routes with arguments
+    fun routeWithId(route: String, id: Int) = "$route/$id"
+
     object PilotStunting : Screen("pilot_stunting")
     object PilotPhbs : Screen("pilot_phbs")
     object PilotKia : Screen("pilot_kia")

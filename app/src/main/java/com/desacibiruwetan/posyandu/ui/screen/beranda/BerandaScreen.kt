@@ -86,11 +86,7 @@ import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
 fun DashboardScreen(
     onNavigateToCariWarga: () -> Unit,
     onNavigateToCatatKejadian: () -> Unit,
-    onNavigateToUpdateKb: () -> Unit,
-    onNavigateToUpdateWusPus: () -> Unit,
-    onNavigateToUpdateBalita: () -> Unit,
     onNavigateToAdministrasiRt: () -> Unit,
-    onNavigateToBumil: () -> Unit,
     onNavigateToRumahKeluarga: () -> Unit,
     onNavigateToPilot: (String) -> Unit,
     onNavItemSelected: (Int) -> Unit,
@@ -193,14 +189,6 @@ fun DashboardScreen(
                     onAdd = onNavigateToRumahKeluarga,
                     onEvent = onNavigateToCatatKejadian
                 )
-
-                SectionHeader("Update data kesehatan", "Pilih program kesehatan yang ingin dicatat")
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                    WorkRow("Balita", "BB/TB, orang tua, dan pertumbuhan", Icons.Default.ChildCare, ProgramPurple, onNavigateToUpdateBalita)
-                    WorkRow("Bumil", "Kehamilan, menyusui, dan catatan risiko", Icons.Default.PregnantWoman, HealthBlue, onNavigateToBumil)
-                    WorkRow("WUS/PUS", "Status sasaran perempuan dan pasangan usia subur", Icons.Default.Favorite, ActionAmber, onNavigateToUpdateWusPus)
-                    WorkRow("KB", "Status penggunaan", Icons.Default.FamilyRestroom, PrimaryGreen, onNavigateToUpdateKb)
-                }
 
                 SectionHeader("Wilayah & program", "Administrasi wilayah dan indikator program")
                 ResponsiveTwoColumn(

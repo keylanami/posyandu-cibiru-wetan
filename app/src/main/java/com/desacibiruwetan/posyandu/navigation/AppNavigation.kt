@@ -309,11 +309,7 @@ fun AppNavigation() {
             DashboardScreen(
                 onNavigateToCariWarga = { safeNavController.navigate(Screen.Warga.route) },
                 onNavigateToCatatKejadian = { safeNavController.navigate(Screen.CatatKejadian.route) },
-                onNavigateToUpdateKb = { safeNavController.navigate(Screen.UpdateKb.route) },
-                onNavigateToUpdateBalita = { safeNavController.navigate(Screen.UpdateBalita.route) },
-                onNavigateToUpdateWusPus = { safeNavController.navigate(Screen.UpdateWusPus.route) },
                 onNavigateToAdministrasiRt = { safeNavController.navigate(Screen.AdministrasiRt.route) },
-                onNavigateToBumil = { safeNavController.navigate(Screen.UpdateBumil.route) },
                 onNavigateToRumahKeluarga = { safeNavController.navigate(Screen.RumahKeluarga.route) },
                 onNavigateToPilot = { route -> safeNavController.navigate(route) },
                 onNavItemSelected = handleBottomNav,
@@ -335,10 +331,6 @@ fun AppNavigation() {
                 keluargaViewModel = keluargaViewModel,
                 dataReadViewModel = dataReadViewModel,
                 onNavigateToRumahKeluarga = { safeNavController.navigate(Screen.RumahKeluarga.route) },
-                onNavigateToUpdateBalita = { safeNavController.navigate(Screen.UpdateBalita.route) },
-                onNavigateToUpdateBumil = { safeNavController.navigate(Screen.UpdateBumil.route) },
-                onNavigateToUpdateWusPus = { safeNavController.navigate(Screen.UpdateWusPus.route) },
-                onNavigateToUpdateKb = { safeNavController.navigate(Screen.UpdateKb.route) },
             ) { route ->
                 safeNavController.navigate(route)
             }
@@ -388,6 +380,10 @@ fun AppNavigation() {
                 anggotaViewModel = anggotaViewModel,
                 keluargaViewModel = keluargaViewModel,
                 onEditClick = { id -> safeNavController.navigate("edit_warga/$id") },
+                onManageBalita = { id -> safeNavController.navigate("${Screen.UpdateBalita.route}/$id") },
+                onManageBumil = { id -> safeNavController.navigate("${Screen.UpdateBumil.route}/$id") },
+                onManageWusPus = { id -> safeNavController.navigate("${Screen.UpdateWusPus.route}/$id") },
+                onManageKb = { id -> safeNavController.navigate("${Screen.UpdateKb.route}/$id") },
             )
         }
 
@@ -413,6 +409,19 @@ fun AppNavigation() {
                 anggotaViewModel = anggotaViewModel,
             )
         }
+        composable(
+            route = "${Screen.UpdateBalita.route}/{localId}",
+            arguments = listOf(navArgument("localId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val localId = backStackEntry.arguments?.getInt("localId")
+            UpdateBalitaScreen(
+                onBackClick = { safeNavController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel,
+                initialLocalId = localId
+            )
+        }
+
         composable(Screen.UpdateKb.route) {
             UpdateKbScreen(
                 onBackClick = { safeNavController.popBackStack() },
@@ -420,11 +429,36 @@ fun AppNavigation() {
                 anggotaViewModel = anggotaViewModel,
             )
         }
+        composable(
+            route = "${Screen.UpdateKb.route}/{localId}",
+            arguments = listOf(navArgument("localId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val localId = backStackEntry.arguments?.getInt("localId")
+            UpdateKbScreen(
+                onBackClick = { safeNavController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel,
+                initialLocalId = localId
+            )
+        }
+
         composable(Screen.UpdateWusPus.route) {
             UpdateWusPusScreen(
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
+            )
+        }
+        composable(
+            route = "${Screen.UpdateWusPus.route}/{localId}",
+            arguments = listOf(navArgument("localId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val localId = backStackEntry.arguments?.getInt("localId")
+            UpdateWusPusScreen(
+                onBackClick = { safeNavController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel,
+                initialLocalId = localId
             )
         }
 
@@ -474,6 +508,18 @@ fun AppNavigation() {
                 onBackClick = { safeNavController.popBackStack() },
                 onNavItemSelected = handleBottomNav,
                 anggotaViewModel = anggotaViewModel,
+            )
+        }
+        composable(
+            route = "${Screen.UpdateBumil.route}/{localId}",
+            arguments = listOf(navArgument("localId") { type = NavType.IntType })
+        ) { backStackEntry ->
+            val localId = backStackEntry.arguments?.getInt("localId")
+            UpdateBumilScreen(
+                onBackClick = { safeNavController.popBackStack() },
+                onNavItemSelected = handleBottomNav,
+                anggotaViewModel = anggotaViewModel,
+                initialLocalId = localId
             )
         }
         composable(Screen.PilotStunting.route) {

@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ErrorOutline
-import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Groups
@@ -129,10 +128,6 @@ fun CariWargaScreen(
     keluargaViewModel: KeluargaViewmodel,
     dataReadViewModel: DataReadViewModel,
     onNavigateToRumahKeluarga: () -> Unit,
-    onNavigateToUpdateBalita: () -> Unit,
-    onNavigateToUpdateBumil: () -> Unit,
-    onNavigateToUpdateWusPus: () -> Unit,
-    onNavigateToUpdateKb: () -> Unit,
     onNavigateToProgram: (String) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
@@ -353,8 +348,7 @@ fun CariWargaScreen(
                             }
 
                             "Kesehatan" -> {
-                                item { SectionIntro("Data kesehatan", "Lihat dan update data sasaran warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
-                                item { HealthActionGrid(onNavigateToUpdateBalita, onNavigateToUpdateBumil, onNavigateToUpdateWusPus, onNavigateToUpdateKb) }
+                                item { SectionIntro("Kesehatan", "Ringkasan data kesehatan warga", Icons.Default.HealthAndSafety, PrimaryGreen) }
                                 readCollections(readState, query, setOf("balita", "bumil", "wuspus", "kb"), selectedDetail, { selectedDetail = null }) { collection, record, detailKey ->
                                     selectedDetail = record.toDetail(collection.title, detailKey)
                                 }
@@ -587,25 +581,6 @@ private fun CommandBanner(title: String, subtitle: String, icon: ImageVector, on
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
         }
         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = ActionAmber)
-    }
-}
-
-@Composable
-private fun HealthActionGrid(
-    balita: () -> Unit,
-    bumil: () -> Unit,
-    wuspus: () -> Unit,
-    kb: () -> Unit
-) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        ResponsiveTwoColumn(
-            first = { itemModifier -> MiniAction("Balita", Icons.Default.ChildCare, ProgramPurple, balita, itemModifier) },
-            second = { itemModifier -> MiniAction("Bumil", Icons.Default.PregnantWoman, HealthBlue, bumil, itemModifier) }
-        )
-        ResponsiveTwoColumn(
-            first = { itemModifier -> MiniAction("WUS/PUS", Icons.Default.Favorite, ActionAmber, wuspus, itemModifier) },
-            second = { itemModifier -> MiniAction("KB", Icons.Default.FamilyRestroom, PrimaryGreen, kb, itemModifier) }
-        )
     }
 }
 

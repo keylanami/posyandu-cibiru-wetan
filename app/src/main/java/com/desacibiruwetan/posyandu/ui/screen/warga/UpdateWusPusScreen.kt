@@ -55,9 +55,12 @@ fun UpdateWusPusScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
+    initialLocalId: Int? = null
 ) {
     val context = LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
+    val listAnggota by anggotaViewModel.listAnggotaLocal.collectAsState()
+    val lockedToWarga = initialLocalId != null
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -71,6 +74,27 @@ fun UpdateWusPusScreen(
 
     val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
 
+    fun selectWarga(warga: AnggotaEntity) {
+        if (warga.jenisKelamin.equals("Laki-laki", ignoreCase = true)) {
+            Toast.makeText(context, "WUS/PUS harus seorang Perempuan!", Toast.LENGTH_SHORT).show()
+        } else {
+            anggotaViewModel.resetDetailWusPusState()
+            selectedWarga = warga
+            namaWarga = warga.nama
+
+            // Reset local form fields when switching citizens
+            namaPasangan = ""
+            kategoriStatus = "WUS"
+            tanggalMulaiKb = ""
+            keterangan = ""
+            fieldErrors = fieldErrors - "warga_id"
+
+            if (warga.serverId != null) {
+                anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
+            }
+        }
+    }
+
     fun resetScreenState() {
         anggotaViewModel.resetDetailWusPusState()
         selectedWarga = null
@@ -82,20 +106,27 @@ fun UpdateWusPusScreen(
         fieldErrors = emptyMap()
     }
 
-    LaunchedEffect(Unit) {
-        resetScreenState()
+    LaunchedEffect(initialLocalId, listAnggota) {
+        if (initialLocalId != null) {
+            val warga = listAnggota.find { it.localId == initialLocalId }
+            if (warga != null && selectedWarga?.localId != initialLocalId) {
+                selectWarga(warga)
+            }
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                resetScreenState()
+    if (!lockedToWarga) {
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    resetScreenState()
+                }
             }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
         }
     }
 
@@ -116,24 +147,7 @@ fun UpdateWusPusScreen(
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
-                if (warga.jenisKelamin.equals("Laki-laki", ignoreCase = true)) {
-                    Toast.makeText(context, "WUS/PUS harus seorang Perempuan!", Toast.LENGTH_SHORT).show()
-                } else {
-                    anggotaViewModel.resetDetailWusPusState()
-                    selectedWarga = warga
-                    namaWarga = warga.nama
-                    
-                    // Reset local form fields when switching citizens
-                    namaPasangan = ""
-                    kategoriStatus = "WUS"
-                    tanggalMulaiKb = ""
-                    keterangan = ""
-                    fieldErrors = fieldErrors - "warga_id"
-
-                    if (warga.serverId != null) {
-                        anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
-                    }
-                }
+                selectWarga(warga)
             },
             anggotaViewModel = anggotaViewModel
         )
@@ -153,7 +167,7 @@ fun UpdateWusPusScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            Box(modifier = Modifier.clickable { showDialog = true }) {
+            Box(modifier = if (lockedToWarga) Modifier else Modifier.clickable { showDialog = true }) {
                 if (selectedWarga != null) {
                     UpdateHeaderCard(title = "Update untuk", name = selectedWarga!!.nama, icon = Icons.Default.Female) {
                         Spacer(modifier = Modifier.height(24.dp))

@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -25,23 +26,29 @@ import androidx.compose.material.icons.filled.ChildCare
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FamilyRestroom
 import androidx.compose.material.icons.filled.Female
-import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.HealthAndSafety
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Male
 import androidx.compose.material.icons.filled.PregnantWoman
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -70,21 +77,29 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.WargaProgramSummary
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailWargaScreen(
     onBackClick: () -> Unit,
     onCatatKejadianClick: (Int) -> Unit,
     onEditClick: (Int) -> Unit,
+    onManageBalita: (Int) -> Unit,
+    onManageBumil: (Int) -> Unit,
+    onManageWusPus: (Int) -> Unit,
+    onManageKb: (Int) -> Unit,
     localId: Int? = null,
     anggotaViewModel: AnggotaViewmodel,
     keluargaViewModel: KeluargaViewmodel,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
     val listKeluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
     val programSummaryState by anggotaViewModel.programSummaryState.collectAsState()
     val warga = listWargaAsli.find { it.localId == localId }
+
+    var showHealthSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState()
 
     val noKk = remember(warga, listKeluarga) {
         val keluarga = listKeluarga.find { it.localId == warga?.keluargaId || it.serverId == warga?.keluargaId }
@@ -124,12 +139,156 @@ fun DetailWargaScreen(
             ProgramChips(warga, (programSummaryState as? UiState.Success)?.data)
             ActionPanel(
                 onEdit = { onEditClick(warga.localId) },
-                onEvent = { onCatatKejadianClick(warga.localId) }
+                onEvent = { onCatatKejadianClick(warga.localId) },
+                onManageHealth = { showHealthSheet = true }
             )
-            ProgramDetailSection(programSummaryState)
+            ProgramDetailSection(
+                state = programSummaryState,
+                onEditBalita = { onManageBalita(warga.localId) },
+                onEditBumil = { onManageBumil(warga.localId) },
+                onEditWusPus = { onManageWusPus(warga.localId) },
+                onEditKb = { onManageKb(warga.localId) }
+            )
             InfoKependudukanCard(warga = warga, noKk = noKk)
             Spacer(modifier = Modifier.height(32.dp))
         }
+
+        if (showHealthSheet) {
+            val summary = (programSummaryState as? UiState.Success)?.data
+            ModalBottomSheet(
+                onDismissRequest = { showHealthSheet = false },
+                sheetState = sheetState,
+                containerColor = SurfaceWhite
+            ) {
+                HealthManagementOptions(
+                    warga = warga,
+                    hasWusPus = summary?.wusPusLocal != null || summary?.wusPusRemote != null,
+                    onOptionClick = { option ->
+                        showHealthSheet = false
+                        when (option) {
+                            "Balita" -> onManageBalita(warga.localId)
+                            "Bumil" -> onManageBumil(warga.localId)
+                            "WUS/PUS" -> onManageWusPus(warga.localId)
+                            "KB" -> onManageKb(warga.localId)
+                        }
+                    }
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HealthManagementOptions(
+    warga: AnggotaEntity,
+    hasWusPus: Boolean,
+    onOptionClick: (String) -> Unit
+) {
+    val context = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 48.dp, start = 20.dp, end = 20.dp, top = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            "Pilih Program Kesehatan",
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        val isPerempuan = warga.jenisKelamin.equals("Perempuan", ignoreCase = true)
+        val isBalita = warga.kategoriUsia.equals("Balita", ignoreCase = true)
+
+        HealthOptionItem(
+            title = "Data Balita",
+            subtitle = "Update tinggi dan berat badan balita",
+            icon = Icons.Default.ChildCare,
+            color = PrimaryGreen,
+            onClick = {
+                if (!isBalita) {
+                    Toast.makeText(context, "Warga bukan kategori Balita", Toast.LENGTH_SHORT).show()
+                }
+                onOptionClick("Balita")
+            }
+        )
+
+        HealthOptionItem(
+            title = "Data Bumil",
+            subtitle = "Kelola kehamilan dan ASI eksklusif",
+            icon = Icons.Default.PregnantWoman,
+            color = ActionAmber,
+            onClick = {
+                if (!isPerempuan) {
+                    Toast.makeText(context, "Hanya untuk warga Perempuan", Toast.LENGTH_SHORT).show()
+                    return@HealthOptionItem
+                }
+                onOptionClick("Bumil")
+            }
+        )
+
+        HealthOptionItem(
+            title = "Data WUS/PUS",
+            subtitle = "Status Wanita Usia Subur / Pasangan Usia Subur",
+            icon = Icons.Default.Female,
+            color = HealthBlue,
+            onClick = {
+                if (!isPerempuan) {
+                    Toast.makeText(context, "Hanya untuk warga Perempuan", Toast.LENGTH_SHORT).show()
+                    return@HealthOptionItem
+                }
+                onOptionClick("WUS/PUS")
+            }
+        )
+
+        HealthOptionItem(
+            title = "Data KB",
+            subtitle = "Catat penggunaan alat kontrasepsi",
+            icon = Icons.Default.FamilyRestroom,
+            color = HealthBlue,
+            onClick = {
+                if (!isPerempuan) {
+                    Toast.makeText(context, "Hanya untuk warga Perempuan", Toast.LENGTH_SHORT).show()
+                    return@HealthOptionItem
+                }
+                if (!hasWusPus) {
+                    Toast.makeText(context, "Buat data WUS/PUS dulu", Toast.LENGTH_SHORT).show()
+                    return@HealthOptionItem
+                }
+                onOptionClick("KB")
+            }
+        )
+    }
+}
+
+@Composable
+private fun HealthOptionItem(
+    title: String,
+    subtitle: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(color.copy(alpha = 0.08f), RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick)
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier.size(44.dp).background(color.copy(alpha = 0.2f), RoundedCornerShape(14.dp)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = color)
+        }
+        Column(modifier = Modifier.weight(1f).padding(start = 14.dp)) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = TextMuted)
+        }
+        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = TextMuted)
     }
 }
 
@@ -267,7 +426,13 @@ private fun ProgramBadge(text: String, icon: ImageVector, color: Color, modifier
 }
 
 @Composable
-private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
+private fun ProgramDetailSection(
+    state: UiState<WargaProgramSummary>,
+    onEditBalita: () -> Unit,
+    onEditBumil: () -> Unit,
+    onEditWusPus: () -> Unit,
+    onEditKb: () -> Unit,
+) {
     when (state) {
         UiState.Idle, UiState.Loading -> Unit
         is UiState.Error -> Unit
@@ -290,6 +455,7 @@ private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
                         title = "Balita",
                         icon = Icons.Default.ChildCare,
                         color = PrimaryGreen,
+                        onClick = onEditBalita,
                         rows = listOf(
                             "Tinggi badan" to "${it.tinggiBadan} cm",
                             "Berat badan" to "${it.beratBadan} kg"
@@ -318,6 +484,7 @@ private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
                         title = "Bumil",
                         icon = Icons.Default.PregnantWoman,
                         color = ActionAmber,
+                        onClick = onEditBumil,
                         rows = listOf(
                             "Hamil ke" to bumil.hamilKe.toString(),
                             "ASI eksklusif" to if (bumil.asiEksklusif) "Ya" else "Tidak",
@@ -336,6 +503,7 @@ private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
                         title = title,
                         icon = Icons.Default.FamilyRestroom,
                         color = HealthBlue,
+                        onClick = onEditWusPus,
                         rows = listOf(
                             "Nama pasangan" to (namaSuami ?: "-"),
                             "Mulai status" to formatDateForDisplay(tanggal).ifBlank { "-" },
@@ -345,7 +513,7 @@ private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
                 }
 
                 summary.kbs.forEach { kb ->
-                    KbInfoCard(kb)
+                    KbInfoCard(kb, onEditKb)
                 }
             }
         }
@@ -353,11 +521,18 @@ private fun ProgramDetailSection(state: UiState<WargaProgramSummary>) {
 }
 
 @Composable
-private fun ProgramInfoCard(title: String, icon: ImageVector, color: Color, rows: List<Pair<String, String>>) {
+private fun ProgramInfoCard(
+    title: String,
+    icon: ImageVector,
+    color: Color,
+    onClick: () -> Unit = {},
+    rows: List<Pair<String, String>>
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(color.copy(alpha = 0.08f), RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -370,6 +545,8 @@ private fun ProgramInfoCard(title: String, icon: ImageVector, color: Color, rows
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(start = 8.dp)
             )
+            Spacer(modifier = Modifier.weight(1f))
+            Icon(Icons.Default.Edit, contentDescription = null, tint = color.copy(alpha = 0.5f), modifier = Modifier.size(16.dp))
         }
         rows.forEach { (label, value) ->
             Column(modifier = Modifier.fillMaxWidth()) {
@@ -381,11 +558,12 @@ private fun ProgramInfoCard(title: String, icon: ImageVector, color: Color, rows
 }
 
 @Composable
-private fun KbInfoCard(kb: KbData) {
+private fun KbInfoCard(kb: KbData, onClick: () -> Unit) {
     ProgramInfoCard(
         title = "KB ${kb.jenisKb}",
         icon = Icons.Default.FamilyRestroom,
         color = HealthBlue,
+        onClick = onClick,
         rows = listOf(
             "Status" to if (kb.statusAktif) "Aktif" else "Tidak aktif",
             "Mulai KB" to formatDateForDisplay(kb.tanggalMulaiKb).ifBlank { "-" },
@@ -395,11 +573,16 @@ private fun KbInfoCard(kb: KbData) {
 }
 
 @Composable
-private fun ActionPanel(onEdit: () -> Unit, onEvent: () -> Unit) {
+private fun ActionPanel(onEdit: () -> Unit, onEvent: () -> Unit, onManageHealth: () -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
         CommandRow("Edit identitas", "Perbarui data dasar dan sosial", Icons.Default.Edit, onEdit)
         CommandRow("Catat kejadian", "Kelahiran, pindah, nikah, cerai, meninggal", Icons.Default.AddCircleOutline, onEvent)
-        CommandRow("Riwayat warga", "Akan tampil setelah ada catatan kunjungan", Icons.Default.History, {})
+        CommandRow(
+            title = "Manajemen Data Kesehatan",
+            subtitle = "Balita, Bumil, WUS/PUS, dan KB",
+            icon = Icons.Default.HealthAndSafety,
+            onClick = onManageHealth
+        )
     }
 }
 

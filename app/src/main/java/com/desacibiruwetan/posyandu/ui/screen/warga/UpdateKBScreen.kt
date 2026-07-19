@@ -49,9 +49,12 @@ fun UpdateKbScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
     anggotaViewModel: AnggotaViewmodel,
+    initialLocalId: Int? = null
 ) {
     val context = LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
+    val listAnggota by anggotaViewModel.listAnggotaLocal.collectAsState()
+    val lockedToWarga = initialLocalId != null
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -67,6 +70,24 @@ fun UpdateKbScreen(
     val jenisKbOptions = listOf("IUD", "Suntik", "Pil", "Kondom", "Implan", "MOW", "MOP")
     val detailWusPus by anggotaViewModel.detailWusPusState.collectAsState()
 
+    fun selectWarga(warga: AnggotaEntity) {
+        selectedWarga = warga
+        namaWarga = warga.nama
+        fieldErrors = fieldErrors - "warga_id"
+        if (warga.serverId != null) {
+            anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
+        }
+    }
+
+    LaunchedEffect(initialLocalId, listAnggota) {
+        if (initialLocalId != null) {
+            val warga = listAnggota.find { it.localId == initialLocalId }
+            if (warga != null && selectedWarga?.localId != initialLocalId) {
+                selectWarga(warga)
+            }
+        }
+    }
+
     LaunchedEffect(detailWusPus) {
         if (detailWusPus is UiState.Error) {
             Toast.makeText(context, "Warga ini belum punya data WUS/PUS", Toast.LENGTH_SHORT).show()
@@ -77,12 +98,7 @@ fun UpdateKbScreen(
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
-                selectedWarga = warga
-                namaWarga = warga.nama
-                fieldErrors = fieldErrors - "warga_id"
-                if (warga.serverId != null) {
-                    anggotaViewModel.getDetailWusPusFromServer(token, warga.serverId)
-                }
+                selectWarga(warga)
             },
             anggotaViewModel = anggotaViewModel
         )
@@ -114,7 +130,7 @@ fun UpdateKbScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Box(modifier = Modifier.clickable { showDialog = true }) {
+            Box(modifier = if (lockedToWarga) Modifier else Modifier.clickable { showDialog = true }) {
                 if (selectedWarga != null) {
                     UpdateHeaderCard(
                         title = "Update untuk",

@@ -60,10 +60,13 @@ import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
 fun UpdateBalitaScreen(
     onBackClick: () -> Unit,
     onNavItemSelected: (Int) -> Unit,
-    anggotaViewModel: AnggotaViewmodel
+    anggotaViewModel: AnggotaViewmodel,
+    initialLocalId: Int? = null
 ) {
     val context = LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
+    val listAnggota by anggotaViewModel.listAnggotaLocal.collectAsState()
+    val lockedToWarga = initialLocalId != null
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedWarga by remember { mutableStateOf<AnggotaEntity?>(null) }
@@ -75,6 +78,30 @@ fun UpdateBalitaScreen(
 
     val detailBalita by anggotaViewModel.detailBalitaState.collectAsState()
 
+    fun selectWarga(warga: AnggotaEntity) {
+        anggotaViewModel.resetDetailBalitaState()
+        selectedWarga = warga
+        namaBalita = warga.nama
+
+        // Reset local form fields when switching citizens
+        tinggiBadan = ""
+        beratBadan = ""
+        fieldErrors = fieldErrors - "warga_id"
+
+        val ket = warga.keterangan ?: ""
+        if (ket.contains("Ayah:") && ket.contains("Ibu:")) {
+            try {
+                beratBadan = ket.substringAfter("BB: ").substringBefore(" kg").trim()
+                tinggiBadan = ket.substringAfter("TB: ").substringBefore(" cm").trim()
+            } catch (e: Exception) {
+            }
+        }
+
+        if (warga.serverId != null) {
+            anggotaViewModel.getDetailBalitaFromServer(token, warga.serverId)
+        }
+    }
+
     fun resetScreenState() {
         anggotaViewModel.resetDetailBalitaState()
         selectedWarga = null
@@ -84,20 +111,27 @@ fun UpdateBalitaScreen(
         fieldErrors = emptyMap()
     }
 
-    LaunchedEffect(Unit) {
-        resetScreenState()
+    LaunchedEffect(initialLocalId, listAnggota) {
+        if (initialLocalId != null) {
+            val warga = listAnggota.find { it.localId == initialLocalId }
+            if (warga != null && selectedWarga?.localId != initialLocalId) {
+                selectWarga(warga)
+            }
+        }
     }
 
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                resetScreenState()
+    if (!lockedToWarga) {
+        DisposableEffect(lifecycleOwner) {
+            val observer = LifecycleEventObserver { _, event ->
+                if (event == Lifecycle.Event.ON_RESUME) {
+                    resetScreenState()
+                }
             }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
+            lifecycleOwner.lifecycle.addObserver(observer)
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
         }
     }
 
@@ -105,27 +139,7 @@ fun UpdateBalitaScreen(
         SearchWargaDialog(
             onDismiss = { showDialog = false },
             onWargaSelected = { warga ->
-                anggotaViewModel.resetDetailBalitaState()
-                selectedWarga = warga
-                namaBalita = warga.nama
-                
-                // Reset local form fields when switching citizens
-                tinggiBadan = ""
-                beratBadan = ""
-                fieldErrors = fieldErrors - "warga_id"
-
-                val ket = warga.keterangan ?: ""
-                if (ket.contains("Ayah:") && ket.contains("Ibu:")) {
-                    try {
-                        beratBadan = ket.substringAfter("BB: ").substringBefore(" kg").trim()
-                        tinggiBadan = ket.substringAfter("TB: ").substringBefore(" cm").trim()
-                    } catch (e: Exception) {
-                    }
-                }
-
-                if (warga.serverId != null) {
-                    anggotaViewModel.getDetailBalitaFromServer(token, warga.serverId)
-                }
+                selectWarga(warga)
             },
             anggotaViewModel = anggotaViewModel,
             filterByKategori = "Balita"
@@ -157,7 +171,7 @@ fun UpdateBalitaScreen(
         ) {
             Spacer(modifier = Modifier.height(24.dp))
 
-            Box(modifier = Modifier.clickable { showDialog = true }) {
+            Box(modifier = if (lockedToWarga) Modifier else Modifier.clickable { showDialog = true }) {
                 if (selectedWarga != null) {
                     UpdateHeaderCard(
                         title = "Update untuk",
