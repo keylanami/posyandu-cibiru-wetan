@@ -30,7 +30,7 @@ import com.desacibiruwetan.posyandu.ui.theme.HealthBlue
 import com.desacibiruwetan.posyandu.ui.theme.SurfaceWhite
 
 @Composable
-fun InfoKependudukanCard(warga: AnggotaEntity) {
+fun InfoKependudukanCard(warga: AnggotaEntity, noKk: String) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -91,7 +91,7 @@ fun InfoKependudukanCard(warga: AnggotaEntity) {
                     Spacer(modifier = Modifier.height(16.dp))
                     InfoItem(label = "Pendidikan", value = warga.pendidikanTerakhir ?: "-")
                     Spacer(modifier = Modifier.height(16.dp))
-                    InfoItem(label = "ID Keluarga", value = warga.keluargaId.toString())
+                    InfoItem(label = "No. KK", value = noKk)
                 }
                 }
             )

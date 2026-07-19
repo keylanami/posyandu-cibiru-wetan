@@ -384,6 +384,7 @@ fun AppNavigation() {
                 onCatatKejadianClick = { id -> safeNavController.navigate("${Screen.CatatKejadian.route}/$id") },
                 localId = localId,
                 anggotaViewModel = anggotaViewModel,
+                keluargaViewModel = keluargaViewModel,
                 onEditClick = { id -> safeNavController.navigate("edit_warga/$id") },
             )
         }

@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -66,6 +67,7 @@ import com.desacibiruwetan.posyandu.ui.theme.TextMuted
 import com.desacibiruwetan.posyandu.utils.SessionManager
 import com.desacibiruwetan.posyandu.utils.formatDateForDisplay
 import com.desacibiruwetan.posyandu.viewmodel.AnggotaViewmodel
+import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.WargaProgramSummary
 
 @Composable
@@ -75,12 +77,19 @@ fun DetailWargaScreen(
     onEditClick: (Int) -> Unit,
     localId: Int? = null,
     anggotaViewModel: AnggotaViewmodel,
+    keluargaViewModel: KeluargaViewmodel,
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val token = SessionManager.getAuthorizationHeader(context)
     val listWargaAsli by anggotaViewModel.listAnggotaLocal.collectAsState()
+    val listKeluarga by keluargaViewModel.listKeluargaLocal.collectAsState()
     val programSummaryState by anggotaViewModel.programSummaryState.collectAsState()
     val warga = listWargaAsli.find { it.localId == localId }
+
+    val noKk = remember(warga, listKeluarga) {
+        val keluarga = listKeluarga.find { it.localId == warga?.keluargaId || it.serverId == warga?.keluargaId }
+        keluarga?.noKK ?: "-"
+    }
 
     LaunchedEffect(warga?.localId, warga?.serverId, token) {
         if (warga != null) {
@@ -118,7 +127,7 @@ fun DetailWargaScreen(
                 onEvent = { onCatatKejadianClick(warga.localId) }
             )
             ProgramDetailSection(programSummaryState)
-            InfoKependudukanCard(warga = warga)
+            InfoKependudukanCard(warga = warga, noKk = noKk)
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
