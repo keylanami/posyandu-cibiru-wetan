@@ -32,4 +32,7 @@ interface RumahDao{
 
     @Query("select * from tabel_rumah where localId = :id or server_id = :id limit 1")
     suspend fun getRumahByLocalOrServerId(id: Int): RumahEntity?
+
+    @Query("select * from tabel_rumah where server_id = :serverId limit 1")
+    suspend fun getRumahByServerId(serverId: Int): RumahEntity?
 }

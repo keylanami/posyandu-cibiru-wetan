@@ -27,4 +27,10 @@ interface WusPusDao {
 
     @Query("select * from tabel_wuspus where anggotaLocalId = :localId or anggotaServerId = :serverId limit 1")
     suspend fun getWuspusByAnggotaId(localId: Int, serverId: Int?): WusPusEntity?
+
+    @Query("select * from tabel_wuspus where wusPusServerId = :serverId limit 1")
+    suspend fun getWusPusByServerId(serverId: Int): WusPusEntity?
+
+    @Query("select * from tabel_wuspus where idLocalWusPus = :id or wusPusServerId = :id limit 1")
+    suspend fun getWusPusByLocalOrServerId(id: Int): WusPusEntity?
 }

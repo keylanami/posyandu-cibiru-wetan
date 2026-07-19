@@ -23,6 +23,9 @@ interface KbDao {
     @Query("select * from tabel_kb where idKbLocal = :localId or idKbServer = :serverId limit 1")
     suspend fun getKbById(localId: Int, serverId: Int?): KbEntity?
 
+    @Query("select * from tabel_kb where idKbServer = :serverId limit 1")
+    suspend fun getKbByServerId(serverId: Int): KbEntity?
+
     @Update
     suspend fun updateKbLocal(kb: KbEntity)
 

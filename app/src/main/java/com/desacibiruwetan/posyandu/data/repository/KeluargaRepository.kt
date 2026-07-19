@@ -2,7 +2,10 @@ package com.desacibiruwetan.posyandu.data.repository
 
 import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
+import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
+import com.desacibiruwetan.posyandu.data.local.dao.SyncStateDao
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.SyncStateEntity
 import com.desacibiruwetan.posyandu.data.model.KeluargaOpt
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.network.ApiService
@@ -12,7 +15,9 @@ import kotlinx.coroutines.flow.Flow
 private const val TAG = "KeluargaRepo"
 class KeluargaRepository(
     private val apiService: ApiService,
-    private val keluargaDao: KeluargaDao
+    private val keluargaDao: KeluargaDao,
+    private val rumahDao: RumahDao,
+    private val syncStateDao: SyncStateDao
 ) {
 
     fun getAllKeluargaLocal(): Flow<List<KeluargaEntity>>{
@@ -26,17 +31,34 @@ class KeluargaRepository(
     suspend fun pullDataFromServer(token: String){
         Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
-            val response = apiService.getAllKeluarga(token)
-            Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
+            var cursor: Int? = null
+            val updatedSince = syncStateDao.getLastSyncedAt("keluargas")
+            var latestUpdatedAt = updatedSince
+            var total = 0
 
-            if (response.isSuccessful){
-                val dataServer = response.body()?.data ?: emptyList()
-                Log.d(TAG, "data dari server: ${dataServer.size} item")
+            do {
+                val response = apiService.getAllKeluarga(token, limit = 500, cursor = cursor, updatedSince = updatedSince)
+                Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
+
+                if (!response.isSuccessful){
+                    Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
+                    return
+                }
+
+                val body = response.body()
+                val dataServer = body?.data ?: emptyList()
+                total += dataServer.size
+                Log.d(TAG, "data keluarga dari server: ${dataServer.size} item")
 
                 dataServer.forEach { keluargaServer ->
+                    val rumahLocal = rumahDao.getRumahByServerId(keluargaServer.rumahId) ?: return@forEach
+                    val existing = keluargaDao.getKeluargaByServerId(keluargaServer.id)
+                    if (existing?.isSynced == false) return@forEach
+
                     val keluargaLokalBaru = KeluargaEntity(
+                        localId = existing?.localId ?: 0,
                         serverId = keluargaServer.id,
-                        rumahId = keluargaServer.rumahId,
+                        rumahId = rumahLocal.localId,
                         noKK = keluargaServer.noKK,
                         statusKepemilikanRumah = keluargaServer.statusKepemilikanRumah,
                         kepemilikanJamban = keluargaServer.kepemilikanJamban,
@@ -48,11 +70,14 @@ class KeluargaRepository(
                     )
 
                     keluargaDao.insertKeluargaLocal(keluargaLokalBaru)
+                    latestUpdatedAt = newestSyncTime(latestUpdatedAt, keluargaServer.updatedAt)
                 }
-                Log.d(TAG, "sync selesai, ${dataServer.size} keluarga tersimpan")
-            } else {
-                Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
-            }
+
+                cursor = body?.meta?.nextCursor
+            } while (body?.meta?.hasMore == true && cursor != null)
+
+            latestUpdatedAt?.let { syncStateDao.upsert(SyncStateEntity("keluargas", it)) }
+            Log.d(TAG, "sync selesai, $total keluarga tersimpan")
 
         } catch (e: Exception){
             println("Gagal tarik server, pakai data lokal: ${e.localizedMessage}")
@@ -186,5 +211,4 @@ class KeluargaRepository(
         }
         return emptyList()
     }
-
 }

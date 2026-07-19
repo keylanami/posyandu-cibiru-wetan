@@ -18,6 +18,9 @@ interface BalitaDao {
     @Query("SELECT * FROM tabel_balita WHERE anggotaLocalId = :localId OR anggotaServerId = :serverId LIMIT 1")
     suspend fun getBalitaByAnggotaId(localId: Int, serverId: Int?): BalitaEntity?
 
+    @Query("SELECT * FROM tabel_balita WHERE anggotaServerId = :anggotaServerId LIMIT 1")
+    suspend fun getBalitaByAnggotaServerId(anggotaServerId: Int): BalitaEntity?
+
     @Query("DELETE FROM tabel_balita")
     suspend fun deleteAllBalita()
 

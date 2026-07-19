@@ -4,10 +4,13 @@ import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
+import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
+import com.desacibiruwetan.posyandu.data.local.dao.SyncStateDao
 import com.desacibiruwetan.posyandu.data.local.dao.WusPusDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
+import com.desacibiruwetan.posyandu.data.local.entity.SyncStateEntity
 import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaData
@@ -28,9 +31,11 @@ private const val TAG = "AnggotaRepo"
 class AnggotaRepository(
     private val apiService: ApiService,
     private val anggotaDao: AnggotaDao,
+    private val keluargaDao: KeluargaDao,
     private val balitaDao: BalitaDao,
     private val bumilDao: BumilDao,
-    private val wusPusDao: WusPusDao
+    private val wusPusDao: WusPusDao,
+    private val syncStateDao: SyncStateDao
 ) {
 
     fun getAllAnggotaLocal(): Flow<List<AnggotaEntity>> = anggotaDao.getAllAnggotaDao()
@@ -41,15 +46,32 @@ class AnggotaRepository(
     suspend fun pullDataFromServer(token: String) {
         Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
-            val response = apiService.getAllAnggota(token)
-            Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
-            if (response.isSuccessful) {
-                val dataServer = response.body()?.data
-                Log.d(TAG, "data dari server: ${dataServer?.size ?: "null"} item")
-                dataServer?.forEach { anggotaServer ->
+            var cursor: Int? = null
+            val updatedSince = syncStateDao.getLastSyncedAt("anggotas")
+            var latestUpdatedAt = updatedSince
+            var total = 0
+
+            do {
+                val response = apiService.getAllAnggota(token, limit = 500, cursor = cursor, updatedSince = updatedSince)
+                Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
+                    return
+                }
+
+                val body = response.body()
+                val dataServer = body?.data ?: emptyList()
+                total += dataServer.size
+                Log.d(TAG, "data anggota dari server: ${dataServer.size} item")
+                dataServer.forEach { anggotaServer ->
+                    val keluargaLocal = keluargaDao.getKeluargaByServerId(anggotaServer.keluargaId) ?: return@forEach
+                    val existing = anggotaDao.getAnggotaByServerId(anggotaServer.id)
+                    if (existing?.isSynced == false) return@forEach
+
                     val anggotaLokalBaru = AnggotaEntity(
+                        localId = existing?.localId ?: 0,
                         serverId = anggotaServer.id,
-                        keluargaId = anggotaServer.keluargaId,
+                        keluargaId = keluargaLocal.localId,
                         nik = anggotaServer.nik,
                         nama = anggotaServer.nama,
                         tempatLahir = anggotaServer.tempatLahir,
@@ -72,11 +94,14 @@ class AnggotaRepository(
                         kategoriUsia = anggotaServer.kategoriUsia
                     )
                     anggotaDao.insertAnggotaLocal(anggotaLokalBaru)
+                    latestUpdatedAt = newestSyncTime(latestUpdatedAt, anggotaServer.updatedAt)
                 }
-                Log.d(TAG, "sync selesai, ${dataServer?.size ?: 0} anggota tersimpan")
-            } else {
-                Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
-            }
+
+                cursor = body?.meta?.nextCursor
+            } while (body?.meta?.hasMore == true && cursor != null)
+
+            latestUpdatedAt?.let { syncStateDao.upsert(SyncStateEntity("anggotas", it)) }
+            Log.d(TAG, "sync selesai, $total anggota tersimpan")
         } catch (e: Exception) {
             Log.e(TAG, "exception: ${e.localizedMessage}", e)
         }
@@ -520,8 +545,4 @@ class AnggotaRepository(
             )
         )
     }
-
-
-
-
 }

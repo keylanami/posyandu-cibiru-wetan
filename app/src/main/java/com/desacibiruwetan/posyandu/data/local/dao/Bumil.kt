@@ -20,6 +20,9 @@ interface BumilDao {
     @Query("select * from tabel_bumil where anggotaLocalId = :localId or anggotaServerId = :serverId limit 1")
     suspend fun getBumilByAnggotaId(localId: Int, serverId: Int?): BumilEntity?
 
+    @Query("select * from tabel_bumil where bumilServerId = :serverId limit 1")
+    suspend fun getBumilByServerId(serverId: Int): BumilEntity?
+
 
     @Query("DELETE FROM tabel_bumil where idLocalBumil = :localId or bumilServerId = :serverId")
     suspend fun deleteAllBumil(localId: Int, serverId: Int?)

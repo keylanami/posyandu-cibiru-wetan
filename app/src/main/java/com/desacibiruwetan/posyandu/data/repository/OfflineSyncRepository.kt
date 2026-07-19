@@ -6,6 +6,7 @@ import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.model.AnggotaReq
 import com.desacibiruwetan.posyandu.data.model.BalitaReq
 import com.desacibiruwetan.posyandu.data.model.BumilReq
+import com.desacibiruwetan.posyandu.data.model.KbRequest
 import com.desacibiruwetan.posyandu.data.model.KeluargaReq
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
 import com.desacibiruwetan.posyandu.data.model.WusPusReq
@@ -26,6 +27,7 @@ class OfflineSyncRepository(
     private val balitaDao = database.balitaDao()
     private val bumilDao = database.bumilDao()
     private val wusPusDao = database.wusPusDao()
+    private val kbDao = database.kbDao()
 
     suspend fun syncPendingChanges(token: String): Boolean = mutex.withLock {
         if (token.isBlank()) return@withLock false
@@ -37,6 +39,7 @@ class OfflineSyncRepository(
             syncBalita(token)
             syncBumil(token)
             syncWusPus(token)
+            syncKb(token)
             true
         }.onFailure {
             Log.e(OFFLINE_SYNC_TAG, "Sync pending gagal: ${it.localizedMessage}", it)
@@ -216,6 +219,43 @@ class OfflineSyncRepository(
                         wusPusServerId = server?.id ?: wusPus.wusPusServerId,
                         createdAt = server?.createdAt ?: wusPus.createdAt,
                         updatedAt = server?.updatedAt ?: wusPus.updatedAt,
+                        isSynced = true
+                    )
+                )
+            }
+        }
+    }
+
+    private suspend fun syncKb(token: String) {
+        kbDao.getKbBelumSinkron().forEach { kb ->
+            val wusPusId = kb.wusPusId ?: return@forEach
+            val wusPus = wusPusDao.getWusPusByLocalOrServerId(wusPusId) ?: return@forEach
+            val wusPusServerId = wusPus.wusPusServerId ?: return@forEach
+            val request = KbRequest(
+                jenisKb = kb.jenisKb,
+                tanggalMulaiKb = kb.tanggalMulaiKb,
+                statusAktif = kb.statusAktif,
+                keterangan = kb.keterangan
+            )
+
+            val response = if (kb.idKbServer == null) {
+                apiService.postKb(token, wusPusServerId, request)
+            } else {
+                apiService.putKb(token, kb.idKbServer, request)
+            }
+
+            if (response.isSuccessful) {
+                val server = response.body()?.data
+                kbDao.updateKbLocal(
+                    kb.copy(
+                        idKbServer = server?.id ?: kb.idKbServer,
+                        wusPusId = wusPus.idLocalWusPus,
+                        jenisKb = server?.jenisKb ?: kb.jenisKb,
+                        tanggalMulaiKb = server?.tanggalMulaiKb ?: kb.tanggalMulaiKb,
+                        statusAktif = server?.statusAktif ?: kb.statusAktif,
+                        keterangan = server?.keterangan ?: kb.keterangan,
+                        createdAt = server?.createdAt ?: kb.createdAt,
+                        updatedAt = server?.updatedAt ?: kb.updatedAt,
                         isSynced = true
                     )
                 )

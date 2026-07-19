@@ -97,7 +97,7 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                RumahViewmodel(RumahRepository(apiService, database.rumahDao())) as T
+                RumahViewmodel(RumahRepository(apiService, database.rumahDao(), database.syncStateDao())) as T
         },
     )
 
@@ -105,7 +105,7 @@ fun AppNavigation() {
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                KeluargaViewmodel(KeluargaRepository(apiService, database.keluargaDao())) as T
+                KeluargaViewmodel(KeluargaRepository(apiService, database.keluargaDao(), database.rumahDao(), database.syncStateDao())) as T
         },
     )
 
@@ -117,9 +117,11 @@ fun AppNavigation() {
                     AnggotaRepository(
                         apiService,
                         database.anggotaDao(),
+                        database.keluargaDao(),
                         database.balitaDao(),
                         database.bumilDao(),
                         database.wusPusDao(),
+                        database.syncStateDao(),
                     ),
                 ) as T
         },

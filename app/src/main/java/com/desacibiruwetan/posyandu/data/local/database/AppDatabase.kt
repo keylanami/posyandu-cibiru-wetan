@@ -8,13 +8,17 @@ import com.desacibiruwetan.posyandu.data.local.dao.AnggotaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BalitaDao
 import com.desacibiruwetan.posyandu.data.local.dao.BumilDao
 import com.desacibiruwetan.posyandu.data.local.dao.KeluargaDao
+import com.desacibiruwetan.posyandu.data.local.dao.KbDao
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
+import com.desacibiruwetan.posyandu.data.local.dao.SyncStateDao
 import com.desacibiruwetan.posyandu.data.local.dao.WusPusDao
 import com.desacibiruwetan.posyandu.data.local.entity.AnggotaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BalitaEntity
 import com.desacibiruwetan.posyandu.data.local.entity.BumilEntity
 import com.desacibiruwetan.posyandu.data.local.entity.KeluargaEntity
+import com.desacibiruwetan.posyandu.data.local.entity.KbEntity
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
+import com.desacibiruwetan.posyandu.data.local.entity.SyncStateEntity
 import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
 
 @Database(
@@ -24,9 +28,11 @@ import com.desacibiruwetan.posyandu.data.local.entity.WusPusEntity
         AnggotaEntity::class,
         BalitaEntity::class,
         BumilEntity::class,
-        WusPusEntity::class
+        WusPusEntity::class,
+        KbEntity::class,
+        SyncStateEntity::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -37,8 +43,12 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun balitaDao(): BalitaDao
     abstract fun bumilDao(): BumilDao
     abstract fun wusPusDao(): WusPusDao
+    abstract fun kbDao(): KbDao
+    abstract fun syncStateDao(): SyncStateDao
 
     suspend fun clearUserData() {
+        syncStateDao().clear()
+        kbDao().deleteAllKbLocal()
         wusPusDao().deleteAllWusPusLocal()
         bumilDao().deleteAllBumilLocal()
         balitaDao().deleteAllBalita()

@@ -32,4 +32,7 @@ interface AnggotaDao{
     @Query("select * from tabel_anggota where localId = :id or serverId = :id limit 1")
     suspend fun getAnggotaByLocalOrServerId(id: Int): AnggotaEntity?
 
+    @Query("select * from tabel_anggota where serverId = :serverId limit 1")
+    suspend fun getAnggotaByServerId(serverId: Int): AnggotaEntity?
+
 }

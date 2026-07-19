@@ -38,6 +38,7 @@ import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Query
 import retrofit2.http.Path
 import retrofit2.http.Url
 
@@ -71,6 +72,9 @@ interface ApiService {
     @GET("rumahs")
     suspend fun getAllRumah(
         @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<RumahData>>>
 
     @GET("rumahs/{id}")
@@ -95,7 +99,10 @@ interface ApiService {
 
     @GET("keluargas")
     suspend fun getAllKeluarga(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<KeluargaData>>>
 
 
@@ -122,7 +129,10 @@ interface ApiService {
 
     @GET("anggotas")
     suspend fun getAllAnggota(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<AnggotaData>>>
 
 
@@ -165,7 +175,10 @@ interface ApiService {
 
     @GET("balitas")
     suspend fun getAllBalita(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<AnggotaData>>>
 
 
@@ -193,7 +206,10 @@ interface ApiService {
 
     @GET("bumils")
     suspend fun getAllBumil(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<BumilData>>>
 
 
@@ -235,7 +251,10 @@ interface ApiService {
 
     @GET("wus-pus")
     suspend fun getAllWusPus(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<WusPusData>>>
 
 
@@ -278,7 +297,10 @@ interface ApiService {
 
     @GET("kbs")
     suspend fun getAllKb(
-        @Header("Authorization") token: String
+        @Header("Authorization") token: String,
+        @Query("limit") limit: Int? = null,
+        @Query("cursor") cursor: Int? = null,
+        @Query("updated_since") updatedSince: String? = null,
     ): Response<BaseResponse<List<KbData>>>
 
     @POST("wus-pus/{wusPusId}/kbs")

@@ -32,4 +32,7 @@ interface KeluargaDao{
     @Query("select * from tabel_keluarga where localId = :id or serverId = :id limit 1")
     suspend fun getKeluargaByLocalOrServerId(id: Int): KeluargaEntity?
 
+    @Query("select * from tabel_keluarga where serverId = :serverId limit 1")
+    suspend fun getKeluargaByServerId(serverId: Int): KeluargaEntity?
+
 }

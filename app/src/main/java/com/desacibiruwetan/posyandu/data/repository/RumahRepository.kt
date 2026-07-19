@@ -2,7 +2,9 @@ package com.desacibiruwetan.posyandu.data.repository
 
 import android.util.Log
 import com.desacibiruwetan.posyandu.data.local.dao.RumahDao
+import com.desacibiruwetan.posyandu.data.local.dao.SyncStateDao
 import com.desacibiruwetan.posyandu.data.local.entity.RumahEntity
+import com.desacibiruwetan.posyandu.data.local.entity.SyncStateEntity
 import com.desacibiruwetan.posyandu.data.model.RumahRequest
 import com.desacibiruwetan.posyandu.data.network.ApiService
 import kotlinx.coroutines.flow.Flow
@@ -12,7 +14,8 @@ private const val TAG = "RumahRepo"
 
 class RumahRepository(
     private val apiService: ApiService,
-    private val rumahDao: RumahDao
+    private val rumahDao: RumahDao,
+    private val syncStateDao: SyncStateDao
 ){
 
 
@@ -25,14 +28,30 @@ class RumahRepository(
     suspend fun pullDataFromServer(token: String){
         Log.d(TAG, "pullDataFromServer token=${token.take(15)}...")
         try {
-            val response = apiService.getAllRumah(token)
-            Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
-            if (response.isSuccessful) {
-                val dataServer = response.body()?.data ?: emptyList()
-                Log.d(TAG, "data dari server: ${dataServer.size} item")
+            var cursor: Int? = null
+            val updatedSince = syncStateDao.getLastSyncedAt("rumahs")
+            var latestUpdatedAt = updatedSince
+            var total = 0
+
+            do {
+                val response = apiService.getAllRumah(token, limit = 500, cursor = cursor, updatedSince = updatedSince)
+                Log.d(TAG, "response code=${response.code()} success=${response.isSuccessful}")
+                if (!response.isSuccessful) {
+                    Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
+                    return
+                }
+
+                val body = response.body()
+                val dataServer = body?.data ?: emptyList()
+                total += dataServer.size
+                Log.d(TAG, "data rumah dari server: ${dataServer.size} item")
 
                 dataServer.forEach { rumahServer ->
+                    val existing = rumahDao.getRumahByServerId(rumahServer.id)
+                    if (existing?.isSynced == false) return@forEach
+
                     val rumahLokalBaru = RumahEntity(
+                        localId = existing?.localId ?: 0,
                         serverId = rumahServer.id,
                         rtId = rumahServer.rtId,
                         alamat = rumahServer.alamat,
@@ -44,11 +63,14 @@ class RumahRepository(
                     )
 
                     rumahDao.insertRumahLocal(rumahLokalBaru)
+                    latestUpdatedAt = newestSyncTime(latestUpdatedAt, rumahServer.updateAt)
                 }
-                Log.d(TAG, "sync selesai, ${dataServer.size} rumah tersimpan")
-            } else {
-                Log.e(TAG, "response gagal: ${response.code()} ${response.errorBody()?.string()}")
-            }
+
+                cursor = body?.meta?.nextCursor
+            } while (body?.meta?.hasMore == true && cursor != null)
+
+            latestUpdatedAt?.let { syncStateDao.upsert(SyncStateEntity("rumahs", it)) }
+            Log.d(TAG, "sync selesai, $total rumah tersimpan")
         } catch(e: Exception){
             Log.e(TAG, "exception: ${e.localizedMessage}", e)
         }
