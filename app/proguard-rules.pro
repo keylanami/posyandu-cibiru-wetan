@@ -1,21 +1,9 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Keep model yang dipakai Moshi jika menggunakan reflection
+-keep class com.desacibiruwetan.posyandu.data.model.** { *; }
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# Keep entity Room
+-keep class com.desacibiruwetan.posyandu.data.local.entity.** { *; }
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
+# Simpan informasi stacktrace
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
