@@ -12,8 +12,8 @@ android {
         applicationId = "com.desacibiruwetan.posyandu"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.20.1"
+        versionCode = 10
+        versionName = "1.26.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -61,4 +61,7 @@ dependencies {
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     ksp(libs.androidx.room.compiler)
+    implementation(libs.play.app.update)
+    implementation(libs.play.app.update.ktx)
+    implementation(libs.kotlinx.coroutines.play.services)
 }

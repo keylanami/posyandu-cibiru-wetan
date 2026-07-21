@@ -1,6 +1,8 @@
 package com.desacibiruwetan.posyandu.ui.screen.beranda
 
+import android.app.Activity
 import android.content.Context
+import android.content.ContextWrapper
 import android.net.ConnectivityManager
 import android.net.Network
 import android.net.NetworkCapabilities
@@ -98,42 +100,20 @@ fun DashboardScreen(
     val context = LocalContext.current
     var showPilotDialog by remember { mutableStateOf(false) }
     val updateInfo by updateViewModel.updateInfo.collectAsState()
-    val downloadId by updateViewModel.downloadId.collectAsState()
 
     LaunchedEffect(Unit) {
         updateViewModel.checkForUpdate()
     }
 
-    DisposableEffect(downloadId) {
-        if (downloadId == null) return@DisposableEffect onDispose {}
-
-        val receiver = object : android.content.BroadcastReceiver() {
-            override fun onReceive(context: android.content.Context, intent: android.content.Intent) {
-                val id = intent.getLongExtra(android.app.DownloadManager.EXTRA_DOWNLOAD_ID, -1)
-                if (id == downloadId) {
-                    updateViewModel.installUpdate()
-                }
-            }
-        }
-        ContextCompat.registerReceiver(
-            context,
-            receiver,
-            android.content.IntentFilter(android.app.DownloadManager.ACTION_DOWNLOAD_COMPLETE),
-            ContextCompat.RECEIVER_EXPORTED
-        )
-        onDispose {
-            context.unregisterReceiver(receiver)
-        }
-    }
-
     if (updateInfo != null) {
         com.desacibiruwetan.posyandu.ui.components.dialog.UpdateDialog(
             updateInfo = updateInfo!!,
-            onDismiss = { updateViewModel.clearUpdateInfo() },
+            onDismiss = { if (!updateInfo!!.forceUpdate) updateViewModel.clearUpdateInfo() },
             onUpdateClick = {
-                updateViewModel.startDownload()
-                updateViewModel.clearUpdateInfo()
-                Toast.makeText(context, "Mengunduh update...", Toast.LENGTH_LONG).show()
+                context.findActivity()?.let { activity ->
+                    updateViewModel.startPlayUpdate(activity)
+                }
+                if (!updateInfo!!.forceUpdate) updateViewModel.clearUpdateInfo()
             }
         )
     }
@@ -481,4 +461,13 @@ private fun ConnectivityManager.isConnectedToInternet(): Boolean {
     val capabilities = getNetworkCapabilities(network) ?: return false
     return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
         capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+}
+
+fun Context.findActivity(): Activity? {
+    var context = this
+    while (context is ContextWrapper) {
+        if (context is Activity) return context
+        context = context.baseContext
+    }
+    return null
 }
