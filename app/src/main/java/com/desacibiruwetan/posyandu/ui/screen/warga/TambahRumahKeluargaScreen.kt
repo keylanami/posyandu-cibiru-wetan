@@ -115,12 +115,16 @@ fun RumahKeluargaScreen(
         editingKeluargaId = null
     }
 
-    LaunchedEffect(token) {
+    suspend fun refreshData() {
         if (token.isNotBlank()) {
             rumahViewModel.syncDataRumah(token)
             keluargaViewModel.syncDataKeluarga(token)
             anggotaViewModel.syncDataAnggotaDariServer(token)
         }
+    }
+
+    LaunchedEffect(token) {
+        refreshData()
     }
 
     val filteredRumahList = remember(searchQuery, rumahList, keluargaList, anggotaList) {

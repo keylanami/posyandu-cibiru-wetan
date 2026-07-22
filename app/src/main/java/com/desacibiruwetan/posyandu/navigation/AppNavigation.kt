@@ -268,8 +268,8 @@ fun AppNavigation() {
             else -> null
         }
 
-        route?.let {
-            navController.navigate(it) {
+        if (route != null && route != navController.currentBackStackEntry?.destination?.route) {
+            navController.navigate(route) {
                 launchSingleTop = true
                 popUpTo(Screen.Dashboard.route) {
                     inclusive = false

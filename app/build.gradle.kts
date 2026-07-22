@@ -12,8 +12,8 @@ android {
         applicationId = "com.desacibiruwetan.posyandu"
         minSdk = 24
         targetSdk = 35
-        versionCode = 10
-        versionName = "1.26.3"
+        versionCode = 15
+        versionName = "1.27.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -27,6 +27,16 @@ android {
                 "proguard-rules.pro"
             )
         }
+
+        create("debugMinified") {
+            initWith(getByName("release"))
+
+            isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
+
+            matchingFallbacks += listOf("debug")
+        }
+
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11

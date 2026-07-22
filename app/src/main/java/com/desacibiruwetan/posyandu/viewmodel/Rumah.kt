@@ -22,14 +22,12 @@ class RumahViewmodel(private val repository: RumahRepository): ViewModel(){
         initialValue =  emptyList()
     )
 
-    fun syncDataRumah(token: String){
-        viewModelScope.launch {
-            _isSyncing.value = true
-            try {
-                repository.pullDataFromServer(token)
-            } finally {
-                _isSyncing.value = false
-            }
+    suspend fun syncDataRumah(token: String){
+        _isSyncing.value = true
+        try {
+            repository.pullDataFromServer(token)
+        } finally {
+            _isSyncing.value = false
         }
     }
 

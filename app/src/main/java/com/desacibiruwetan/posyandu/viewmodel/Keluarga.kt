@@ -27,14 +27,12 @@ class KeluargaViewmodel(private val repository: KeluargaRepository): ViewModel()
     )
 
 
-    fun syncDataKeluarga(token: String){
-        viewModelScope.launch {
-            _isSyncing.value = true
-            try {
-                repository.pullDataFromServer(token)
-            } finally {
-                _isSyncing.value = false
-            }
+    suspend fun syncDataKeluarga(token: String){
+        _isSyncing.value = true
+        try {
+            repository.pullDataFromServer(token)
+        } finally {
+            _isSyncing.value = false
         }
     }
 

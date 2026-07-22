@@ -142,12 +142,16 @@ fun TambahWargaScreen(
     val jaminanKesehatanOptions = listOf("Punya", "Tidak")
 
 
-    LaunchedEffect(Unit) {
+    suspend fun refreshData() {
         if (token.isNotEmpty()) {
             keluargaViewModel.syncDataKeluarga(token)
             anggotaViewModel.syncDataAnggotaDariServer(token)
             keluargaViewModel.fetchKeluargaOptions(token)
         }
+    }
+
+    LaunchedEffect(Unit) {
+        refreshData()
     }
 
     val localDropdownOptions = remember(localKeluarga, localAnggota) {

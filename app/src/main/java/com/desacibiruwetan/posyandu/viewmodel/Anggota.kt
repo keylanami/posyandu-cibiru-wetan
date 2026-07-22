@@ -77,14 +77,12 @@ class AnggotaViewmodel(private val repository: AnggotaRepository) : ViewModel() 
     val programSummaryState = _programSummaryState.asStateFlow()
 
 
-    fun syncDataAnggotaDariServer(token: String) {
-        viewModelScope.launch {
-            _isSyncing.value = true
-            try {
-                repository.pullDataFromServer(token)
-            } finally {
-                _isSyncing.value = false
-            }
+    suspend fun syncDataAnggotaDariServer(token: String) {
+        _isSyncing.value = true
+        try {
+            repository.pullDataFromServer(token)
+        } finally {
+            _isSyncing.value = false
         }
     }
 

@@ -99,6 +99,7 @@ import com.desacibiruwetan.posyandu.viewmodel.KeluargaViewmodel
 import com.desacibiruwetan.posyandu.viewmodel.ReadCollection
 import com.desacibiruwetan.posyandu.viewmodel.ReadRecord
 import com.desacibiruwetan.posyandu.viewmodel.RumahViewmodel
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
@@ -130,6 +131,7 @@ fun CariWargaScreen(
     onNavigateToRumahKeluarga: () -> Unit,
     onNavigateToProgram: (String) -> Unit,
 ) {
+    val coroutineScope = androidx.compose.runtime.rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
     var section by remember { mutableStateOf("Warga") }
     var selectedDetail by remember { mutableStateOf<DetailInfo?>(null) }
@@ -164,9 +166,9 @@ fun CariWargaScreen(
 
     LaunchedEffect(rawToken) {
         if (rawToken.isNotEmpty()) {
-            anggotaViewModel.syncDataAnggotaDariServer(token)
             rumahViewModel.syncDataRumah(token)
             keluargaViewModel.syncDataKeluarga(token)
+            anggotaViewModel.syncDataAnggotaDariServer(token)
             dataReadViewModel.refresh(token)
         }
     }
@@ -180,11 +182,15 @@ fun CariWargaScreen(
             return
         }
         isRefreshing = true
-        anggotaViewModel.syncDataAnggotaDariServer(token)
-        rumahViewModel.syncDataRumah(token)
-        keluargaViewModel.syncDataKeluarga(token)
-        dataReadViewModel.refresh(token) {
-            isRefreshing = false
+        coroutineScope.launch {
+            try {
+                rumahViewModel.syncDataRumah(token)
+                keluargaViewModel.syncDataKeluarga(token)
+                anggotaViewModel.syncDataAnggotaDariServer(token)
+                dataReadViewModel.refresh(token)
+            } finally {
+                isRefreshing = false
+            }
         }
     }
 

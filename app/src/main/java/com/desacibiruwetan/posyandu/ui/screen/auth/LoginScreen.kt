@@ -263,16 +263,6 @@ fun LoginScreen(
             }
 
             Spacer(modifier = Modifier.weight(1f))
-
-            Text(
-                text = "(c) 2026 Pemerintah Desa Cibiru Wetan",
-                style = MaterialTheme.typography.labelMedium.copy(
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.62f)
-                ),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(bottom = 24.dp)
-            )
         }
     }
 }
