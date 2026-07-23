@@ -1,5 +1,6 @@
 package com.desacibiruwetan.posyandu.data.network
 
+import com.desacibiruwetan.posyandu.BuildConfig
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import okhttp3.Interceptor
@@ -10,7 +11,7 @@ import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.TimeUnit
 
 object ApiConfig {
-    private const val BASE_URL = "https://grandepic1.eastasia.cloudapp.azure.com/api/v1/"
+    private const val BASE_URL = BuildConfig.BASE_URL
 
     fun getApiService(): ApiService {
 

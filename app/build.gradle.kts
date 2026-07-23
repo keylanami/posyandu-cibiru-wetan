@@ -12,13 +12,19 @@ android {
         applicationId = "com.desacibiruwetan.posyandu"
         minSdk = 24
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.27.11"
+        versionCode = 17
+        versionName = "1.27.12"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        
+        buildConfigField("String", "BASE_URL", "\"https://grandepic1.eastasia.cloudapp.azure.com/api/v1/\"")
     }
 
     buildTypes {
+        getByName("debug") {
+            buildConfigField("String", "BASE_URL", "\"https://grandepic1.eastasia.cloudapp.azure.com/api/v1/\"")
+        }
+        
         release {
             isMinifyEnabled = true
             isShrinkResources = true
@@ -26,6 +32,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("String", "BASE_URL", "\"https://mykader.chevalierlabsas.org/api/v1/\"")
         }
 
         create("debugMinified") {
@@ -35,8 +42,8 @@ android {
             signingConfig = signingConfigs.getByName("debug")
 
             matchingFallbacks += listOf("debug")
+            buildConfigField("String", "BASE_URL", "\"https://grandepic1.eastasia.cloudapp.azure.com/api/v1/\"")
         }
-
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -44,6 +51,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
