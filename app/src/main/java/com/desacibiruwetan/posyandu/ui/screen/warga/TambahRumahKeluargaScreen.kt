@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -81,6 +83,7 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.TimeZone
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 fun RumahKeluargaScreen(
     onBackClick: () -> Unit,
@@ -108,11 +111,40 @@ fun RumahKeluargaScreen(
     var editingKeluargaId by remember { mutableStateOf<Int?>(null) }
     var selectedKeluargaDetailId by remember { mutableStateOf<Int?>(null) }
 
+    val addRumahRequester = remember { BringIntoViewRequester() }
+    val editRumahRequester = remember { BringIntoViewRequester() }
+    val addKeluargaRequester = remember { BringIntoViewRequester() }
+    val editKeluargaRequester = remember { BringIntoViewRequester() }
+
     fun closeForms() {
         showAddRumahForm = false
         editingRumahId = null
         addingKeluargaRumahId = null
         editingKeluargaId = null
+    }
+
+    LaunchedEffect(showAddRumahForm) {
+        if (showAddRumahForm) {
+            addRumahRequester.bringIntoView()
+        }
+    }
+
+    LaunchedEffect(editingRumahId) {
+        if (editingRumahId != null) {
+            editRumahRequester.bringIntoView()
+        }
+    }
+
+    LaunchedEffect(addingKeluargaRumahId) {
+        if (addingKeluargaRumahId != null) {
+            addKeluargaRequester.bringIntoView()
+        }
+    }
+
+    LaunchedEffect(editingKeluargaId) {
+        if (editingKeluargaId != null) {
+            editKeluargaRequester.bringIntoView()
+        }
     }
 
     suspend fun refreshData() {
@@ -147,9 +179,6 @@ fun RumahKeluargaScreen(
                 onClick = {
                     closeForms()
                     showAddRumahForm = true
-                    coroutineScope.launch {
-                        listState.animateScrollToItem(3)
-                    }
                 }
             )
         },
@@ -189,24 +218,26 @@ fun RumahKeluargaScreen(
 
                 if (showAddRumahForm) {
                     item {
-                        RumahFormCard(
-                            title = "Tambah rumah",
-                            subtitle = "Buat data rumah dulu, lalu tambahkan satu atau beberapa KK di dalamnya.",
-                            rumah = null,
-                            rt = rt,
-                            rw = rw,
-                            onCancel = { showAddRumahForm = false },
-                            onSubmit = { alamat, dusun ->
-                                if (token.isBlank()) {
-                                    Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
-                                    return@RumahFormCard
+                        Box(modifier = Modifier.bringIntoViewRequester(addRumahRequester)) {
+                            RumahFormCard(
+                                title = "Tambah rumah",
+                                subtitle = "Buat data rumah dulu, lalu tambahkan satu atau beberapa KK di dalamnya.",
+                                rumah = null,
+                                rt = rt,
+                                rw = rw,
+                                onCancel = { showAddRumahForm = false },
+                                onSubmit = { alamat, dusun ->
+                                    if (token.isBlank()) {
+                                        Toast.makeText(context, "Sesi habis, silakan login ulang.", Toast.LENGTH_SHORT).show()
+                                        return@RumahFormCard
+                                    }
+                                    rumahViewModel.tambahRumah(token, alamat, dusun, rt.toIntOrNull() ?: 0) {
+                                        Toast.makeText(context, "Rumah berhasil disimpan.", Toast.LENGTH_SHORT).show()
+                                        showAddRumahForm = false
+                                    }
                                 }
-                                rumahViewModel.tambahRumah(token, alamat, dusun, rt.toIntOrNull() ?: 0) {
-                                    Toast.makeText(context, "Rumah berhasil disimpan.", Toast.LENGTH_SHORT).show()
-                                    showAddRumahForm = false
-                                }
-                            }
-                        )
+                            )
+                        }
                     }
                 }
 
@@ -234,6 +265,9 @@ fun RumahKeluargaScreen(
                             editingKeluargaId = editingKeluargaId,
                             rt = rt,
                             rw = rw,
+                            editRumahRequester = editRumahRequester,
+                            addKeluargaRequester = addKeluargaRequester,
+                            editKeluargaRequester = editKeluargaRequester,
                             onEditRumah = {
                                 closeForms()
                                 editingRumahId = rumah.localId
@@ -387,6 +421,7 @@ private fun EmptySearchCard(query: String) {
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun RumahManagementCard(
     rumah: RumahEntity,
@@ -398,6 +433,9 @@ private fun RumahManagementCard(
     editingKeluargaId: Int?,
     rt: String,
     rw: String,
+    editRumahRequester: BringIntoViewRequester,
+    addKeluargaRequester: BringIntoViewRequester,
+    editKeluargaRequester: BringIntoViewRequester,
     onEditRumah: () -> Unit,
     onAddKeluarga: () -> Unit,
     onToggleKeluargaDetail: (KeluargaEntity) -> Unit,
@@ -442,27 +480,31 @@ private fun RumahManagementCard(
         )
 
         if (isEditingRumah) {
-            RumahFormCard(
-                title = "Edit rumah ${rumah.noRumah ?: ""}",
-                subtitle = "Perubahan disimpan lokal dulu dan akan ikut sinkron saat online.",
-                rumah = rumah,
-                rt = rt,
-                rw = rw,
-                onCancel = onCancel,
-                onSubmit = onSubmitRumah
-            )
+            Box(modifier = Modifier.bringIntoViewRequester(editRumahRequester)) {
+                RumahFormCard(
+                    title = "Edit rumah ${rumah.noRumah ?: ""}",
+                    subtitle = "Perubahan disimpan lokal dulu dan akan ikut sinkron saat online.",
+                    rumah = rumah,
+                    rt = rt,
+                    rw = rw,
+                    onCancel = onCancel,
+                    onSubmit = onSubmitRumah
+                )
+            }
         }
 
         if (isAddingKeluarga) {
-            KeluargaFormCard(
-                title = "Tambah KK ke Rumah ${rumah.noRumah ?: "-"}",
-                subtitle = "Satu rumah bisa punya lebih dari satu KK.",
-                keluarga = null,
-                onCancel = onCancel,
-                onSubmit = { noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
-                    onSubmitKeluarga(null, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi)
-                }
-            )
+            Box(modifier = Modifier.bringIntoViewRequester(addKeluargaRequester)) {
+                KeluargaFormCard(
+                    title = "Tambah KK ke Rumah ${rumah.noRumah ?: "-"}",
+                    subtitle = "Satu rumah bisa punya lebih dari satu KK.",
+                    keluarga = null,
+                    onCancel = onCancel,
+                    onSubmit = { noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi ->
+                        onSubmitKeluarga(null, noKk, statusKepemilikanRumah, kepemilikanJamban, kepemilikanSpal, statusEkonomi)
+                    }
+                )
+            }
         }
 
         if (keluargaList.isEmpty()) {
@@ -475,6 +517,7 @@ private fun RumahManagementCard(
                     anggotaList = anggotaKeluarga,
                     isExpanded = selectedKeluargaDetailId == keluarga.localId,
                     isEditing = editingKeluargaId == keluarga.localId,
+                    editKeluargaRequester = editKeluargaRequester,
                     onToggleDetail = { onToggleKeluargaDetail(keluarga) },
                     onEdit = { onEditKeluarga(keluarga) },
                     onCancel = onCancel,
@@ -487,12 +530,14 @@ private fun RumahManagementCard(
     }
 }
 
+@OptIn(androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 private fun KeluargaRow(
     keluarga: KeluargaEntity,
     anggotaList: List<AnggotaEntity>,
     isExpanded: Boolean,
     isEditing: Boolean,
+    editKeluargaRequester: BringIntoViewRequester,
     onToggleDetail: () -> Unit,
     onEdit: () -> Unit,
     onCancel: () -> Unit,
@@ -538,13 +583,15 @@ private fun KeluargaRow(
         }
 
         if (isEditing) {
-            KeluargaFormCard(
-                title = "Edit KK ${keluarga.noKK}",
-                subtitle = "Edit nomor KK dan status keluarga tanpa mengubah rumahnya.",
-                keluarga = keluarga,
-                onCancel = onCancel,
-                onSubmit = onSubmit
-            )
+            Box(modifier = Modifier.bringIntoViewRequester(editKeluargaRequester)) {
+                KeluargaFormCard(
+                    title = "Edit KK ${keluarga.noKK}",
+                    subtitle = "Edit nomor KK dan status keluarga tanpa mengubah rumahnya.",
+                    keluarga = keluarga,
+                    onCancel = onCancel,
+                    onSubmit = onSubmit
+                )
+            }
         }
     }
 }
