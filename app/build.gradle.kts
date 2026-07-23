@@ -11,9 +11,9 @@ android {
     defaultConfig {
         applicationId = "com.desacibiruwetan.posyandu"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 15
-        versionName = "1.27.9"
+        targetSdk = 36
+        versionCode = 16
+        versionName = "1.27.11"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
