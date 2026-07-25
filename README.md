@@ -1,6 +1,6 @@
 # 🏥 Posyandu Cibiru Wetan (GKSTTB)
 <p align="center">
-  <img src="https://raw.githubusercontent.com/keylanami/posyandu-cibiru-wetan/refs/heads/master/Banner.png" width="200" alt="Banner">
+  <img src="https://raw.githubusercontent.com/keylanami/posyandu-cibiru-wetan/refs/heads/master/Banner.png" alt="Banner">
 </p>
 > **Digitalizing Rural Health Services with Modern Android Excellence.**
 
