@@ -180,6 +180,9 @@ fun CatatKejadianScreen(
                 "Pindah Masuk" -> {
                     selectedWarga?.let { warga ->
                         val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
+                        val catatanBaru = "[Pindah Masuk] Tgl: $apiDate. Asal: $asalAlamat. Catatan: $keterangan"
+                        val keteranganLengkap = if (warga.keterangan.isNullOrBlank()) catatanBaru else "${warga.keterangan}\n$catatanBaru"
+                        
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -193,7 +196,7 @@ fun CatatKejadianScreen(
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
                             statusWargaBaru = "aktif",
-                            keteranganBaru = "Tgl Masuk: $apiDate. Asal: $asalAlamat. $keterangan",
+                            keteranganBaru = keteranganLengkap,
                             usiaBaru = calcUsia,
                             kategoriUsiaBaru = calcKat
                         )
@@ -203,6 +206,9 @@ fun CatatKejadianScreen(
                 "Pindah Keluar" -> {
                     selectedWarga?.let { warga ->
                         val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
+                        val catatanBaru = "[Pindah Keluar] Tgl: $apiDate. Tujuan: $tujuanAlamat. Catatan: $keterangan"
+                        val keteranganLengkap = if (warga.keterangan.isNullOrBlank()) catatanBaru else "${warga.keterangan}\n$catatanBaru"
+
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -216,7 +222,7 @@ fun CatatKejadianScreen(
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
                             statusWargaBaru = "pindah_keluar",
-                            keteranganBaru = "Tgl Keluar: $apiDate. Tujuan: $tujuanAlamat. $keterangan",
+                            keteranganBaru = keteranganLengkap,
                             usiaBaru = calcUsia,
                             kategoriUsiaBaru = calcKat
                         )
@@ -226,6 +232,9 @@ fun CatatKejadianScreen(
                 "Meninggal" -> {
                     selectedWarga?.let { warga ->
                         val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
+                        val catatanBaru = "[Meninggal] Wafat: $apiDate. Penyebab: $keterangan"
+                        val keteranganLengkap = if (warga.keterangan.isNullOrBlank()) catatanBaru else "${warga.keterangan}\n$catatanBaru"
+
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -239,7 +248,7 @@ fun CatatKejadianScreen(
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = warga.statusSipil,
                             statusWargaBaru = "meninggal",
-                            keteranganBaru = "Wafat: $apiDate. Penyebab: $keterangan",
+                            keteranganBaru = keteranganLengkap,
                             usiaBaru = calcUsia,
                             kategoriUsiaBaru = calcKat
                         )
@@ -249,6 +258,10 @@ fun CatatKejadianScreen(
                 "Nikah", "Cerai" -> {
                     selectedWarga?.let { warga ->
                         val (calcUsia, calcKat) = calculateAgeInfo(warga.tanggalLahir)
+                        val labelKejadian = if (selectedCategory == "Nikah") "Pernikahan" else "Perceraian"
+                        val catatanBaru = "[$labelKejadian] Tgl: $apiDate. Pasangan: $namaPasangan. Catatan: $keterangan"
+                        val keteranganLengkap = if (warga.keterangan.isNullOrBlank()) catatanBaru else "${warga.keterangan}\n$catatanBaru"
+
                         anggotaViewModel.updateAnggota(
                             token = token,
                             anggotaLokal = warga,
@@ -261,9 +274,8 @@ fun CatatKejadianScreen(
                             jaminanKesehatanBaru = warga.jaminanKesehatan,
                             statusKeluargaBaru = warga.statusKeluarga,
                             statusSipilBaru = if (selectedCategory == "Nikah") "Kawin Tercatat" else "Cerai Hidup",
-                            statusWargaBaru = warga.statusWarga
-                                ?: "aktif",
-                            keteranganBaru = "Status baru: $selectedCategory dengan $namaPasangan. $keterangan",
+                            statusWargaBaru = warga.statusWarga ?: "aktif",
+                            keteranganBaru = keteranganLengkap,
                             usiaBaru = calcUsia,
                             kategoriUsiaBaru = calcKat
                         )
