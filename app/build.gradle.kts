@@ -6,11 +6,11 @@ plugins {
 
 android {
     namespace = "com.desacibiruwetan.posyandu"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.desacibiruwetan.posyandu"
-        minSdk = 24
+        minSdk = 23
         targetSdk = 36
         versionCode = 17
         versionName = "1.27.12"
