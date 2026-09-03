@@ -1,5 +1,7 @@
 package com.desacibiruwetan.posyandu.ui.screen.warga
 
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -76,6 +78,13 @@ fun CatatKejadianScreen(
 ) {
     val context = LocalContext.current
     val listWarga by anggotaViewModel.listAnggotaLocal.collectAsState()
+
+    val connectivityManager = remember { context.getSystemService(ConnectivityManager::class.java) }
+    val isOnline = remember(connectivityManager) {
+        val network = connectivityManager.activeNetwork
+        val capabilities = connectivityManager.getNetworkCapabilities(network)
+        capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
+    }
 
     val token = SessionManager.getAuthorizationHeader(context)
 
@@ -164,15 +173,14 @@ fun CatatKejadianScreen(
                         usia = "0",
                         kategoriUsia = "Balita",
                         onSuccess = { localId, serverId ->
-                            if (serverId != null) {
-                                anggotaViewModel.createDataBalita(
-                                    token,
-                                    localId,
-                                    serverId,
-                                    validatedTb,
-                                    validatedBb
-                                )
-                            }
+                            // ALWAYS create local balita data (BB/TB) even if offline (serverId == null)
+                            anggotaViewModel.createDataBalita(
+                                token,
+                                localId,
+                                serverId,
+                                validatedTb,
+                                validatedBb
+                            )
                         }
                     )
                 }
@@ -282,8 +290,13 @@ fun CatatKejadianScreen(
                     }
                 }
             }
-            Toast.makeText(context, "Data $selectedCategory berhasil dicatat", Toast.LENGTH_SHORT)
-                .show()
+            val feedbackMsg = if (isOnline) {
+                "Data $selectedCategory berhasil dicatat ke server"
+            } else {
+                "Data $selectedCategory tersimpan lokal (Offline)"
+            }
+            
+            Toast.makeText(context, feedbackMsg, Toast.LENGTH_SHORT).show()
             onBackClick()
         }
     }
